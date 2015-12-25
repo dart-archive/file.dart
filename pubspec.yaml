@@ -1,0 +1,8 @@
+name: file
+author: Matan Lurey <matanl@google.com>
+description: A pluggable file system abstraction for Dart.
+homepage: https://github.com/matanlurey/file
+version: 1.0.0
+dependencies:
+dev_dependencies:
+  test: any
