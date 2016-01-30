@@ -10,17 +10,31 @@ a file system.
 Unlike `dart:io`, `package:file`:
 
 - Has an entirely *async* public interface (no `fooSync` methods).
-- Has explicit factory classes for different implementations:
+- Has explicit factory classes for different implementations.
+- Can be used to implement custom file systems.
+
+## Usage
+
+Implement your own custom file system:
 
 ```dart
-var inMemoryFS = new InMemoryFileSystem();
-var file = inMemoryFS.file('/foo/bar');
+import 'package:file/file.dart';
+
+class FooBarFileSystem implements FileSystem { ... }
 ```
 
-- Can be used to implement custom file systems:
+Use the in-memory file system:
 
 ```dart
-class GoogleDriveFileSystem implements FileSystem { ... }
+import 'package:file/file.dart';
+
+var fs = new InMemoryFileSystem();
 ```
 
-And much much more!
+Use the local file system (requires dart:io access):
+
+```dart
+import 'package:file/io.dart';
+
+var fs = const LocalFileSystem();
+```
