@@ -1,3 +1,6 @@
+[![Build Status](https://travis-ci.org/matanlurey/file.svg?branch=master)](https://travis-ci.org/matanlurey/file)
+[![Coverage Status](https://coveralls.io/repos/github/matanlurey/file/badge.svg?branch=master)](https://coveralls.io/github/matanlurey/file?branch=master)
+
 # File
 
 A generic file system abstraction for Dart.
