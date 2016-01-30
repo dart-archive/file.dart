@@ -16,7 +16,7 @@ class _InMemoryDirectory
       throw new FileSystemEntityException('Not found', path);
     }
     if (name != '') {
-      directory = directory[name];
+      directory = directory[name] as Map<String, Object>;
     }
     // This could be optimized heavily, right now it makes a lot of extra
     // lookups and gets more and more expensive as you traverse downwards.

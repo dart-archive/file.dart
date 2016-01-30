@@ -21,7 +21,7 @@ abstract class _InMemoryFileSystemEntity extends FileSystemEntity {
       var reference = _resolve(true, newPath);
       Object clone = parent[name];
       if (clone is! String) {
-        clone = _cloneSafe(clone);
+        clone = _cloneSafe(clone as Map<String, Object>);
       }
       reference[newPath.substring(newPath.lastIndexOf('/') + 1)] = clone;
       if (_type == FileSystemEntityType.FILE) {
