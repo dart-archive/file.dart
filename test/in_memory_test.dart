@@ -113,6 +113,75 @@ void main() {
           expect(e, const isInstanceOf<FileSystemEntityException>());
         }));
       });
+
+      test('should be able to copy a file', () async {
+        var file = system.file('/foo/bar/README');
+        file = await file.copy('/foo/bar/README.md');
+        expect(file.path, '/foo/bar/README.md');
+        expect(await file.exists(), isTrue);
+      });
+
+      test('should be able to copy a directory', () async {
+        var dir = system.directory('/foo/bar');
+        dir = await dir.copy('/foo/bar2');
+        expect(dir.path, '/foo/bar2');
+        expect(await dir.exists(), isTrue);
+      });
+
+      test('should fail copying when the path does not exist', () async {
+        system
+            .directory('/foo/bar')
+            .copy('/foo/bar/baz')
+            .catchError(expectAsync((e) {
+          expect(e, const isInstanceOf<FileSystemEntityException>());
+        }));
+      });
+
+      test('should be able to move a file', () async {
+        var file = system.file('/foo/bar/README');
+        file = await file.rename('/foo/bar/README.md');
+        expect(file.path, '/foo/bar/README.md');
+        expect(await file.exists(), isTrue);
+        expect(await system.file('/foo/bar/README').exists(), isFalse);
+      });
+
+      test('should be able to move a directory', () async {
+        var dir = system.directory('/foo/bar');
+        dir = await dir.rename('/foo/bar2');
+        expect(dir.path, '/foo/bar2');
+        expect(await dir.exists(), isTrue);
+        expect(await system.directory('/foo/bar').exists(), isFalse);
+      });
+
+      test('should fail moving when the path does not exist', () async {
+        system
+            .directory('/foo/bar')
+            .rename('/foo/bar/baz')
+            .catchError(expectAsync((e) {
+          expect(e, const isInstanceOf<FileSystemEntityException>());
+        }));
+      });
+
+      test('should be able to list files', () async {
+        expect(
+            (await system.directory('/foo/bar').list().toList())
+                .map((FileSystemEntity e) => e.path),
+            [
+              '/foo/bar/README',
+              '/foo/bar/baz.dat',
+              '/foo/bar/baz']);
+      });
+
+      test('should be able to list files recursively', () async {
+        expect(
+            (await system.directory('/').list(recursive: true).toList())
+                .map((FileSystemEntity e) => e.path),
+            [
+              '/foo/bar/README',
+              '/foo/bar/baz.dat',
+            ]
+        );
+      });
     });
   });
 }

@@ -10,5 +10,28 @@ class _InMemoryDirectory
   Object _createImpl() => {};
 
   @override
+  Stream<FileSystemEntity> list({bool recursive: false}) async* {
+    var directory = _resolve(false);
+    if (directory == null) {
+      throw new FileSystemEntityException('Not found', path);
+    }
+    if (name != '') {
+      directory = directory[name];
+    }
+    // This could be optimized heavily, right now it makes a lot of extra
+    // lookups and gets more and more expensive as you traverse downwards.
+    for (var name in directory.keys) {
+      var entityPath = '$path/$name';
+      if (await fileSystem.type(entityPath) == FileSystemEntityType.FILE) {
+        yield fileSystem.file(entityPath);
+      } else if (recursive) {
+        yield* fileSystem.directory(entityPath).list(recursive: true);
+      } else {
+        yield fileSystem.directory(entityPath);
+      }
+    }
+  }
+
+  @override
   final FileSystemEntityType _type = FileSystemEntityType.DIRECTORY;
 }

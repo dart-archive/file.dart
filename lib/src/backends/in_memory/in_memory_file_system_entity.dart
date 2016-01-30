@@ -10,6 +10,30 @@ abstract class _InMemoryFileSystemEntity extends FileSystemEntity {
   _InMemoryFileSystemEntity(this.fileSystem, this.path);
 
   @override
+  Future<FileSystemEntity> copy(String newPath) async {
+    if (await fileSystem.type(newPath) != FileSystemEntityType.NOT_FOUND) {
+      throw new FileSystemEntityException(
+          'Unable to copy or move to an existing path',
+          newPath);
+    }
+    var parent = _resolve(false);
+    if (parent != null) {
+      var reference = _resolve(true, newPath);
+      Object clone = parent[name];
+      if (clone is! String) {
+        clone = _cloneSafe(clone);
+      }
+      reference[newPath.substring(newPath.lastIndexOf('/') + 1)] = clone;
+      if (_type == FileSystemEntityType.FILE) {
+        return new _InMemoryFile(fileSystem, newPath);
+      } else {
+        return new _InMemoryDirectory(fileSystem, newPath);
+      }
+    }
+    throw new FileSystemEntityException('Not found', path);
+  }
+
+  @override
   Future<FileSystemEntity> create({bool recursive: false}) async {
     var parent = _resolve(recursive);
     if (parent == null) {
@@ -30,7 +54,7 @@ abstract class _InMemoryFileSystemEntity extends FileSystemEntity {
     }
     if (_type == FileSystemEntityType.FILE ||
         recursive ||
-        parent[name].isEmpty) {
+        (parent[name] as Map).isEmpty) {
       parent.remove(name);
       return this;
     }
@@ -53,8 +77,20 @@ abstract class _InMemoryFileSystemEntity extends FileSystemEntity {
   // TODO: Consider promoting to FileSystemEntity.
   String get name => path.substring(path.lastIndexOf('/') + 1);
 
-  Map<String, Object> _resolve(bool recursive) =>
-      fileSystem._resolvePath(getParentPath(path).split('/'), recursive: recursive);
+  @override
+  Future<FileSystemEntity> rename(String newPath) async {
+    var copied = await copy(newPath);
+    await delete(recursive: true);
+    return copied;
+  }
+
+  Map<String, Object> _resolve(bool recursive, [String path]) {
+    path ??= this.path;
+    if (path == '') {
+      return fileSystem._data;
+    }
+    return fileSystem._resolvePath(getParentPath(path).split('/'), recursive: recursive);
+  }
 
   /// Return what this type is.
   FileSystemEntityType get _type;

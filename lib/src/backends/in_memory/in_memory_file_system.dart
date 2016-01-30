@@ -47,7 +47,9 @@ class InMemoryFileSystem implements FileSystem {
   InMemoryFileSystem._(this._data);
 
   @override
-  Directory directory(String path) => new _InMemoryDirectory(this, path);
+  Directory directory(String path) {
+    return new _InMemoryDirectory(this, path == '/' ? '' : path);
+  }
 
   @override
   File file(String path) => new _InMemoryFile(this, path);

@@ -90,5 +90,5 @@ enum FileSystemEntityType {
 
 /// Returns the parent directory of [path].
 String getParentPath(String path) {
-  return path == '/' ? null : path.substring(0, path.lastIndexOf('/'));
+  return path == '/' || path == '' ? null : path.substring(0, path.lastIndexOf('/'));
 }
