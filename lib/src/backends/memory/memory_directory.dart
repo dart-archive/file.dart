@@ -1,9 +1,9 @@
-part of file.src.backends.in_memory;
+part of file.src.backends.memory;
 
-class _InMemoryDirectory
-    extends _InMemoryFileSystemEntity
+class _MemoryDirectory
+    extends _MemoryFileSystemEntity
     with Directory {
-  _InMemoryDirectory(InMemoryFileSystem fileSystem, String path)
+  _MemoryDirectory(MemoryFileSystem fileSystem, String path)
       : super(fileSystem, path);
   // Create an object representing a directory with no files.
   @override
@@ -24,10 +24,11 @@ class _InMemoryDirectory
       var entityPath = '$path/$name';
       if (await fileSystem.type(entityPath) == FileSystemEntityType.FILE) {
         yield fileSystem.file(entityPath);
-      } else if (recursive) {
-        yield* fileSystem.directory(entityPath).list(recursive: true);
       } else {
         yield fileSystem.directory(entityPath);
+        if (recursive) {
+          yield* fileSystem.directory(entityPath).list(recursive: true);
+        }
       }
     }
   }

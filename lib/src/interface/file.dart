@@ -6,4 +6,14 @@ abstract class File implements FileSystemEntity {
   Future<bool> exists() async {
     return await fileSystem.type(path) == FileSystemEntityType.FILE;
   }
+
+  Future<List<int>> readAsBytes();
+
+  Future<String> readAsString();
+
+  /// Writes [bytes] to the file.
+  Future<File> writeAsBytes(List<int> bytes);
+
+  /// Writes [contents] to the file.
+  Future<File> writeAsString(String contents);
 }

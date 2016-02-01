@@ -16,4 +16,24 @@ class _LocalFile extends _LocalFileSystemEntity implements File {
         await (_ioEntity as io.File).create(recursive: recursive),
         fileSystem);
   }
+
+  @override
+  Future<List<int>> readAsBytes() => (_ioEntity as io.File).readAsBytes();
+
+  @override
+  Future<String> readAsString() => (_ioEntity as io.File).readAsString();
+
+  @override
+  Future<File> writeAsBytes(List<int> contents) async {
+    return new _LocalFile(
+        await (_ioEntity as io.File).writeAsBytes(contents),
+        fileSystem);
+  }
+
+  @override
+  Future<File> writeAsString(String contents) async {
+    return new _LocalFile(
+        await (_ioEntity as io.File).writeAsString(contents),
+        fileSystem);
+  }
 }

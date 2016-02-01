@@ -1,4 +1,4 @@
-part of file.src.backends.in_memory;
+part of file.src.backends.memory;
 
 /// Returns a deep copy of [map], verifying it is JSON serializable.
 Map<String, Object> _cloneSafe(Map<String, Object> map) {
@@ -8,51 +8,30 @@ Map<String, Object> _cloneSafe(Map<String, Object> map) {
 
 /// An implementation of [FileSystem] that exists entirely in memory.
 ///
-/// [InMemoryFileSystem] is suitable for mocking and tests, as well as for
+/// [MemoryFileSystem] is suitable for mocking and tests, as well as for
 /// caching or staging before writing or reading to a live system.
 ///
 /// **NOTE**: This class is not yet optimized and should not be used for
 /// performance-sensitive operations. There is also no implementation today for
 /// symbolic [Link]s.
-class InMemoryFileSystem implements FileSystem {
+class MemoryFileSystem implements FileSystem {
   final Map<String, Object> _data;
 
   /// Create a new, empty in-memory file system.
-  factory InMemoryFileSystem() {
-    return new InMemoryFileSystem._(<String, Object>{});
-  }
-
-  /// Build an in-memory file system from a [map] file structure.
-  ///
-  /// __Example use__:
-  ///     new InMemoryFileSystem.build({
-  ///       'home': {
-  ///         'root': {
-  ///           'README': 'Hello, this is a file.',
-  ///           'root.dat': [0, 32, 252, 45, 101]
-  ///         }
-  ///       }
-  ///     });
-  ///
-  /// The following types are respected:
-  /// - A [Map] is a folder.
-  /// - A [String] is a text file.
-  /// - A [List<int>] is a binary file.
-  factory InMemoryFileSystem.fromMap(Map<String, Object> files) {
-    // Lazy/dirty way of doing a deep clone and checking the structure.
-    return new InMemoryFileSystem._(_cloneSafe(files));
+  factory MemoryFileSystem() {
+    return new MemoryFileSystem._(<String, Object>{});
   }
 
   // Prevent extending this class.
-  InMemoryFileSystem._(this._data);
+  MemoryFileSystem._(this._data);
 
   @override
   Directory directory(String path) {
-    return new _InMemoryDirectory(this, path == '/' ? '' : path);
+    return new _MemoryDirectory(this, path == '/' ? '' : path);
   }
 
   @override
-  File file(String path) => new _InMemoryFile(this, path);
+  File file(String path) => new _MemoryFile(this, path);
 
   // Resolves a list of path parts to the final directory in the hash map.
   //

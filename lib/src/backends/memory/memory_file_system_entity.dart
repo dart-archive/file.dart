@@ -1,13 +1,13 @@
-part of file.src.backends.in_memory;
+part of file.src.backends.memory;
 
-abstract class _InMemoryFileSystemEntity extends FileSystemEntity {
+abstract class _MemoryFileSystemEntity extends FileSystemEntity {
   @override
-  final InMemoryFileSystem fileSystem;
+  final MemoryFileSystem fileSystem;
 
   @override
   final String path;
 
-  _InMemoryFileSystemEntity(this.fileSystem, this.path);
+  _MemoryFileSystemEntity(this.fileSystem, this.path);
 
   @override
   Future<FileSystemEntity> copy(String newPath) async {
@@ -25,9 +25,9 @@ abstract class _InMemoryFileSystemEntity extends FileSystemEntity {
       }
       reference[newPath.substring(newPath.lastIndexOf('/') + 1)] = clone;
       if (_type == FileSystemEntityType.FILE) {
-        return new _InMemoryFile(fileSystem, newPath);
+        return new _MemoryFile(fileSystem, newPath);
       } else {
-        return new _InMemoryDirectory(fileSystem, newPath);
+        return new _MemoryDirectory(fileSystem, newPath);
       }
     }
     throw new FileSystemEntityException('Not found', path);
@@ -67,7 +67,7 @@ abstract class _InMemoryFileSystemEntity extends FileSystemEntity {
   Directory get parent {
     var parentPath = getParentPath(path);
     if (parentPath != null) {
-      return new _InMemoryDirectory(
+      return new _MemoryDirectory(
           fileSystem,
           parentPath == '' ? '/' : parentPath);
     }
