@@ -2,6 +2,17 @@ import 'dart:convert' show JSON;
 
 import 'interface.dart' show FileSystemEntityType;
 
+/// Stores in-memory file system data.
+///
+/// It intentionally contains no members. Users are only expected to pass these
+/// objects around for the purpose of sharing in-memory storage, but never use
+/// it directly as the internal data stuctures are not guaranteed to be stable.
+abstract class MemoryFileStorage {}
+
+class MemoryFileStorageImpl implements MemoryFileStorage {
+  final Map<String, dynamic> data = <String, dynamic>{};
+}
+
 /// Returns a deep copy of [map], verifying it is JSON serializable.
 Map<String, Object> cloneSafe(Map<String, Object> map) {
   var json = JSON.encode(map);

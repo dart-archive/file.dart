@@ -9,15 +9,25 @@ part of file.src.backends.memory;
 /// performance-sensitive operations. There is also no implementation today for
 /// symbolic [Link]s.
 class MemoryFileSystem implements FileSystem {
-  final Map<String, Object> _data;
+  final MemoryFileStorageImpl _storage;
+  MemoryFileStorage get storage => _storage;
+  Map<String, dynamic> get _data => _storage.data;
 
-  /// Create a new, empty in-memory file system.
-  factory MemoryFileSystem() {
-    return new MemoryFileSystem._(<String, Object>{});
+  /// Create a new in-memory file system.
+  ///
+  /// If [backedBy] is not supplied, the file system starts empty.
+  ///
+  /// If [backedBy] is supplied this file system will use it as the underlying
+  /// storage of file system information. This is useful if you need to
+  /// instantiate multiple instances of in-memory file systems all backed by
+  /// the same map.
+  factory MemoryFileSystem({MemoryFileStorage backedBy}) {
+    return new MemoryFileSystem._(backedBy);
   }
 
   // Prevent extending this class.
-  MemoryFileSystem._(this._data);
+  MemoryFileSystem._(MemoryFileStorage storage)
+      : _storage = storage ?? new MemoryFileStorageImpl();
 
   @override
   Directory directory(String path) {
@@ -30,7 +40,7 @@ class MemoryFileSystem implements FileSystem {
   /// Returns a Map equivalent to the file structure of the file system.
   ///
   // See [InMemoryFileSystem.fromMap] for details on the structure.
-  Map<String, Object> toMap() => cloneSafe(_data);
+  Map<String, dynamic> toMap() => cloneSafe(_data);
 
   @override
   Future<FileSystemEntityType> type(String path, {bool followLinks: true}) {
