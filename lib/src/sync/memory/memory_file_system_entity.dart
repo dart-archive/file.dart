@@ -1,8 +1,8 @@
 part of file.src.backends.memory;
 
-abstract class _MemoryFileSystemEntity extends FileSystemEntity {
+abstract class _MemoryFileSystemEntity extends SyncFileSystemEntity {
   @override
-  final MemoryFileSystem fileSystem;
+  final SyncMemoryFileSystem fileSystem;
 
   @override
   final String path;
@@ -10,8 +10,8 @@ abstract class _MemoryFileSystemEntity extends FileSystemEntity {
   _MemoryFileSystemEntity(this.fileSystem, this.path);
 
   @override
-  Future<FileSystemEntity> copy(String newPath) async {
-    if (await fileSystem.type(newPath) != FileSystemEntityType.NOT_FOUND) {
+  SyncFileSystemEntity copy(String newPath) {
+    if (fileSystem.type(newPath) != FileSystemEntityType.NOT_FOUND) {
       throw new FileSystemEntityException(
           'Unable to copy or move to an existing path',
           newPath);
@@ -34,7 +34,7 @@ abstract class _MemoryFileSystemEntity extends FileSystemEntity {
   }
 
   @override
-  Future<FileSystemEntity> create({bool recursive: false}) async {
+  SyncFileSystemEntity create({bool recursive: false}) {
     var parent = _resolve(recursive);
     if (parent == null) {
       throw new FileSystemEntityException('Not found', getParentPath(path));
@@ -47,7 +47,7 @@ abstract class _MemoryFileSystemEntity extends FileSystemEntity {
   Object _createImpl();
 
   @override
-  Future<FileSystemEntity> delete({bool recursive: false}) async {
+  SyncFileSystemEntity delete({bool recursive: false}) {
     var parent = _resolve(recursive);
     if (parent == null) {
       throw new FileSystemEntityException('Not found', path);
@@ -64,7 +64,7 @@ abstract class _MemoryFileSystemEntity extends FileSystemEntity {
   }
 
   @override
-  Directory get parent {
+  SyncDirectory get parent {
     var parentPath = getParentPath(path);
     if (parentPath != null) {
       return new _MemoryDirectory(
@@ -74,13 +74,13 @@ abstract class _MemoryFileSystemEntity extends FileSystemEntity {
     return null;
   }
 
-  // TODO: Consider promoting to FileSystemEntity.
+  // TODO: Consider promoting to SyncFileSystemEntity.
   String get name => path.substring(path.lastIndexOf('/') + 1);
 
   @override
-  Future<FileSystemEntity> rename(String newPath) async {
-    var copied = await copy(newPath);
-    await delete(recursive: true);
+  SyncFileSystemEntity rename(String newPath) {
+    var copied = copy(newPath);
+    delete(recursive: true);
     return copied;
   }
 

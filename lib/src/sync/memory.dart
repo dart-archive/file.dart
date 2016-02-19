@@ -1,8 +1,6 @@
 library file.src.backends.memory;
 
-import 'dart:async';
-
-import 'package:file/src/interface.dart';
+import 'package:file/src/sync.dart';
 
 import '../memory_utils.dart';
 
