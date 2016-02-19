@@ -78,6 +78,8 @@ class FileSystemEntityException implements Exception {
   final String path;
 
   FileSystemEntityException(this.message, this.path);
+
+  String toString() => '${FileSystemEntityException}: $message: $path';
 }
 
 /// The type of an entity on the file system.

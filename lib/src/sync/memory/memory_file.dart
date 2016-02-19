@@ -1,7 +1,7 @@
 part of file.src.backends.memory;
 
-class _MemoryFile extends _MemoryFileSystemEntity with File {
-  _MemoryFile(MemoryFileSystem fileSystem, String path)
+class _MemoryFile extends _MemoryFileSystemEntity with SyncFile {
+  _MemoryFile(SyncMemoryFileSystem fileSystem, String path)
       : super(fileSystem, path);
   // Create an object representing a binary file with no data.
   @override
@@ -11,7 +11,7 @@ class _MemoryFile extends _MemoryFileSystemEntity with File {
   final FileSystemEntityType _type = FileSystemEntityType.FILE;
 
   @override
-  Future<List<int>> readAsBytes() async {
+  List<int> readAsBytes() {
     var dir = _resolve(false);
     if (dir != null) {
       var entity = dir[name];
@@ -25,7 +25,7 @@ class _MemoryFile extends _MemoryFileSystemEntity with File {
   }
 
   @override
-  Future<String> readAsString() async {
+  String readAsString() {
     var dir = _resolve(false);
     if (dir != null) {
       var entity = dir[name];
@@ -39,14 +39,14 @@ class _MemoryFile extends _MemoryFileSystemEntity with File {
   }
 
   @override
-  Future<File> writeAsBytes(List<int> contents) {
+  SyncFile writeAsBytes(List<int> contents) {
     _resolve(true)[name] = contents;
-    return new Future<File>.value(this);
+    return this;
   }
 
   @override
-  Future<File> writeAsString(String contents) {
+  SyncFile writeAsString(String contents) {
     _resolve(true)[name] = contents;
-    return new Future<File>.value(this);
+    return this;
   }
 }

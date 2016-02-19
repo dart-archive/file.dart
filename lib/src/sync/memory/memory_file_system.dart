@@ -8,24 +8,24 @@ part of file.src.backends.memory;
 /// **NOTE**: This class is not yet optimized and should not be used for
 /// performance-sensitive operations. There is also no implementation today for
 /// symbolic [Link]s.
-class MemoryFileSystem implements FileSystem {
+class SyncMemoryFileSystem implements SyncFileSystem {
   final Map<String, Object> _data;
 
   /// Create a new, empty in-memory file system.
-  factory MemoryFileSystem() {
-    return new MemoryFileSystem._(<String, Object>{});
+  factory SyncMemoryFileSystem() {
+    return new SyncMemoryFileSystem._(<String, Object>{});
   }
 
   // Prevent extending this class.
-  MemoryFileSystem._(this._data);
+  SyncMemoryFileSystem._(this._data);
 
   @override
-  Directory directory(String path) {
+  SyncDirectory directory(String path) {
     return new _MemoryDirectory(this, path == '/' ? '' : path);
   }
 
   @override
-  File file(String path) => new _MemoryFile(this, path);
+  SyncFile file(String path) => new _MemoryFile(this, path);
 
   /// Returns a Map equivalent to the file structure of the file system.
   ///
@@ -33,8 +33,7 @@ class MemoryFileSystem implements FileSystem {
   Map<String, Object> toMap() => cloneSafe(_data);
 
   @override
-  Future<FileSystemEntityType> type(String path, {bool followLinks: true}) {
-    return new Future<FileSystemEntityType>.value(
-        getType(_data, path, followLinks));
+  FileSystemEntityType type(String path, {bool followLinks: true}) {
+    return getType(_data, path, followLinks);
   }
 }
