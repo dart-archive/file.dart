@@ -12,9 +12,12 @@ a file system.
 
 Unlike `dart:io`, `package:file`:
 
-- Has an entirely *async* public interface (no `fooSync` methods).
+- Does not mix synchronous and asynchronous API in one. It is up to users to
+  choose one, the other, or both.
 - Has explicit factory classes for different implementations.
 - Can be used to implement custom file systems.
+- Comes with in-memory implementation out-of-the-box, making it super-easy to
+  test code that works with the file system.
 
 ## Usage
 
@@ -40,4 +43,13 @@ Use the local file system (requires dart:io access):
 import 'package:file/io.dart';
 
 var fs = const LocalFileSystem();
+```
+
+The synchronous counterparts can be imported from:
+
+```dart
+// API and in-memory implementation
+import `package:file/sync.dart`;
+// Implementation based on "dart:io"
+import `package:file/sync_io.dart`;
 ```
