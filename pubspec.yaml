@@ -4,7 +4,7 @@ authors:
 - Yegor Jbanov <yjbanov@google.com>
 description: A pluggable, mockable file system abstraction for Dart.
 homepage: https://github.com/matanlurey/file
-version: 0.1.0
+version: 0.1.1
 dependencies:
 dev_dependencies:
   test: ^0.12.10
