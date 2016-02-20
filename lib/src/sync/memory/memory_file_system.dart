@@ -9,15 +9,25 @@ part of file.src.backends.memory;
 /// performance-sensitive operations. There is also no implementation today for
 /// symbolic [Link]s.
 class SyncMemoryFileSystem implements SyncFileSystem {
-  final Map<String, Object> _data;
+  final MemoryFileStorageImpl _storage;
+  MemoryFileStorage get storage => _storage;
+  Map<String, dynamic> get _data => _storage.data;
 
-  /// Create a new, empty in-memory file system.
-  factory SyncMemoryFileSystem() {
-    return new SyncMemoryFileSystem._(<String, Object>{});
+  /// Create a new in-memory file system.
+  ///
+  /// If [backedBy] is not supplied, the file system starts empty.
+  ///
+  /// If [backedBy] is supplied this file system will use it as the underlying
+  /// storage of file system information. This is useful if you need to
+  /// instantiate multiple instances of in-memory file systems all backed by
+  /// the same map.
+  factory SyncMemoryFileSystem({MemoryFileStorage backedBy}) {
+    return new SyncMemoryFileSystem._(backedBy);
   }
 
   // Prevent extending this class.
-  SyncMemoryFileSystem._(this._data);
+  SyncMemoryFileSystem._(MemoryFileStorage storage)
+      : _storage = storage ?? new MemoryFileStorageImpl();
 
   @override
   SyncDirectory directory(String path) {
