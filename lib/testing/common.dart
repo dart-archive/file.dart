@@ -18,18 +18,21 @@ import 'package:test/test.dart';
 ///
 /// All files will be empty.
 Future<Directory> createUsersDirectory(Directory root) {
-  return insertFiles(root, const <String, Object> {
-    'users': const {
-      'jack': const {
-        'profile.jpg': const [],
-        'README': 'Jack will fill this in'
+  return insertFiles(
+      root,
+      const <String, Object>{
+        'users': const {
+          'jack': const {
+            'profile.jpg': const [],
+            'README': 'Jack will fill this in'
+          },
+          'jill': const {
+            'profile.jpg': const [],
+            'README': 'Jill will fill this in'
+          }
+        }
       },
-      'jill': const {
-        'profile.jpg': const [],
-        'README': 'Jill will fill this in'
-      }
-    }
-  }, true);
+      true);
 }
 
 //
@@ -67,13 +70,8 @@ void runCommonTests(FileSystem getFileSystem(), [String getRoot()]) {
           await createUsersDirectory(dir);
           dir = system.directory('$root/users/jack');
           expect(
-            (await dir.list().toList())
-                .map((e) => e.path)
-                .toList()
-                ..sort(), [
-            '$root/users/jack/README',
-            '$root/users/jack/profile.jpg'
-          ]);
+              (await dir.list().toList()).map((e) => e.path).toList()..sort(),
+              ['$root/users/jack/README', '$root/users/jack/profile.jpg']);
         });
 
         test('recursively', () async {
@@ -84,8 +82,7 @@ void runCommonTests(FileSystem getFileSystem(), [String getRoot()]) {
           var files = await (dir
               .list(recursive: true)
               .map((e) => e.path)
-              .toList())
-              ..sort();
+              .toList())..sort();
 
           expect(files, [
             '$root/users/jack',

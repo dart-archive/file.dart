@@ -8,8 +8,7 @@
 /// almost always preferable to use the asynchronous API.
 library file.src.interface.sync;
 
-import 'interface.dart'
-    show FileSystemEntityType, getParentPath, FileSystemEntityException;
+import 'interface.dart' show FileSystemEntityType;
 export 'interface.dart'
     show FileSystemEntityType, getParentPath, FileSystemEntityException;
 

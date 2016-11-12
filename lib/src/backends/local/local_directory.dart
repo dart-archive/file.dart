@@ -1,7 +1,8 @@
 part of file.src.backends.local;
 
 class _LocalDirectory extends _LocalFileSystemEntity implements Directory {
-  _LocalDirectory(io.Directory entity, FileSystem system) : super(entity, system);
+  _LocalDirectory(io.Directory entity, FileSystem system)
+      : super(entity, system);
 
   @override
   Future<Directory> copy(String newPath) async {
@@ -17,16 +18,15 @@ class _LocalDirectory extends _LocalFileSystemEntity implements Directory {
 
   @override
   Stream<FileSystemEntity> list({bool recursive: false}) {
-    return (_ioEntity as io.Directory)
-        .list(recursive: recursive)
-        .map((ioEntity) {
-      if (ioEntity is io.File) {
-        return new _LocalFile(ioEntity, fileSystem);
+    io.Directory directory = _ioEntity;
+    return directory.list(recursive: recursive).map((entity) {
+      if (entity is io.File) {
+        return new _LocalFile(entity, fileSystem);
       }
-      if (ioEntity is io.Directory) {
-        return new _LocalDirectory(ioEntity, fileSystem);
+      if (entity is io.Directory) {
+        return new _LocalDirectory(entity, fileSystem);
       }
       return null;
-    }).where((e) => e != null) as Stream<FileSystemEntity>;
+    }).where((e) => e != null);
   }
 }

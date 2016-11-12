@@ -13,11 +13,8 @@ class MemoryFileStorageImpl implements MemoryFileStorage {
   final Map<String, dynamic> data = <String, dynamic>{};
 }
 
-/// Returns a deep copy of [map], verifying it is JSON serializable.
-Map<String, Object> cloneSafe(Map<String, Object> map) {
-  var json = JSON.encode(map);
-  return JSON.decode(json) as Map<String, Object>;
-}
+/// Returns a deep copy of [object], verifying it is JSON serializable.
+cloneSafe(object) => JSON.decode(JSON.encode(object));
 
 // Resolves a list of path parts to the final directory in the hash map.
 //

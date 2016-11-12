@@ -40,7 +40,7 @@ class MemoryFileSystem implements FileSystem {
   /// Returns a Map equivalent to the file structure of the file system.
   ///
   // See [InMemoryFileSystem.fromMap] for details on the structure.
-  Map<String, dynamic> toMap() => cloneSafe(_data);
+  Map<String, dynamic> toMap() => cloneSafe/*<Map<String, dynamic>>*/(_data);
 
   @override
   Future<FileSystemEntityType> type(String path, {bool followLinks: true}) {

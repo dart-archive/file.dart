@@ -6,15 +6,13 @@ class _LocalFile extends _LocalFileSystemEntity implements File {
   @override
   Future<File> copy(String newPath) async {
     return new _LocalFile(
-        await (_ioEntity as io.File).copy(newPath),
-        fileSystem);
+        await (_ioEntity as io.File).copy(newPath), fileSystem);
   }
 
   @override
   Future<File> create({bool recursive: false}) async {
     return new _LocalFile(
-        await (_ioEntity as io.File).create(recursive: recursive),
-        fileSystem);
+        await (_ioEntity as io.File).create(recursive: recursive), fileSystem);
   }
 
   @override
@@ -26,14 +24,12 @@ class _LocalFile extends _LocalFileSystemEntity implements File {
   @override
   Future<File> writeAsBytes(List<int> contents) async {
     return new _LocalFile(
-        await (_ioEntity as io.File).writeAsBytes(contents),
-        fileSystem);
+        await (_ioEntity as io.File).writeAsBytes(contents), fileSystem);
   }
 
   @override
   Future<File> writeAsString(String contents) async {
     return new _LocalFile(
-        await (_ioEntity as io.File).writeAsString(contents),
-        fileSystem);
+        await (_ioEntity as io.File).writeAsString(contents), fileSystem);
   }
 }

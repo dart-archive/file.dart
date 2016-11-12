@@ -5,7 +5,8 @@ class SyncLocalFileSystem implements SyncFileSystem {
   const SyncLocalFileSystem();
 
   @override
-  SyncDirectory directory(String path) => new _LocalDirectory(new io.Directory(path), this);
+  SyncDirectory directory(String path) =>
+      new _LocalDirectory(new io.Directory(path), this);
 
   @override
   SyncFile file(String path) => new _LocalFile(new io.File(path), this);

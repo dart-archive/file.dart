@@ -1,7 +1,8 @@
 part of file.src.backends.local;
 
 class _LocalDirectory extends _LocalFileSystemEntity implements SyncDirectory {
-  _LocalDirectory(io.Directory entity, SyncFileSystem system) : super(entity, system);
+  _LocalDirectory(io.Directory entity, SyncFileSystem system)
+      : super(entity, system);
 
   @override
   SyncDirectory copy(String newPath) {
