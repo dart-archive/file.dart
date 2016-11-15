@@ -30,9 +30,8 @@ import 'package:file/file.dart';
 /// operations and is not guaranteed to be efficient for performance sensitive
 /// work (e.g. batching is not implemented).
 Future<Directory> insertFiles(
-    Directory directory,
-    Map<String, Object> structure, [
-    bool checkRoot = false]) async {
+    Directory directory, Map<String, Object> structure,
+    [bool checkRoot = false]) async {
   // TODO: Add top-level type assertion.
   for (var name in structure.keys) {
     var entity = structure[name];

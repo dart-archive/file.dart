@@ -5,9 +5,7 @@ class _LocalFile extends _LocalFileSystemEntity implements SyncFile {
 
   @override
   SyncFile copy(String newPath) {
-    return new _LocalFile(
-        (_ioEntity as io.File).copySync(newPath),
-        fileSystem);
+    return new _LocalFile((_ioEntity as io.File).copySync(newPath), fileSystem);
   }
 
   @override

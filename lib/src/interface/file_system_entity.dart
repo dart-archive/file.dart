@@ -69,7 +69,6 @@ abstract class FileSystemEntity {
 
 /// Exception thrown when a file operation fails.
 class FileSystemEntityException implements Exception {
-  @override
   final String message;
 
   /// The file system path on which the error occurred.
@@ -83,14 +82,11 @@ class FileSystemEntityException implements Exception {
 }
 
 /// The type of an entity on the file system.
-enum FileSystemEntityType {
-  DIRECTORY,
-  FILE,
-  LINK,
-  NOT_FOUND
-}
+enum FileSystemEntityType { DIRECTORY, FILE, LINK, NOT_FOUND }
 
 /// Returns the parent directory of [path].
 String getParentPath(String path) {
-  return path == '/' || path == '' ? null : path.substring(0, path.lastIndexOf('/'));
+  return path == '/' || path == ''
+      ? null
+      : path.substring(0, path.lastIndexOf('/'));
 }

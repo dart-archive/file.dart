@@ -5,13 +5,15 @@ class LocalFileSystem implements FileSystem {
   const LocalFileSystem();
 
   @override
-  Directory directory(String path) => new _LocalDirectory(new io.Directory(path), this);
+  Directory directory(String path) =>
+      new _LocalDirectory(new io.Directory(path), this);
 
   @override
   File file(String path) => new _LocalFile(new io.File(path), this);
 
   @override
-  Future<FileSystemEntityType> type(String path, {bool followLinks: true}) async {
+  Future<FileSystemEntityType> type(String path,
+      {bool followLinks: true}) async {
     var type = await io.FileSystemEntity.type(path);
     if (type == io.FileSystemEntityType.FILE) {
       return FileSystemEntityType.FILE;

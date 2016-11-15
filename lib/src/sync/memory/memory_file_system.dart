@@ -40,7 +40,7 @@ class SyncMemoryFileSystem implements SyncFileSystem {
   /// Returns a Map equivalent to the file structure of the file system.
   ///
   // See [InMemoryFileSystem.fromMap] for details on the structure.
-  Map<String, Object> toMap() => cloneSafe(_data);
+  Map<String, Object> toMap() => cloneSafe(_data) as Map<String, dynamic>;
 
   @override
   FileSystemEntityType type(String path, {bool followLinks: true}) {

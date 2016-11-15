@@ -1,5 +1,4 @@
 @TestOn('vm')
-
 import 'dart:io' as io;
 import 'dart:math' as math;
 
@@ -23,10 +22,10 @@ main() {
 
       /// A randomly generated temporary directory for test files
       final workDirPath =
-          '${io.Directory.systemTemp.absolute.path}/'  // root temp directory
-          'test-${type.replaceAll(' ', '-')}-'  // fs type qualifier
-          '${new DateTime.now().millisecondsSinceEpoch}-'  //  timestamp
-          '${new math.Random().nextInt(1000000)}';  // random number
+          '${io.Directory.systemTemp.absolute.path}/' // root temp directory
+          'test-${type.replaceAll(' ', '-')}-' // fs type qualifier
+          '${new DateTime.now().millisecondsSinceEpoch}-' //  timestamp
+          '${new math.Random().nextInt(1000000)}'; // random number
 
       // This test is stateful. Sequence of tests is important.
       setUpAll(() async {
@@ -107,7 +106,7 @@ main() {
 
           expect(await fs.file(pathBefore).exists(), isFalse);
           expect(await fs.file(pathAfter).exists(), isTrue);
-        }, skip: 'this is failing and it is too late to fix it; gotta go to bed');
+        });
       });
     });
   });

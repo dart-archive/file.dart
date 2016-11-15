@@ -13,15 +13,14 @@ abstract class _MemoryFileSystemEntity extends SyncFileSystemEntity {
   SyncFileSystemEntity copy(String newPath) {
     if (fileSystem.type(newPath) != FileSystemEntityType.NOT_FOUND) {
       throw new FileSystemEntityException(
-          'Unable to copy or move to an existing path',
-          newPath);
+          'Unable to copy or move to an existing path', newPath);
     }
     var parent = _resolve(false);
     if (parent != null) {
       var reference = _resolve(true, newPath);
       Object clone = parent[name];
       if (clone is! String) {
-        clone = cloneSafe(clone as Map<String, Object>);
+        clone = cloneSafe(clone);
       }
       reference[newPath.substring(newPath.lastIndexOf('/') + 1)] = clone;
       if (_type == FileSystemEntityType.FILE) {
@@ -59,8 +58,7 @@ abstract class _MemoryFileSystemEntity extends SyncFileSystemEntity {
       return this;
     }
     throw new FileSystemEntityException(
-        'Cannot non-recursively delete a non-empty directory',
-        path);
+        'Cannot non-recursively delete a non-empty directory', path);
   }
 
   @override
@@ -68,8 +66,7 @@ abstract class _MemoryFileSystemEntity extends SyncFileSystemEntity {
     var parentPath = getParentPath(path);
     if (parentPath != null) {
       return new _MemoryDirectory(
-          fileSystem,
-          parentPath == '' ? '/' : parentPath);
+          fileSystem, parentPath == '' ? '/' : parentPath);
     }
     return null;
   }

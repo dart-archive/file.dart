@@ -1,8 +1,6 @@
 part of file.src.backends.memory;
 
-class _MemoryDirectory
-    extends _MemoryFileSystemEntity
-    with SyncDirectory {
+class _MemoryDirectory extends _MemoryFileSystemEntity with SyncDirectory {
   _MemoryDirectory(SyncMemoryFileSystem fileSystem, String path)
       : super(fileSystem, path);
   // Create an object representing a directory with no files.
