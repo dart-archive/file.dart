@@ -6,6 +6,8 @@ import 'file.dart';
 
 /// A generic representation of a file system.
 abstract class FileSystem {
+  const FileSystem();
+
   /// Returns a reference to a [Directory] at [path].
   Directory directory(String path);
 

@@ -1,26 +1,44 @@
 part of file.src.backends.local;
 
 /// A wrapper implementation around `dart:io`'s implementation.
-class LocalFileSystem implements FileSystem {
+class LocalFileSystem extends FileSystem {
   const LocalFileSystem();
 
   @override
   Directory directory(String path) =>
-      new _LocalDirectory(new io.Directory(path), this);
+      new _LocalDirectory(this, new io.Directory(path));
 
   @override
-  File file(String path) => new _LocalFile(new io.File(path), this);
+  File file(String path) => new _LocalFile(this, new io.File(path));
 
   @override
-  Future<FileSystemEntityType> type(String path,
-      {bool followLinks: true}) async {
-    var type = await io.FileSystemEntity.type(path);
-    if (type == io.FileSystemEntityType.FILE) {
-      return FileSystemEntityType.FILE;
-    } else if (type == io.FileSystemEntityType.DIRECTORY) {
-      return FileSystemEntityType.DIRECTORY;
-    } else {
-      return FileSystemEntityType.NOT_FOUND;
-    }
-  }
+  Directory get currentDirectory => directory(io.Directory.current.path);
+
+  @override
+  set currentDirectory(dynamic path) => io.Directory.current = path;
+
+  @override
+  Future<io.FileStat> stat(String path) => io.FileStat.stat(path);
+
+  @override
+  io.FileStat statSync(String path) => io.FileStat.statSync(path);
+
+  @override
+  Future<bool> identical(String path1, String path2) =>
+      io.FileSystemEntity.identical(path1, path2);
+
+  @override
+  bool identicalSync(String path1, String path2) =>
+      io.FileSystemEntity.identicalSync(path1, path2);
+
+  @override
+  bool get isWatchSupported => io.FileSystemEntity.isWatchSupported;
+
+  @override
+  Future<io.FileSystemEntityType> type(String path, {bool followLinks: true}) =>
+      io.FileSystemEntity.type(path, followLinks: followLinks);
+
+  @override
+  io.FileSystemEntityType typeSync(String path, {bool followLinks: true}) =>
+      io.FileSystemEntity.typeSync(path, followLinks: followLinks);
 }

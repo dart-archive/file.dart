@@ -1,32 +1,55 @@
 part of file.src.backends.local;
 
-class _LocalDirectory extends _LocalFileSystemEntity implements Directory {
-  _LocalDirectory(io.Directory entity, FileSystem system)
-      : super(entity, system);
+class _LocalDirectory extends _LocalFileSystemEntity<
+    _LocalDirectory,
+    io.Directory> implements Directory {
+
+  _LocalDirectory(FileSystem fileSystem, io.Directory delegate)
+      : super(fileSystem, delegate);
 
   @override
-  Future<Directory> copy(String newPath) async {
-    throw new UnsupportedError('Not a supported operation');
-  }
+  _LocalDirectory _createNew(io.Directory delegate) =>
+      new _LocalDirectory(fileSystem, delegate);
 
   @override
-  Future<Directory> create({bool recursive: false}) async {
-    return new _LocalDirectory(
-        await (_ioEntity as io.Directory).create(recursive: recursive),
-        fileSystem);
-  }
+  Future<Directory> create({bool recursive: false}) async =>
+      _createNew(await _delegate.create(recursive: recursive));
 
   @override
-  Stream<FileSystemEntity> list({bool recursive: false}) {
-    io.Directory directory = _ioEntity;
-    return directory.list(recursive: recursive).map((entity) {
-      if (entity is io.File) {
-        return new _LocalFile(entity, fileSystem);
-      }
-      if (entity is io.Directory) {
-        return new _LocalDirectory(entity, fileSystem);
-      }
-      return null;
-    }).where((e) => e != null);
+  void createSync({bool recursive: false}) =>
+      _delegate.createSync(recursive: recursive);
+
+  @override
+  Future<Directory> createTemp([String prefix]) async =>
+      _createNew(await _delegate.createTemp(prefix));
+
+  @override
+  Directory createTempSync([String prefix]) =>
+      _createNew(_delegate.createTempSync(prefix));
+
+  @override
+  Stream<FileSystemEntity> list({
+    bool recursive: false,
+    bool followLinks: true,
+  }) => _delegate.list(recursive: recursive, followLinks: followLinks)
+      .map(_wrap);
+
+  @override
+  List<FileSystemEntity> listSync({
+    bool recursive: false,
+    bool followLinks: true,
+  }) => _delegate.listSync(recursive: recursive, followLinks: followLinks)
+      .map((io.FileSystemEntity entity) => _wrap(entity))
+      .toList();
+
+  FileSystemEntity _wrap(io.FileSystemEntity entity) {
+    if (entity is io.File) {
+      return new _LocalFile(fileSystem, entity);
+    } else if (entity is io.Directory) {
+      return new _LocalDirectory(fileSystem, entity);
+    } else if (entity is io.Link) {
+      return new _LocalLink(fileSystem, entity);
+    }
+    throw new io.FileSystemException('Unsupported type: $entity');
   }
 }
