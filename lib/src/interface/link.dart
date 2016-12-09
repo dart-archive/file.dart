@@ -1,9 +1,7 @@
-part of file.src.interface.file;
+import 'dart:io' as io;
+
+import 'file_system_entity.dart';
 
 /// A reference to a symbolic link on the file system.
-abstract class Link implements FileSystemEntity {
-  @override
-  Future<bool> exists() async {
-    return await fileSystem.type(path) == FileSystemEntityType.LINK;
-  }
+abstract class Link implements FileSystemEntity, io.Link {
 }

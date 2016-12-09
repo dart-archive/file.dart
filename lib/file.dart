@@ -1,5 +1,5 @@
-library file;
-
-export 'package:file/src/backends/memory.dart';
-export 'package:file/src/memory_utils.dart' show MemoryFileStorage;
-export 'package:file/src/interface.dart';
+export 'src/interface/directory.dart';
+export 'src/interface/file_system_entity.dart';
+export 'src/interface/file_system.dart';
+export 'src/interface/file.dart';
+export 'src/interface/link.dart';
