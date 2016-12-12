@@ -1,6 +1,9 @@
 part of file.src.backends.local;
 
 /// A wrapper implementation around `dart:io`'s implementation.
+///
+/// Since this implementation of the [FileSystem] interface delegates to
+/// `dart:io`, is is not suitable for use in the browser.
 class LocalFileSystem extends FileSystem {
   const LocalFileSystem();
 

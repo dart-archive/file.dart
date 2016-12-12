@@ -38,7 +38,8 @@ class _LocalFile extends _LocalFileSystemEntity<File, io.File> implements File {
   @override
   Future<io.RandomAccessFile> open({
     io.FileMode mode: io.FileMode.READ,
-  }) async => _delegate.open(mode: mode);
+  }) async =>
+      _delegate.open(mode: mode);
 
   @override
   io.RandomAccessFile openSync({io.FileMode mode: io.FileMode.READ}) =>
@@ -52,7 +53,8 @@ class _LocalFile extends _LocalFileSystemEntity<File, io.File> implements File {
   io.IOSink openWrite({
     io.FileMode mode: io.FileMode.WRITE,
     Encoding encoding: UTF8,
-  }) => _delegate.openWrite(mode: mode, encoding: encoding);
+  }) =>
+      _delegate.openWrite(mode: mode, encoding: encoding);
 
   @override
   Future<List<int>> readAsBytes() => _delegate.readAsBytes();
@@ -81,18 +83,20 @@ class _LocalFile extends _LocalFileSystemEntity<File, io.File> implements File {
     List<int> bytes, {
     io.FileMode mode: io.FileMode.WRITE,
     bool flush: false,
-  }) async => _createNew(await _delegate.writeAsBytes(
-    bytes,
-    mode: mode,
-    flush: flush,
-  ));
+  }) async =>
+      _createNew(await _delegate.writeAsBytes(
+        bytes,
+        mode: mode,
+        flush: flush,
+      ));
 
   @override
   void writeAsBytesSync(
     List<int> bytes, {
     io.FileMode mode: io.FileMode.WRITE,
     bool flush: false,
-  }) => _delegate.writeAsBytesSync(bytes, mode: mode, flush: flush);
+  }) =>
+      _delegate.writeAsBytesSync(bytes, mode: mode, flush: flush);
 
   @override
   Future<File> writeAsString(
@@ -100,12 +104,13 @@ class _LocalFile extends _LocalFileSystemEntity<File, io.File> implements File {
     io.FileMode mode: io.FileMode.WRITE,
     Encoding encoding: UTF8,
     bool flush: false,
-  }) async => _createNew(await _delegate.writeAsString(
-    contents,
-    mode: mode,
-    encoding: encoding,
-    flush: flush,
-  ));
+  }) async =>
+      _createNew(await _delegate.writeAsString(
+        contents,
+        mode: mode,
+        encoding: encoding,
+        flush: flush,
+      ));
 
   @override
   void writeAsStringSync(
@@ -113,10 +118,11 @@ class _LocalFile extends _LocalFileSystemEntity<File, io.File> implements File {
     io.FileMode mode: io.FileMode.WRITE,
     Encoding encoding: UTF8,
     bool flush: false,
-  }) => _delegate.writeAsStringSync(
-    contents,
-    mode: mode,
-    encoding: encoding,
-    flush: flush,
-  );
+  }) =>
+      _delegate.writeAsStringSync(
+        contents,
+        mode: mode,
+        encoding: encoding,
+        flush: flush,
+      );
 }

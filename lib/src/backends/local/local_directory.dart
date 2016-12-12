@@ -1,9 +1,8 @@
 part of file.src.backends.local;
 
-class _LocalDirectory extends _LocalFileSystemEntity<
-    _LocalDirectory,
-    io.Directory> implements Directory {
-
+class _LocalDirectory
+    extends _LocalFileSystemEntity<_LocalDirectory, io.Directory>
+    implements Directory {
   _LocalDirectory(FileSystem fileSystem, io.Directory delegate)
       : super(fileSystem, delegate);
 
@@ -31,16 +30,18 @@ class _LocalDirectory extends _LocalFileSystemEntity<
   Stream<FileSystemEntity> list({
     bool recursive: false,
     bool followLinks: true,
-  }) => _delegate.list(recursive: recursive, followLinks: followLinks)
-      .map(_wrap);
+  }) =>
+      _delegate.list(recursive: recursive, followLinks: followLinks).map(_wrap);
 
   @override
   List<FileSystemEntity> listSync({
     bool recursive: false,
     bool followLinks: true,
-  }) => _delegate.listSync(recursive: recursive, followLinks: followLinks)
-      .map((io.FileSystemEntity entity) => _wrap(entity))
-      .toList();
+  }) =>
+      _delegate
+          .listSync(recursive: recursive, followLinks: followLinks)
+          .map((io.FileSystemEntity entity) => _wrap(entity))
+          .toList();
 
   FileSystemEntity _wrap(io.FileSystemEntity entity) {
     if (entity is io.File) {

@@ -1,10 +1,7 @@
 part of file.src.backends.local;
 
-abstract class _LocalFileSystemEntity<
-    T extends FileSystemEntity,
-    D extends io.FileSystemEntity
-  > implements FileSystemEntity {
-
+abstract class _LocalFileSystemEntity<T extends FileSystemEntity,
+    D extends io.FileSystemEntity> implements FileSystemEntity {
   @override
   final FileSystem fileSystem;
 
@@ -57,7 +54,8 @@ abstract class _LocalFileSystemEntity<
   Stream<io.FileSystemEvent> watch({
     int events: io.FileSystemEvent.ALL,
     bool recursive: false,
-  }) => _delegate.watch(events: events, recursive: recursive);
+  }) =>
+      _delegate.watch(events: events, recursive: recursive);
 
   @override
   bool get isAbsolute => _delegate.isAbsolute;
