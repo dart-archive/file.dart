@@ -99,8 +99,10 @@ class MemoryFileSystem extends FileSystem {
 
   @override
   bool identicalSync(String path1, String path2) {
-    _Node node1 = _findNode(path1, resolveTailLink: true);
-    _Node node2 = _findNode(path2, resolveTailLink: true);
+    _Node node1 = _findNode(path1);
+    _checkExists(node1, () => path1);
+    _Node node2 = _findNode(path2);
+    _checkExists(node2, () => path2);
     return node1 != null && node1 == node2;
   }
 

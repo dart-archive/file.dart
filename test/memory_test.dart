@@ -9,50 +9,49 @@ void main() {
   group('MemoryFileSystem', () {
     MemoryFileSystem fs;
 
-    setUp(() async {
+    setUp(() {
       fs = new MemoryFileSystem();
     });
 
-    group('MemoryFileSystem', () {
+    group('FileSystem', () {
       group('currentDirectory', () {
-        test('default', () {
+        test('defaultsToRoot', () {
           expect(fs.currentDirectory.path, '/');
         });
 
-        test('setToNotFoundThrows', () {
+        test('throwsIfSetToNonExistentPath', () {
           expectFileSystemException('No such file or directory', () {
             fs.currentDirectory = '/foo';
           });
         });
 
-        test('setString', () {
+        test('succeedsWhenSetToValidStringPath', () {
           fs.directory('/foo').createSync();
           fs.currentDirectory = '/foo';
           expect(fs.currentDirectory.path, '/foo');
         });
 
-        test('setDirectory', () {
+        test('succeedsWhenSetToValidDirectory', () {
           fs.directory('/foo').createSync();
           fs.currentDirectory = new io.Directory('/foo');
           expect(fs.currentDirectory.path, '/foo');
         });
 
-        test('setOtherTypeThrows', () {
+        test('throwsWhenArgumentIsNotStringOrDirectory', () {
           expect(() {
             fs.currentDirectory = 123;
           }, throwsArgumentError);
         });
 
-        test('setRelative', () {
-          fs.directory('/foo').createSync();
+        test('succeedsWhenSetToRelativePath', () {
+          fs.directory('/foo/bar').createSync(recursive: true);
           fs.currentDirectory = 'foo';
           expect(fs.currentDirectory.path, '/foo');
-          fs.directory('/foo/bar').createSync();
           fs.currentDirectory = 'bar';
           expect(fs.currentDirectory.path, '/foo/bar');
         });
 
-        test('setParent', () {
+        test('succeedsWhenSetToParentDirectory', () {
           fs.directory('/foo').createSync();
           fs.currentDirectory = 'foo';
           expect(fs.currentDirectory.path, '/foo');
@@ -60,25 +59,25 @@ void main() {
           expect(fs.currentDirectory.path, '/');
         });
 
-        test('setParentPastRootStaysAtRoot', () {
+        test('staysAtRootWhenSetToParentOfRoot', () {
           fs.currentDirectory = '../../..';
           expect(fs.currentDirectory.path, '/');
         });
 
-        test('setWithTrailingSlashGetsRemoved', () {
+        test('removesTrailingSlashWhenSet', () {
           fs.directory('/foo').createSync();
           fs.currentDirectory = '/foo/';
           expect(fs.currentDirectory.path, '/foo');
         });
 
-        test('setToFilePathThrows', () {
+        test('throwsWhenSetToFilePath', () {
           fs.file('/foo').createSync();
           expectFileSystemException('Not a directory', () {
             fs.currentDirectory = '/foo';
           });
         });
 
-        test('setResolvesSymlinks', () {
+        test('resolvesSymlinksWhenEncountered', () {
           fs.link('/foo/bar/baz').createSync('/qux', recursive: true);
           fs.directory('/qux').createSync();
           fs.directory('/quux').createSync();
@@ -88,36 +87,36 @@ void main() {
       });
 
       group('stat', () {
-        test('notFound', () {
+        test('isNotFoundForPathToNonExistentEntityAtTail', () {
           io.FileStat stat = fs.statSync('/foo');
           expect(stat.type, io.FileSystemEntityType.NOT_FOUND);
         });
 
-        test('parentNotFound', () {
+        test('isNotFoundForPathToNonExistentEntityInTraversal', () {
           io.FileStat stat = fs.statSync('/foo/bar');
           expect(stat.type, io.FileSystemEntityType.NOT_FOUND);
         });
 
-        test('directory', () {
+        test('isDirectoryForDirectory', () {
           fs.directory('/foo').createSync();
           var stat = fs.statSync('/foo');
           expect(stat.type, io.FileSystemEntityType.DIRECTORY);
         });
 
-        test('file', () {
+        test('isFileForFile', () {
           fs.file('/foo').createSync();
           var stat = fs.statSync('/foo');
           expect(stat.type, io.FileSystemEntityType.FILE);
         });
 
-        test('linkReturnsTargetStat', () {
+        test('isFileForSymlinkToFile', () {
           fs.file('/foo').createSync();
           fs.link('/bar').createSync('/foo');
           var stat = fs.statSync('/bar');
           expect(stat.type, io.FileSystemEntityType.FILE);
         });
 
-        test('linkWithCircularReferenceReturnsNotFound', () {
+        test('isNotFoundForSymlinkWithCircularReference', () {
           fs.link('/foo').createSync('/bar');
           fs.link('/bar').createSync('/baz');
           fs.link('/baz').createSync('/foo');
@@ -127,75 +126,213 @@ void main() {
       });
 
       group('identical', () {
-        test('samePathExists', () {
+        test('isTrueForIdenticalPathsToExistentFile', () {
           fs.file('/foo').createSync();
           expect(fs.identicalSync('/foo', '/foo'), true);
         });
 
-        test('differentPathsBothExist', () {
+        test('isFalseForDifferentPathsToDifferentFiles', () {
           fs.file('/foo').createSync();
           fs.file('/bar').createSync();
           expect(fs.identicalSync('/foo', '/bar'), false);
         });
 
-        test('differentPathsReferringToSameEntityViaTraversal', () {
+        test('isTrueForDifferentPathsToSameFileViaLinkInTraversal', () {
           fs.file('/foo/file').createSync(recursive: true);
           fs.link('/bar').createSync('/foo');
           expect(fs.identicalSync('/foo/file', '/bar/file'), true);
         });
 
-        test('differentPathsReferringToSameEntityAtTail', () {
+        test('isFalseForDifferentPathsToSameFileViaLinkAtTail', () {
           fs.file('/foo').createSync();
           fs.link('/bar').createSync('/foo');
-          expect(fs.identicalSync('/foo', '/bar'), true);
-        });
-
-        test('bothNotFound', () {
           expect(fs.identicalSync('/foo', '/bar'), false);
         });
 
-        test('oneNotFound', () {
+        test('throwsForDifferentPathsToNonExistentEntities', () {
+          expectFileSystemException('No such file or directory', () {
+            fs.identicalSync('/foo', '/bar');
+          });
+        });
+
+        test('throwsForDifferentPathsToOneFileOneNonExistentEntity', () {
           fs.file('/foo').createSync();
-          expect(fs.identicalSync('/foo', '/bar'), false);
+          expectFileSystemException('No such file or directory', () {
+            fs.identicalSync('/foo', '/bar');
+          });
         });
       });
 
       group('type', () {
-        test('file', () {
+        test('isFileForFile', () {
           fs.file('/foo').createSync();
           var type = fs.typeSync('/foo');
           expect(type, io.FileSystemEntityType.FILE);
         });
 
-        test('directory', () {
+        test('isDirectoryForDirectory', () {
           fs.directory('/foo').createSync();
           var type = fs.typeSync('/foo');
           expect(type, io.FileSystemEntityType.DIRECTORY);
         });
 
-        test('linkFollowed', () {
+        test('isFileForSymlinkToFileAndFollowLinksTrue', () {
           fs.file('/foo').createSync();
           fs.link('/bar').createSync('/foo');
           var type = fs.typeSync('/bar');
           expect(type, io.FileSystemEntityType.FILE);
         });
 
-        test('linkNotFollowed', () {
+        test('isLinkForSymlinkToFileAndFollowLinksFalse', () {
           fs.file('/foo').createSync();
           fs.link('/bar').createSync('/foo');
           var type = fs.typeSync('/bar', followLinks: false);
           expect(type, io.FileSystemEntityType.LINK);
         });
 
-        test('notFoundAtTail', () {
+        test('isNotFoundForNoEntityAtTail', () {
           var type = fs.typeSync('/foo');
           expect(type, io.FileSystemEntityType.NOT_FOUND);
         });
 
-        test('notFoundViaTraversal', () {
+        test('isNotFoundForNoDirectoryInTraversal', () {
           var type = fs.typeSync('/foo/bar/baz');
           expect(type, io.FileSystemEntityType.NOT_FOUND);
         });
+      });
+    });
+
+    group('Directory', () {
+      test('uri', () {});
+
+      group('exists', () {
+        test('falseWhenNotExists', () {});
+
+        test('trueWhenExistsAsDirectory', () {});
+
+        test('falseWhenExistsAsFile', () {});
+
+        test('trueWhenExistsAsSymlinkToDirectory', () {});
+
+        test('falseWhenExistsAsSymlinkToFile', () {});
+      });
+
+      group('create', () {
+        test('succeedsWhenAlreadyExistsAsDirectory', () {});
+
+        test('failsWhenAlreadyExistsAsFile', () {});
+
+        test('succeedsWhenAlreadyExistsAsSymlinkToDirectory', () {});
+
+        test('succeedsWhenTailDoesntExist', () {});
+
+        test('failsWhenAncestorDoesntExistRecursiveFalse', () {});
+
+        test('succeedsWhenAncestorDoesntExistRecursiveTrue', () {});
+      });
+
+      group('rename', () {
+        test('succeedsWhenDestinationDoesntExist', () {});
+
+        test('succeedsWhenDestinationIsEmptyDirectory', () {});
+
+        test('failsWhenDestinationIsFile', () {});
+
+        test('failsWhenDestinationParentFolderDoesntExist', () {});
+
+        test('failsWhenDestinationIsNonEmptyDirectory', () {});
+
+        test('failsWhenSourceDoesntExist', () {});
+
+        test('failsWhenSourceIsFile', () {});
+
+        test('failsWhenSourceIsSymlinkToDirectory', () {});
+
+        test('failsWhenDestinationIsSymlinkToEmptyDirectory', () {});
+      });
+
+      group('delete', () {
+        test('succeedsWhenEmptyDirectoryExistsAndRecursiveFalse', () {});
+
+        test('succeedsWhenEmptyDirectoryExistsAndRecursiveTrue', () {});
+
+        test('throwsWhenNonEmptyDirectoryExistsAndRecursiveFalse', () {});
+
+        test('succeedsWhenNonEmptyDirectoryExistsAndRecursiveTrue', () {});
+
+        test('throwsWhenDirectoryDoesntExistAndRecursiveFalse', () {});
+
+        test('throwsWhenDirectoryDoesntExistAndRecursiveTrue', () {});
+
+        test('succeedsWhenPathReferencesFileAndRecursiveTrue', () {});
+
+        test('throwsWhenPathReferencesFileAndRecursiveFalse', () {});
+
+        test('succeedsWhenPathReferencesLinkAndRecursiveTrue', () {});
+
+        test('throwsWhenPathReferencesLinkAndRecursiveFalse', () {});
+      });
+
+      group('resolveSymbolicLinks', () {
+        test('throwsIfLoopInLinkChain', () {});
+
+        test('throwsPathNotFoundInTraversal', () {});
+
+        test('throwsPathNotFoundAtTail', () {});
+
+        test('resolvesRelativePathToCurrentDirectory', () {});
+
+        test('handlesRelativeSymlinks', () {});
+
+        test('handlesAbsoluteSymlinks', () {});
+
+        test('handlesParentAndThisFolderReferences', () {});
+
+        test('handlesBackToBackSlashesInPath', () {});
+
+        test('handlesComplexPathWithMultipleSymlinks', () {});
+      });
+
+      group('absolute', () {
+        test('returnsSameEntityWhenAlreadyAbsolute', () {});
+
+        test('succeedsForRelativePaths', () {});
+      });
+
+      group('parent', () {
+        test('returnsRootForRoot', () {});
+
+        test('succeedsForNonRoot', () {});
+      });
+
+      group('createTemp', () {
+        test('throwsIfDirectoryDoesntExist', () {});
+
+        test('resolvesNameCollisions', () {});
+
+        test('succeedsWithoutPrefix', () {});
+
+        test('succeedsWithPrefix', () {});
+      });
+
+      group('list', () {
+        test('returnsEmptyListForEmptyDirectory', () {});
+
+        test('listsBasicContents', () {});
+
+        test('throwsIfDirectoryDoesntExist', () {});
+
+        test('returnsLinkObjectsIfFollowLinksFalse', () {});
+
+        test('followsLinksIfFollowLinksTrue', () {});
+
+        test(
+            'returnsLinkObjectsForSecondLinkEncounterIfFollowLinksTrue', () {});
+
+        test('recurseIntoDirectoriesIfRecursiveTrue', () {});
+
+        test('recurseIntoDirectorySymlinksIfFollowLinksTrueRecursiveTrue',
+            () {});
       });
     });
   });
@@ -218,7 +355,9 @@ class _FileSystemException extends Matcher {
 
   bool matches(item, Map matchState) {
     if (item is io.FileSystemException) {
-      return (msg == null || item.message.contains(msg));
+      return (msg == null ||
+          item.message.contains(msg) ||
+          item.osError.message.contains(msg));
     }
     return false;
   }

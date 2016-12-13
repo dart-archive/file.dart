@@ -134,8 +134,7 @@ class _FileNode extends _RealNode {
   int get size => content.length;
 
   void copyFrom(_FileNode source) {
-    changed = new DateTime.now().millisecondsSinceEpoch;
-    modified = new DateTime.now().millisecondsSinceEpoch;
+    modified = changed = new DateTime.now().millisecondsSinceEpoch;
     accessed = source.accessed;
     mode = source.mode;
     content = new List<int>.from(content);

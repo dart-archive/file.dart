@@ -48,6 +48,7 @@ class _MemoryDirectory extends _MemoryFileSystemEntity implements Directory {
     String basename = fileSystem._context.basename(fullPath);
     _DirectoryNode node = fileSystem._findNode(dirname);
     _checkExists(node, () => dirname);
+    _checkIsDir(node, () => dirname);
     var name = () => '$basename$_tempCounter';
     while (node.children.containsKey(name())) {
       _tempCounter++;
