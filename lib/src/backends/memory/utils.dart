@@ -1,13 +1,14 @@
 part of file.src.backends.memory;
 
 /// Checks if `node.type` returns [io.FileSystemEntityType.FILE].
-bool _isFile(_Node node) => node.type == io.FileSystemEntityType.FILE;
+bool _isFile(_Node node) => node?.type == io.FileSystemEntityType.FILE;
 
 /// Checks if `node.type` returns [io.FileSystemEntityType.DIRECTORY].
-bool _isDirectory(_Node node) => node.type == io.FileSystemEntityType.DIRECTORY;
+bool _isDirectory(_Node node) =>
+    node?.type == io.FileSystemEntityType.DIRECTORY;
 
 /// Checks if `node.type` returns [io.FileSystemEntityType.LINK].
-bool _isLink(_Node node) => node.type == io.FileSystemEntityType.LINK;
+bool _isLink(_Node node) => node?.type == io.FileSystemEntityType.LINK;
 
 /// Tells whether the specified path represents an absolute path.
 bool _isAbsolute(String path) => path.startsWith(_separator);
@@ -46,39 +47,32 @@ bool _isEmpty(String str) => str.isEmpty;
 /// [io.FileSystemException], calling [path] to generate the path.
 ///
 /// If [ledger] is specified, the resolved path to the terminal node will be
-/// appended to the ledger. The path will not be normalized, meaning
-/// `..` and `.` path segments will not be resolved.
+/// appended to the ledger (or overwritten in the ledger if a link target
+/// specified an absolute path). The path will not be normalized, meaning
+/// `..` and `.` path segments may be present.
 _Node _resolveLinks(
   _LinkNode link,
   _PathGenerator path, {
-  StringBuffer ledger,
+  List<String> ledger,
 }) {
   // Record a breadcrumb trail to guard against symlink loops.
   Set<_LinkNode> breadcrumbs = new Set<_LinkNode>();
 
-  List<String> ledgerEntryBuilder = ledger != null ? <String>[''] : null;
   _Node node = link;
   while (_isLink(node)) {
     link = node;
     if (!breadcrumbs.add(node)) {
       throw new io.FileSystemException('Loop found in link chain', path());
     }
-    if (ledgerEntryBuilder != null) {
+    if (ledger != null) {
       if (_isAbsolute(link.target)) {
-        ledgerEntryBuilder.clear;
-        ledgerEntryBuilder.addAll(link.target.split(_separator));
-      } else {
-        if (ledgerEntryBuilder.isNotEmpty) {
-          ledgerEntryBuilder.removeLast();
-        }
-        ledgerEntryBuilder.addAll(link.target.split(_separator));
+        ledger.clear();
+      } else if (ledger.isNotEmpty) {
+        ledger.removeLast();
       }
+      ledger.addAll(link.target.split(_separator));
     }
     node = link.referent;
-  }
-
-  if (ledger != null) {
-    ledger.write(ledgerEntryBuilder.join(_separator));
   }
 
   return node;

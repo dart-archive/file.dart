@@ -57,19 +57,23 @@ class MemoryFileSystem extends FileSystem {
   File file(String path) => new _MemoryFile(this, path);
 
   @override
+  Link link(String path) => new _MemoryLink(this, path);
+
+  @override
   Directory get currentDirectory => directory(_cwd);
 
   @override
   set currentDirectory(dynamic path) {
     String value;
-    if (path is Directory) {
+    if (path is io.Directory) {
       value = path.path;
     } else if (path is String) {
       value = path;
     } else {
-      throw new TypeError();
+      throw new ArgumentError('Invalid type for "path": ${path?.runtimeType}');
     }
-    value = _context.canonicalize(value);
+
+    value = directory(value).resolveSymbolicLinksSync();
     _Node node = _findNode(value);
     _checkExists(node, () => value);
     _checkIsDir(node, () => value);
@@ -83,7 +87,7 @@ class MemoryFileSystem extends FileSystem {
   @override
   io.FileStat statSync(String path) {
     try {
-      return _findNode(path)?.stat;
+      return _findNode(path)?.stat ?? _MemoryFileStat._notFound;
     } on io.FileSystemException {
       return _MemoryFileStat._notFound;
     }
@@ -95,8 +99,8 @@ class MemoryFileSystem extends FileSystem {
 
   @override
   bool identicalSync(String path1, String path2) {
-    _Node node1 = _findNode(path1);
-    _Node node2 = _findNode(path2);
+    _Node node1 = _findNode(path1, resolveTailLink: true);
+    _Node node2 = _findNode(path2, resolveTailLink: true);
     return node1 != null && node1 == node2;
   }
 
@@ -114,15 +118,12 @@ class MemoryFileSystem extends FileSystem {
   io.FileSystemEntityType typeSync(String path, {bool followLinks: true}) {
     _Node node;
     try {
-      node = _findNode(path);
+      node = _findNode(path, resolveTailLink: followLinks);
     } on io.FileSystemException {
       node = null;
     }
-    if (node = null) {
+    if (node == null) {
       return io.FileSystemEntityType.NOT_FOUND;
-    }
-    if (followLinks && _isLink(node)) {
-      node = _resolveLinks(node, () => path);
     }
     return node.type;
   }
@@ -146,8 +147,9 @@ class MemoryFileSystem extends FileSystem {
   ///
   /// If the last element in [path] represents a symbolic link, this will
   /// return the [_LinkNode] node for the link (it will not return the
-  /// node to which the link points). However, directory links in the middle
-  /// of the path will be followed in order to find the node.
+  /// node to which the link points), unless [resolveTailLink] is true.
+  /// Directory links in the middle of the path will be followed in order to
+  /// find the node regardless of the value of [resolveTailLink].
   ///
   /// If [segmentVisitor] is specified, it will be invoked for every path
   /// segment visited along the way starting where the reference (root folder
@@ -164,7 +166,8 @@ class MemoryFileSystem extends FileSystem {
     String path, {
     _Node reference,
     _SegmentVisitor segmentVisitor,
-    StringBuffer pathWithSymlinks,
+    List<String> pathWithSymlinks,
+    bool resolveTailLink: false,
   }) {
     if (path == null) {
       throw new ArgumentError.notNull('path');
@@ -207,11 +210,16 @@ class MemoryFileSystem extends FileSystem {
         if (_isLink(child)) {
           child = _resolveLinks(child, subpath, ledger: pathWithSymlinks);
         } else if (pathWithSymlinks != null) {
-          pathWithSymlinks..write(_separator)..write(basename);
+          pathWithSymlinks..add(_separator)..add(basename);
         }
         _checkIsDir(child, subpath);
         directory = child;
+      } else if (pathWithSymlinks != null) {
+        pathWithSymlinks..add(_separator)..add(basename);
       }
+    }
+    if (_isLink(child) && resolveTailLink) {
+      child = _resolveLinks(child, () => path);
     }
     return child;
   }

@@ -15,6 +15,9 @@ class LocalFileSystem extends FileSystem {
   File file(String path) => new _LocalFile(this, new io.File(path));
 
   @override
+  Link link(String path) => new _LocalLink(this, new io.Link(path));
+
+  @override
   Directory get currentDirectory => directory(io.Directory.current.path);
 
   @override

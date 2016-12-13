@@ -58,11 +58,11 @@ class _MemoryFile extends _MemoryFileSystemEntity implements File {
         if (currentSegment == finalSegment) {
           if (child != null) {
             if (_isLink(child)) {
-              StringBuffer ledger = new StringBuffer();
+              List<String> ledger = <String>[];
               child = _resolveLinks(child, () => newPath, ledger: ledger);
               _checkExists(child, () => newPath);
               parent = child.parent;
-              childName = fileSystem._context.basename(ledger.toString());
+              childName = ledger.last;
               assert(parent.children.containsKey(childName));
             }
             if (child.type != expectedType) {
@@ -289,9 +289,8 @@ class _FileSink implements io.IOSink {
   }
 
   @override
-  Future flush() {
+  Future flush() async {
     _checkNotStreaming();
-    return new Future.value();
   }
 
   @override

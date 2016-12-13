@@ -3,6 +3,7 @@ import 'dart:io' as io;
 
 import 'directory.dart';
 import 'file.dart';
+import 'link.dart';
 
 /// A generic representation of a file system.
 ///
@@ -18,6 +19,9 @@ abstract class FileSystem {
 
   /// Returns a reference to a [File] at [path].
   File file(String path);
+
+  /// Returns a reference to a [Link] at [path].
+  Link link(String path);
 
   /// Creates a directory object pointing to the current working directory.
   Directory get currentDirectory;

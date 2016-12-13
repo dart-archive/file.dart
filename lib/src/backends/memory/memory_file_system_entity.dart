@@ -58,12 +58,11 @@ abstract class _MemoryFileSystemEntity implements FileSystemEntity {
 
   @override
   String resolveSymbolicLinksSync() {
-    StringBuffer ledger = new StringBuffer();
-    _Node node = fileSystem._findNode(path, pathWithSymlinks: ledger);
-    if (_isLink(node)) {
-      _resolveLinks(node, () => path, ledger: ledger);
-    }
-    String resolved = ledger.toString();
+    List<String> ledger = <String>[];
+    _Node node = fileSystem._findNode(path,
+        pathWithSymlinks: ledger, resolveTailLink: true);
+    _checkExists(node, () => path);
+    String resolved = ledger.join(_separator);
     if (!isAbsolute) {
       resolved = fileSystem._cwd + resolved;
     }
