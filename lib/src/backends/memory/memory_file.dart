@@ -211,20 +211,18 @@ class _MemoryFile extends _MemoryFileSystemEntity implements File {
 /// Implementation of an [io.IOSink] that's backed by a [_FileNode].
 class _FileSink implements io.IOSink {
   final _FileNode _node;
-  final Completer<Null> _doneCompleter = new Completer<Null>();
+  final Completer<Null> _completer = new Completer<Null>();
+
+  Completer<Null> _streamCompleter;
   Encoding _encoding;
-  bool _isClosed = false;
 
   _FileSink(this._node, this._encoding) {
     _checkNotNull(_encoding);
   }
 
-  dynamic _checkNotNull(dynamic value) {
-    if (value == null) {
-      throw new ArgumentError.notNull();
-    }
-    return value;
-  }
+  bool get isClosed => _completer.isCompleted;
+
+  bool get isStreaming => !(_streamCompleter?.isCompleted ?? true);
 
   @override
   Encoding get encoding => _encoding;
@@ -234,7 +232,8 @@ class _FileSink implements io.IOSink {
 
   @override
   void add(List<int> data) {
-    if (!_isClosed) {
+    _checkNotStreaming();
+    if (!isClosed) {
       _node.content.addAll(data);
     }
   }
@@ -255,7 +254,7 @@ class _FileSink implements io.IOSink {
   }
 
   @override
-  void writeln([Object obj = ""]) {
+  void writeln([Object obj = '']) {
     write(obj);
     write('\n');
   }
@@ -264,23 +263,57 @@ class _FileSink implements io.IOSink {
   void writeCharCode(int charCode) => write(new String.fromCharCode(charCode));
 
   @override
-  void addError(error, [StackTrace stackTrace]) =>
-      throw new UnsupportedError('addError');
-
-  @override
-  Future addStream(Stream<List<int>> stream) =>
-      stream.forEach((List<int> data) => add(data));
-
-  @override
-  Future flush() => new Future.value();
-
-  @override
-  Future close() {
-    _isClosed = true;
-    _doneCompleter.complete();
-    return _doneCompleter.future;
+  void addError(error, [StackTrace stackTrace]) {
+    _checkNotStreaming();
+    _completer.completeError(error, stackTrace);
   }
 
   @override
-  Future get done => _doneCompleter.future;
+  Future addStream(Stream<List<int>> stream) {
+    _checkNotStreaming();
+    _streamCompleter = new Completer<Null>();
+    var finish = () {
+      _streamCompleter.complete();
+      _streamCompleter = null;
+    };
+    stream.listen(
+      (List<int> data) => _node.content.addAll(data),
+      cancelOnError: true,
+      onError: (error, StackTrace stackTrace) {
+        _completer.completeError(error, stackTrace);
+        finish();
+      },
+      onDone: finish,
+    );
+    return _streamCompleter.future;
+  }
+
+  @override
+  Future flush() {
+    _checkNotStreaming();
+    return new Future.value();
+  }
+
+  @override
+  Future close() {
+    _checkNotStreaming();
+    _completer.complete();
+    return _completer.future;
+  }
+
+  @override
+  Future get done => _completer.future;
+
+  dynamic _checkNotNull(dynamic value) {
+    if (value == null) {
+      throw new ArgumentError.notNull();
+    }
+    return value;
+  }
+
+  void _checkNotStreaming() {
+    if (isStreaming) {
+      throw new StateError('StreamSink is bound to a stream');
+    }
+  }
 }
