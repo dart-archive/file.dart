@@ -1,6 +1,4 @@
-import 'dart:io' as io;
-
-import 'file_system.dart';
+part of file.src.interface;
 
 /// The common super class for [File], [Directory], and [Link] objects.
 abstract class FileSystemEntity implements io.FileSystemEntity {

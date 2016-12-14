@@ -1,9 +1,4 @@
-import 'dart:async';
-import 'dart:io' as io;
-
-import 'directory.dart';
-import 'file.dart';
-import 'link.dart';
+part of file.src.interface;
 
 /// A generic representation of a file system.
 ///

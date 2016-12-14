@@ -1,3 +1,4 @@
+@TestOn("vm")
 import 'dart:io' as io;
 
 import 'package:file/file.dart';
@@ -85,32 +86,32 @@ void runCommonTests(FileSystem fileSystemFactory()) {
 
     group('stat', () {
       test('isNotFoundForPathToNonExistentEntityAtTail', () {
-        io.FileStat stat = fs.statSync('/foo');
-        expect(stat.type, io.FileSystemEntityType.NOT_FOUND);
+        FileStat stat = fs.statSync('/foo');
+        expect(stat.type, FileSystemEntityType.NOT_FOUND);
       });
 
       test('isNotFoundForPathToNonExistentEntityInTraversal', () {
-        io.FileStat stat = fs.statSync('/foo/bar');
-        expect(stat.type, io.FileSystemEntityType.NOT_FOUND);
+        FileStat stat = fs.statSync('/foo/bar');
+        expect(stat.type, FileSystemEntityType.NOT_FOUND);
       });
 
       test('isDirectoryForDirectory', () {
         fs.directory('/foo').createSync();
         var stat = fs.statSync('/foo');
-        expect(stat.type, io.FileSystemEntityType.DIRECTORY);
+        expect(stat.type, FileSystemEntityType.DIRECTORY);
       });
 
       test('isFileForFile', () {
         fs.file('/foo').createSync();
         var stat = fs.statSync('/foo');
-        expect(stat.type, io.FileSystemEntityType.FILE);
+        expect(stat.type, FileSystemEntityType.FILE);
       });
 
       test('isFileForSymlinkToFile', () {
         fs.file('/foo').createSync();
         fs.link('/bar').createSync('/foo');
         var stat = fs.statSync('/bar');
-        expect(stat.type, io.FileSystemEntityType.FILE);
+        expect(stat.type, FileSystemEntityType.FILE);
       });
 
       test('isNotFoundForSymlinkWithCircularReference', () {
@@ -118,7 +119,7 @@ void runCommonTests(FileSystem fileSystemFactory()) {
         fs.link('/bar').createSync('/baz');
         fs.link('/baz').createSync('/foo');
         var stat = fs.statSync('/foo');
-        expect(stat.type, io.FileSystemEntityType.NOT_FOUND);
+        expect(stat.type, FileSystemEntityType.NOT_FOUND);
       });
     });
 
@@ -164,37 +165,37 @@ void runCommonTests(FileSystem fileSystemFactory()) {
       test('isFileForFile', () {
         fs.file('/foo').createSync();
         var type = fs.typeSync('/foo');
-        expect(type, io.FileSystemEntityType.FILE);
+        expect(type, FileSystemEntityType.FILE);
       });
 
       test('isDirectoryForDirectory', () {
         fs.directory('/foo').createSync();
         var type = fs.typeSync('/foo');
-        expect(type, io.FileSystemEntityType.DIRECTORY);
+        expect(type, FileSystemEntityType.DIRECTORY);
       });
 
       test('isFileForSymlinkToFileAndFollowLinksTrue', () {
         fs.file('/foo').createSync();
         fs.link('/bar').createSync('/foo');
         var type = fs.typeSync('/bar');
-        expect(type, io.FileSystemEntityType.FILE);
+        expect(type, FileSystemEntityType.FILE);
       });
 
       test('isLinkForSymlinkToFileAndFollowLinksFalse', () {
         fs.file('/foo').createSync();
         fs.link('/bar').createSync('/foo');
         var type = fs.typeSync('/bar', followLinks: false);
-        expect(type, io.FileSystemEntityType.LINK);
+        expect(type, FileSystemEntityType.LINK);
       });
 
       test('isNotFoundForNoEntityAtTail', () {
         var type = fs.typeSync('/foo');
-        expect(type, io.FileSystemEntityType.NOT_FOUND);
+        expect(type, FileSystemEntityType.NOT_FOUND);
       });
 
       test('isNotFoundForNoDirectoryInTraversal', () {
         var type = fs.typeSync('/foo/bar/baz');
-        expect(type, io.FileSystemEntityType.NOT_FOUND);
+        expect(type, FileSystemEntityType.NOT_FOUND);
       });
     });
   });
@@ -348,7 +349,7 @@ class _FileSystemException extends Matcher {
       description.add('FileSystemException with msg "$msg"');
 
   bool matches(item, Map matchState) {
-    if (item is io.FileSystemException) {
+    if (item is FileSystemException) {
       return (msg == null ||
           item.message.contains(msg) ||
           item.osError.message.contains(msg));

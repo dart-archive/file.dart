@@ -2,9 +2,9 @@ library file.src.backends.memory;
 
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io' as io;
 
 import 'package:file/file.dart';
+import 'package:file/src/io.dart' as io;
 import 'package:path/path.dart' as p;
 
 part 'memory/memory_directory.dart';

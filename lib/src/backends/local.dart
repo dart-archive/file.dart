@@ -2,9 +2,11 @@ library file.src.backends.local;
 
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io' as io;
 
+import 'package:file/src/io.dart' as io;
 import 'package:file/file.dart';
+
+import '../io/shim.dart' as shim;
 
 part 'local/local_directory.dart';
 part 'local/local_file.dart';
