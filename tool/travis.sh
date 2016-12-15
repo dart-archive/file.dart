@@ -1,9 +1,8 @@
 #!/bin/bash
 
 # Make sure dartfmt is run on everything
-# This assumes you have dart_style as a dev_dependency
 echo "Checking dartfmt..."
-NEEDS_DARTFMT="$(find lib test tool -name "*.dart" | xargs pub run dart_style:format -n)"
+NEEDS_DARTFMT="$(dartfmt -n lib test tool)"
 if [[ ${NEEDS_DARTFMT} != "" ]]
 then
   echo "FAILED"
