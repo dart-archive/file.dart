@@ -1,71 +1,22 @@
 part of file.src.backends.local;
 
 abstract class _LocalFileSystemEntity<T extends FileSystemEntity,
-    D extends io.FileSystemEntity> implements FileSystemEntity {
+    D extends io.FileSystemEntity> extends ForwardingFileSystemEntity<T, D> {
   @override
   final FileSystem fileSystem;
 
-  final D _delegate;
+  @override
+  final D delegate;
 
-  _LocalFileSystemEntity(this.fileSystem, this._delegate);
-
-  /// Creates a new entity with the same file system as this entity but backed
-  /// by the specified delegate.
-  T _createNew(D delegate);
+  _LocalFileSystemEntity(this.fileSystem, this.delegate);
 
   @override
-  Uri get uri => _delegate.uri;
+  Directory wrapDirectory(io.Directory delegate) =>
+      new _LocalDirectory(fileSystem, delegate);
 
   @override
-  Future<bool> exists() => _delegate.exists();
+  File wrapFile(io.File delegate) => new _LocalFile(fileSystem, delegate);
 
   @override
-  bool existsSync() => _delegate.existsSync();
-
-  @override
-  Future<T> rename(String newPath) async =>
-      _createNew(await _delegate.rename(newPath) as D);
-
-  @override
-  T renameSync(String newPath) =>
-      _createNew(_delegate.renameSync(newPath) as D);
-
-  @override
-  Future<String> resolveSymbolicLinks() => _delegate.resolveSymbolicLinks();
-
-  @override
-  String resolveSymbolicLinksSync() => _delegate.resolveSymbolicLinksSync();
-
-  @override
-  Future<io.FileStat> stat() => _delegate.stat();
-
-  @override
-  io.FileStat statSync() => _delegate.statSync();
-
-  @override
-  Future<T> delete({bool recursive: false}) async =>
-      _createNew(await _delegate.delete(recursive: recursive) as D);
-
-  @override
-  void deleteSync({bool recursive: false}) =>
-      _delegate.deleteSync(recursive: recursive);
-
-  @override
-  Stream<io.FileSystemEvent> watch({
-    int events: io.FileSystemEvent.ALL,
-    bool recursive: false,
-  }) =>
-      _delegate.watch(events: events, recursive: recursive);
-
-  @override
-  bool get isAbsolute => _delegate.isAbsolute;
-
-  @override
-  T get absolute => _createNew(_delegate.absolute as D);
-
-  @override
-  Directory get parent => new _LocalDirectory(fileSystem, _delegate.parent);
-
-  @override
-  String get path => _delegate.path;
+  Link wrapLink(io.Link delegate) => new _LocalLink(fileSystem, delegate);
 }

@@ -1,8 +1,8 @@
 library file.src.backends.local;
 
 import 'dart:async';
-import 'dart:convert';
 
+import 'package:file/src/forwarding.dart';
 import 'package:file/src/io.dart' as io;
 import 'package:file/file.dart';
 
