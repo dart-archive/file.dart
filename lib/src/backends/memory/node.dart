@@ -150,9 +150,24 @@ class _LinkNode extends _Node {
     assert(target != null && target.isNotEmpty);
   }
 
+  /// Gets the node backing for this link's target. Throws a
+  /// [io.FileSystemException] if this link references a non-existent file
+  /// system entity.
+  _Node get referent {
+    _Node node = fs._findNode(target, reference: this);
+    _checkExists(node, () => target);
+    return node;
+  }
+
   /// Gets the node backing for this link's target, or null if this link
   /// references a non-existent file system entity.
-  _Node get referent => fs._findNode(target, reference: this);
+  _Node get referentOrNull {
+    try {
+      return referent;
+    } on io.FileSystemException {
+      return null;
+    }
+  }
 
   @override
   io.FileSystemEntityType get type => io.FileSystemEntityType.LINK;
@@ -164,7 +179,7 @@ class _LinkNode extends _Node {
     }
     reentrant = true;
     try {
-      _Node node = referent;
+      _Node node = referentOrNull;
       return node == null ? _MemoryFileStat._notFound : node.stat;
     } finally {
       reentrant = false;

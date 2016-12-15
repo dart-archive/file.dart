@@ -30,6 +30,7 @@ class _MemoryDirectory extends _MemoryFileSystemEntity implements Directory {
         }
         return null;
       },
+      resolveTailLink: true,
     );
     if (node.type != expectedType) {
       // There was an existing non-directory node at this object's path
@@ -42,8 +43,8 @@ class _MemoryDirectory extends _MemoryFileSystemEntity implements Directory {
 
   @override
   Directory createTempSync([String prefix]) {
-    prefix ??= '';
-    String fullPath = '$path$_separator$prefix';
+    prefix = (prefix ?? '') + 'rand';
+    String fullPath = fileSystem._context.join(path, prefix);
     String dirname = fileSystem._context.dirname(fullPath);
     String basename = fileSystem._context.basename(fullPath);
     _DirectoryNode node = fileSystem._findNode(dirname);
@@ -55,7 +56,8 @@ class _MemoryDirectory extends _MemoryFileSystemEntity implements Directory {
     }
     _DirectoryNode tempDir = new _DirectoryNode(node);
     node.children[name()] = tempDir;
-    return new _MemoryDirectory(fileSystem, '$dirname$_separator${name()}');
+    return new _MemoryDirectory(
+        fileSystem, fileSystem._context.join(dirname, name()));
   }
 
   @override
@@ -95,24 +97,28 @@ class _MemoryDirectory extends _MemoryFileSystemEntity implements Directory {
   }) {
     _DirectoryNode node = backing;
     List<FileSystemEntity> listing = <FileSystemEntity>[];
-    Set<_LinkNode> visitedLinks = new Set<_LinkNode>();
     List<_PendingListTask> tasks = <_PendingListTask>[
       new _PendingListTask(
         node,
         path.endsWith(_separator) ? path.substring(0, path.length - 1) : path,
+        new Set<_LinkNode>(),
       ),
     ];
     while (tasks.isNotEmpty) {
       _PendingListTask task = tasks.removeLast();
       task.dir.children.forEach((String name, _Node child) {
-        String childPath = '${task.path}$_separator$name';
-        if (followLinks && _isLink(child) && visitedLinks.add(child)) {
-          child = (child as _LinkNode).referent;
+        Set<_LinkNode> breadcrumbs = new Set<_LinkNode>.from(task.breadcrumbs);
+        String childPath = fileSystem._context.join(task.path, name);
+        while (followLinks && _isLink(child) && breadcrumbs.add(child)) {
+          _Node referent = (child as _LinkNode).referentOrNull;
+          if (referent != null) {
+            child = referent;
+          }
         }
         if (_isDirectory(child)) {
           listing.add(new _MemoryDirectory(fileSystem, childPath));
           if (recursive) {
-            tasks.add(new _PendingListTask(child, childPath));
+            tasks.add(new _PendingListTask(child, childPath, breadcrumbs));
           }
         } else if (_isLink(child)) {
           listing.add(new _MemoryLink(fileSystem, childPath));
@@ -131,5 +137,6 @@ class _MemoryDirectory extends _MemoryFileSystemEntity implements Directory {
 class _PendingListTask {
   final _DirectoryNode dir;
   final String path;
-  _PendingListTask(this.dir, this.path);
+  final Set<_LinkNode> breadcrumbs;
+  _PendingListTask(this.dir, this.path, this.breadcrumbs);
 }

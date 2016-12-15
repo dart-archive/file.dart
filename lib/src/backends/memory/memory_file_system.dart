@@ -209,19 +209,20 @@ class MemoryFileSystem extends FileSystem {
       if (i < finalSegment) {
         _PathGenerator subpath = _subpath(parts, 0, i);
         _checkExists(child, subpath);
+        if (pathWithSymlinks != null) {
+          pathWithSymlinks.add(basename);
+        }
         if (_isLink(child)) {
           child = _resolveLinks(child, subpath, ledger: pathWithSymlinks);
-        } else if (pathWithSymlinks != null) {
-          pathWithSymlinks..add(_separator)..add(basename);
         }
         _checkIsDir(child, subpath);
         directory = child;
       } else if (pathWithSymlinks != null) {
-        pathWithSymlinks..add(_separator)..add(basename);
+        pathWithSymlinks.add(basename);
       }
     }
     if (_isLink(child) && resolveTailLink) {
-      child = _resolveLinks(child, () => path);
+      child = _resolveLinks(child, () => path, ledger: pathWithSymlinks);
     }
     return child;
   }

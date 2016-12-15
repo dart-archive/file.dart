@@ -62,7 +62,8 @@ _Node _resolveLinks(
   while (_isLink(node)) {
     link = node;
     if (!breadcrumbs.add(node)) {
-      throw new io.FileSystemException('Loop found in link chain', path());
+      throw new io.FileSystemException(
+          'Too many levels of symbolic links', path());
     }
     if (ledger != null) {
       if (_isAbsolute(link.target)) {

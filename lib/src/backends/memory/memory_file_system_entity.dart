@@ -63,8 +63,8 @@ abstract class _MemoryFileSystemEntity implements FileSystemEntity {
         pathWithSymlinks: ledger, resolveTailLink: true);
     _checkExists(node, () => path);
     String resolved = ledger.join(_separator);
-    if (!isAbsolute) {
-      resolved = fileSystem._cwd + resolved;
+    if (!_isAbsolute(resolved)) {
+      resolved = fileSystem._cwd + _separator + resolved;
     }
     return fileSystem._context.normalize(resolved);
   }
@@ -88,7 +88,7 @@ abstract class _MemoryFileSystemEntity implements FileSystemEntity {
       if (node is _DirectoryNode && node.children.isNotEmpty) {
         throw new io.FileSystemException('Directory not empty', path);
       }
-      if (node.type != expectedType) {
+      if (node.stat.type != expectedType) {
         throw new io.FileSystemException(
             'Not a ${expectedType.toString().toLowerCase()}', path);
       }
@@ -113,7 +113,7 @@ abstract class _MemoryFileSystemEntity implements FileSystemEntity {
   FileSystemEntity get absolute {
     String absolutePath = path;
     if (!_isAbsolute(absolutePath)) {
-      absolutePath = '${fileSystem._cwd}$_separator$absolutePath';
+      absolutePath = fileSystem._context.join(fileSystem._cwd, absolutePath);
     }
     return _clone(absolutePath);
   }
@@ -136,11 +136,16 @@ abstract class _MemoryFileSystemEntity implements FileSystemEntity {
   /// If an entity already existed at this path, [createChild] will not be
   /// invoked at all, and this method will return with the backing node for the
   /// existing entity (whose type may differ from this entity's type).
+  ///
+  /// If [resolveTailLink] is true and the result node is a link, this will
+  /// resolve it to its target prior to returning it.
   _Node _createSync(
-    _Node createChild(_DirectoryNode parent, bool isFinalSegment),
-  ) {
+    _Node createChild(_DirectoryNode parent, bool isFinalSegment), {
+    bool resolveTailLink: false,
+  }) {
     return fileSystem._findNode(
       path,
+      resolveTailLink: resolveTailLink,
       segmentVisitor: (
         _DirectoryNode parent,
         String childName,
@@ -183,6 +188,9 @@ abstract class _MemoryFileSystemEntity implements FileSystemEntity {
     _RenameOverwriteValidator<dynamic> validateOverwriteExistingEntity,
   }) {
     _Node node = backing;
+    if (node.stat.type != expectedType) {
+      throw new io.FileSystemException('No such file or directory', path);
+    }
     fileSystem._findNode(
       newPath,
       segmentVisitor: (
