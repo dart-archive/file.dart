@@ -190,6 +190,11 @@ void runCommonTests(FileSystem createFileSystem(), {String root()}) {
           expect(type, FileSystemEntityType.DIRECTORY);
         });
 
+        test('isDirectoryForAncestorOfRoot', () {
+          var type = fs.typeSync('../../../../../../../..');
+          expect(type, FileSystemEntityType.DIRECTORY);
+        });
+
         test('isFileForSymlinkToFileAndFollowLinksTrue', () {
           fs.file(ns('/foo')).createSync();
           fs.link(ns('/bar')).createSync(ns('/foo'));
@@ -504,6 +509,8 @@ void runCommonTests(FileSystem createFileSystem(), {String root()}) {
           fs.link(ns('/foo/qux')).createSync('bar/baz');
           expect(fs.directory(ns('/foo/qux')).resolveSymbolicLinksSync(),
               ns('/foo/bar/baz'));
+          expect(fs.directory('foo/qux').resolveSymbolicLinksSync(),
+              ns('/foo/bar/baz'));
         });
 
         test('handlesAbsoluteSymlinks', () {
@@ -512,6 +519,19 @@ void runCommonTests(FileSystem createFileSystem(), {String root()}) {
           fs.link(ns('/foo/quux')).createSync(ns('/bar/baz/qux'));
           expect(fs.directory(ns('/foo/quux')).resolveSymbolicLinksSync(),
               ns('/bar/baz/qux'));
+        });
+
+        test('handlesSymlinksWhoseTargetsHaveNestedSymlinks', () {
+          fs.directory(ns('/foo')).createSync();
+          fs.link(ns('/foo/quuz')).createSync(ns('/bar'));
+          fs.link(ns('/foo/grault')).createSync(ns('/baz/quux'));
+          fs.directory(ns('/bar')).createSync();
+          fs.link(ns('/bar/qux')).createSync(ns('/baz'));
+          fs.link(ns('/bar/garply')).createSync(ns('/foo'));
+          fs.directory(ns('/baz')).createSync();
+          fs.link(ns('/baz/quux')).createSync(ns('/bar/garply/quuz'));
+          expect(fs.directory(ns('/foo/grault/qux')).resolveSymbolicLinksSync(),
+              ns('/baz'));
         });
 
         test('handlesParentAndThisFolderReferences', () {

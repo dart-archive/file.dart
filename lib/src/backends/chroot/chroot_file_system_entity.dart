@@ -47,18 +47,13 @@ abstract class _ChrootFileSystemEntity<T extends FileSystemEntity,
   @override
   Future<String> resolveSymbolicLinks() async => resolveSymbolicLinksSync();
 
-  // TODO: This implementation seems overly complex - there must be a better way
   @override
   String resolveSymbolicLinksSync() {
     p.Context context = fileSystem._context;
     List<String> ledger = context.split(fileSystem.root);
-    int rootLength = ledger.length;
-    int leading = rootLength;
-    int start = 1;
+    int leading = ledger.length;
     if (!isAbsolute) {
-      start = 0;
       ledger.addAll(context.split(fileSystem._cwd).sublist(1));
-      leading = ledger.length;
     }
 
     List<String> segments = context.split(path);
@@ -66,20 +61,19 @@ abstract class _ChrootFileSystemEntity<T extends FileSystemEntity,
       segments = segments.sublist(1);
     }
 
-    var subpath = () => context.joinAll(ledger);
-    var getType =
-        () => fileSystem.delegate.typeSync(subpath(), followLinks: false);
+    String subpath() => context.joinAll(ledger);
+    FileSystemEntityType getType() =>
+        fileSystem.delegate.typeSync(subpath(), followLinks: false);
 
     for (String segment in segments) {
       ledger.add(segment);
+
       FileSystemEntityType type = getType();
       if (type == FileSystemEntityType.LINK) {
         Set<String> breadcrumbs = new Set<String>();
         while (type == FileSystemEntityType.LINK) {
           String target = fileSystem.delegate.link(subpath()).targetSync();
           if (context.isAbsolute(target)) {
-            leading = rootLength;
-            start = 1;
             ledger.clear();
           } else {
             ledger.removeLast();
@@ -90,6 +84,7 @@ abstract class _ChrootFileSystemEntity<T extends FileSystemEntity,
           if (!breadcrumbs.add(resolved)) {
             throw new FileSystemException('Too many levels of symbolic links');
           }
+
           if (!resolved.startsWith(fileSystem.root)) {
             // The symlink target leads outside the chroot jail.
             type = FileSystemEntityType.NOT_FOUND;
@@ -105,9 +100,10 @@ abstract class _ChrootFileSystemEntity<T extends FileSystemEntity,
       }
     }
 
-    ledger.removeRange(start, leading);
-    String resolved = context.joinAll(ledger);
-    return context.normalize(resolved);
+    // Strip the chroot context
+    ledger.removeRange(1, leading);
+
+    return context.normalize(context.joinAll(ledger));
   }
 
   @override
