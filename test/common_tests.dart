@@ -1,15 +1,53 @@
 @TestOn("vm")
+import 'dart:async';
+import 'dart:convert';
 import 'dart:io' as io;
 
 import 'package:file/file.dart';
 import 'package:test/test.dart';
+import 'package:test/test.dart' as testpkg show group, test;
 
-void runCommonTests(FileSystem createFileSystem(), {String root()}) {
+/// Runs a suite of tests common to all file system implementations. All file
+/// system implementations should run *at least* these tests to ensure
+/// compliance with file system API.
+///
+/// If [root] is specified, its return value will be used as the root folder
+/// in which all file system entities will be created. If not specified, the
+/// tests will attempt to create entities in the file system root.
+///
+/// [skip] may be used to skip certain tests (or entire groups of tests) in
+/// this suite (to be used, for instance, if a file system implementation is
+/// not yet fully complete). The format of each entry in the list is:
+/// `$group1Description > $group2Description > ... > $testDescription`.
+/// Entries may use regular expression syntax.
+void runCommonTests(
+  FileSystem createFileSystem(), {
+  String root(),
+  List<String> skip: const <String>[],
+}) {
   var rootfn = root;
 
   group('common', () {
     FileSystem fs;
     String root;
+
+    List<String> stack = <String>[];
+
+    void skipIfNecessary(description, callback()) {
+      stack.add(description);
+      bool matchesCurrentFrame(String input) =>
+          new RegExp('^$input\$').hasMatch(stack.join(' > '));
+      if (skip.where(matchesCurrentFrame).isEmpty) {
+        callback();
+      }
+      stack.removeLast();
+    }
+
+    void group(description, body()) =>
+        skipIfNecessary(description, () => testpkg.group(description, body));
+
+    void test(description, body()) =>
+        skipIfNecessary(description, () => testpkg.test(description, body));
 
     /// Returns [path] prefixed by the [root] namespace.
     /// This is only intended for absolute paths.
@@ -232,6 +270,7 @@ void runCommonTests(FileSystem createFileSystem(), {String root()}) {
         test('falseWhenNotExists', () {
           expect(fs.directory(ns('/foo')).existsSync(), false);
           expect(fs.directory('foo').existsSync(), false);
+          expect(fs.directory(ns('/foo/bar')).existsSync(), false);
         });
 
         test('trueWhenExistsAsDirectory', () {
@@ -711,6 +750,1317 @@ void runCommonTests(FileSystem createFileSystem(), {String root()}) {
             expect(list, hasLength(1));
             expect(list[0], allOf(isLink, hasPath(ns('/bar/baz'))));
           }
+        });
+      });
+    });
+
+    group('File', () {
+      test('uri', () {
+        expect(fs.file(ns('/foo')).uri.toString(), 'file://${ns('/foo')}');
+        expect(fs.file('foo').uri.toString(), 'foo');
+      });
+
+      group('create', () {
+        test('succeedsIfTailDoesntAlreadyExist', () {
+          fs.file(ns('/foo')).createSync();
+          expect(fs.file(ns('/foo')).existsSync(), true);
+        });
+
+        test('succeedsIfAlreadyExistsAsFile', () {
+          fs.file(ns('/foo')).createSync();
+          fs.file(ns('/foo')).createSync();
+          expect(fs.file(ns('/foo')).existsSync(), true);
+        });
+
+        test('throwsIfAncestorDoesntExistRecursiveFalse', () {
+          expectFileSystemException('No such file or directory', () {
+            fs.file(ns('/foo/bar')).createSync();
+          });
+        });
+
+        test('succeedsIfAncestorDoesntExistRecursiveTrue', () {
+          fs.file(ns('/foo/bar')).createSync(recursive: true);
+          expect(fs.file(ns('/foo/bar')).existsSync(), true);
+        });
+
+        test('throwsIfAlreadyExistsAsDirectory', () {
+          fs.directory(ns('/foo')).createSync();
+          expectFileSystemException('Creation failed', () {
+            fs.file(ns('/foo')).createSync();
+          });
+        });
+
+        test('throwsIfAlreadyExistsAsLinkToDirectory', () {
+          fs.directory(ns('/foo')).createSync();
+          fs.link(ns('/bar')).createSync(ns('/foo'));
+          expectFileSystemException('Creation failed', () {
+            fs.file(ns('/bar')).createSync();
+          });
+        });
+
+        test('succeedsIfAlreadyExistsAsLinkToFile', () {
+          fs.file(ns('/foo')).createSync();
+          fs.link(ns('/bar')).createSync(ns('/foo'));
+          fs.file(ns('/bar')).createSync();
+          expect(fs.file(ns('/bar')).existsSync(), true);
+        });
+      });
+
+      group('rename', () {
+        test('succeedsIfTargetDoesntExistAtTail', () {
+          File f = fs.file(ns('/foo'))..createSync();
+          f.renameSync(ns('/bar'));
+          expect(fs.file(ns('/foo')).existsSync(), false);
+          expect(fs.file(ns('/bar')).existsSync(), true);
+        });
+
+        test('throwsIfTargetDoesntExistViaTraversal', () {
+          File f = fs.file(ns('/foo'))..createSync();
+          expectFileSystemException('No such file or directory', () {
+            f.renameSync(ns('/bar/baz'));
+          });
+        });
+
+        test('succeedsIfTargetExistsAsFile', () {
+          File f = fs.file(ns('/foo'))..createSync();
+          fs.file(ns('/bar')).createSync();
+          f.renameSync(ns('/bar'));
+          expect(fs.file(ns('/foo')).existsSync(), false);
+          expect(fs.file(ns('/bar')).existsSync(), true);
+        });
+
+        test('throwsIfTargetExistsAsDirectory', () {
+          File f = fs.file(ns('/foo'))..createSync();
+          fs.directory(ns('/bar')).createSync();
+          expectFileSystemException('Is a directory', () {
+            f.renameSync(ns('/bar'));
+          });
+        });
+
+        test('succeedsIfTargetExistsAsLinkToFile', () {
+          File f = fs.file(ns('/foo'))..createSync();
+          fs.file(ns('/bar')).createSync();
+          fs.link(ns('/baz')).createSync(ns('/bar'));
+          f.renameSync(ns('/baz'));
+          expect(fs.typeSync(ns('/foo')), FileSystemEntityType.NOT_FOUND);
+          expect(fs.typeSync(ns('/bar')), FileSystemEntityType.FILE);
+          expect(fs.typeSync(ns('/baz')), FileSystemEntityType.FILE);
+        });
+
+        test('throwsIfTargetExistsAsLinkToDirectory', () {
+          File f = fs.file(ns('/foo'))..createSync();
+          fs.directory(ns('/bar')).createSync();
+          fs.link(ns('/baz')).createSync(ns('/bar'));
+          expectFileSystemException('Is a directory', () {
+            f.renameSync(ns('/baz'));
+          });
+        });
+
+        test('throwsIfSourceDoesntExist', () {
+          expectFileSystemException('No such file or directory', () {
+            fs.file(ns('/foo')).renameSync(ns('/bar'));
+          });
+        });
+
+        test('throwsIfSourceExistsAsDirectory', () {
+          fs.directory(ns('/foo')).createSync();
+          expectFileSystemException('Is a directory', () {
+            fs.file(ns('/foo')).renameSync(ns('/bar'));
+          });
+        });
+
+        test('succeedsIfSourceIsLinkToFile', () {
+          fs.file(ns('/foo')).createSync();
+          fs.link(ns('/bar')).createSync(ns('/foo'));
+          fs.file(ns('/bar')).renameSync(ns('/baz'));
+          expect(fs.typeSync(ns('/bar')), FileSystemEntityType.NOT_FOUND);
+          expect(fs.typeSync(ns('/baz')), FileSystemEntityType.FILE);
+        });
+      });
+
+      group('copy', () {
+        test('succeedsIfTargetDoesntExistAtTail', () {
+          File f = fs.file(ns('/foo'))..createSync();
+          f.copySync(ns('/bar'));
+          expect(fs.file(ns('/foo')).existsSync(), true);
+          expect(fs.file(ns('/bar')).existsSync(), true);
+        });
+
+        test('throwsIfTargetDoesntExistViaTraversal', () {
+          File f = fs.file(ns('/foo'))..createSync();
+          expectFileSystemException('No such file or directory', () {
+            f.copySync(ns('/bar/baz'));
+          });
+        });
+
+        test('succeedsIfTargetExistsAsFile', () {
+          File f = fs.file(ns('/foo'))..createSync();
+          fs.file(ns('/bar')).createSync();
+          f.copySync(ns('/bar'));
+          expect(fs.file(ns('/foo')).existsSync(), true);
+          expect(fs.file(ns('/bar')).existsSync(), true);
+        });
+
+        test('throwsIfTargetExistsAsDirectory', () {
+          File f = fs.file(ns('/foo'))..createSync();
+          fs.directory(ns('/bar')).createSync();
+          expectFileSystemException('Is a directory', () {
+            f.copySync(ns('/bar'));
+          });
+        });
+
+        test('succeedsIfTargetExistsAsLinkToFile', () {
+          File f = fs.file(ns('/foo'))..createSync();
+          fs.file(ns('/bar')).createSync();
+          fs.link(ns('/baz')).createSync(ns('/bar'));
+          f.copySync(ns('/baz'));
+          expect(fs.typeSync(ns('/foo')), FileSystemEntityType.FILE);
+          expect(fs.typeSync(ns('/bar')), FileSystemEntityType.FILE);
+          expect(fs.typeSync(ns('/baz')), FileSystemEntityType.FILE);
+        });
+
+        test('throwsIfTargetExistsAsLinkToDirectory', () {
+          File f = fs.file(ns('/foo'))..createSync();
+          fs.directory(ns('/bar')).createSync();
+          fs.link(ns('/baz')).createSync(ns('/bar'));
+          expectFileSystemException('Is a directory', () {
+            f.copySync(ns('/baz'));
+          });
+        });
+
+        test('throwsIfSourceDoesntExist', () {
+          expectFileSystemException('No such file or directory', () {
+            fs.file(ns('/foo')).copySync(ns('/bar'));
+          });
+        });
+
+        test('throwsIfSourceExistsAsDirectory', () {
+          fs.directory(ns('/foo')).createSync();
+          expectFileSystemException('Is a directory', () {
+            fs.file(ns('/foo')).copySync(ns('/bar'));
+          });
+        });
+
+        test('succeedsIfSourceExistsAsLinkToFile', () {
+          fs.file(ns('/foo')).createSync();
+          fs.link(ns('/bar')).createSync(ns('/foo'));
+          fs.file(ns('/bar')).copySync(ns('/baz'));
+          expect(fs.typeSync(ns('/bar')), FileSystemEntityType.FILE);
+          expect(fs.typeSync(ns('/baz')), FileSystemEntityType.FILE);
+        });
+      });
+
+      group('length', () {
+        test('throwsIfDoesntExist', () {
+          expectFileSystemException('No such file or directory', () {
+            fs.file(ns('/foo')).lengthSync();
+          });
+        });
+
+        test('throwsIfExistsAsDirectory', () {
+          fs.directory(ns('/foo')).createSync();
+          expectFileSystemException('Is a directory', () {
+            fs.file(ns('/foo')).lengthSync();
+          });
+        });
+
+        test('returnsZeroForNewlyCreatedFile', () {
+          File f = fs.file(ns('/foo'))..createSync();
+          expect(f.lengthSync(), 0);
+        });
+
+        test('writeNBytesReturnsLengthN', () {
+          File f = fs.file(ns('/foo'))..createSync();
+          f.writeAsBytesSync(<int>[1, 2, 3, 4], flush: true);
+          expect(f.lengthSync(), 4);
+        });
+
+        test('succeedsIfExistsAsLinkToFile', () {
+          fs.file(ns('/foo')).createSync();
+          fs.link(ns('/bar')).createSync('foo');
+          expect(fs.file(ns('/bar')).lengthSync(), 0);
+        });
+      });
+
+      group('absolute', () {
+        test('returnsSamePathWhenAlreadyAbsolute', () {
+          expect(fs.file(ns('/foo')).absolute.path, ns('/foo'));
+        });
+
+        test('succeedsForRelativePaths', () {
+          expect(fs.file('foo').absolute.path, ns('/foo'));
+        });
+      });
+
+      group('lastModified', () {
+        test('isNowForNewlyCreatedFile', () {
+          File f = fs.file(ns('/foo'))..createSync();
+          expect(new DateTime.now().difference(f.lastModifiedSync()).abs(),
+              lessThan(new Duration(seconds: 2)));
+        });
+
+        test('throwsIfDoesntExist', () {
+          expectFileSystemException('No such file or directory', () {
+            fs.file(ns('/foo')).lastModifiedSync();
+          });
+        });
+
+        test('throwsIfExistsAsDirectory', () {
+          fs.directory(ns('/foo')).createSync();
+          expectFileSystemException('Is a directory', () {
+            fs.file(ns('/foo')).lastModifiedSync();
+          });
+        });
+      });
+
+      group('open', () {
+        void testIfDoesntExistAtTail(FileMode mode) {
+          if (mode == FileMode.READ) {
+            test('throwsIfDoesntExistAtTail', () {
+              expectFileSystemException('No such file or directory', () {
+                fs.file(ns('/bar')).openSync(mode: mode);
+              });
+            });
+          } else {
+            test('createsFileIfDoesntExistAtTail', () {
+              var raf = fs.file(ns('/bar')).openSync(mode: mode);
+              raf.closeSync();
+              expect(fs.file(ns('/bar')).existsSync(), true);
+            });
+          }
+        }
+
+        void testThrowsIfDoesntExistViaTraversal(FileMode mode) {
+          test('throwsIfDoesntExistViaTraversal', () {
+            expectFileSystemException('No such file or directory', () {
+              fs.file(ns('/bar/baz')).openSync(mode: mode);
+            });
+          });
+        }
+
+        void testRandomAccessFileOperations(FileMode mode) {
+          group('RandomAccessFile', () {
+            File f;
+            RandomAccessFile raf;
+
+            setUp(() {
+              f = fs.file(ns('/foo'))..createSync();
+              f.writeAsStringSync('pre-existing content\n', flush: true);
+              raf = f.openSync(mode: mode);
+            });
+
+            tearDown(() {
+              try {
+                raf.closeSync();
+              } on FileSystemException {
+                // Ignore; a test may have already closed it.
+              }
+            });
+
+            test('succeedsIfClosedAfterClosed', () {
+              raf.closeSync();
+              expectFileSystemException('File closed', () {
+                raf.closeSync();
+              });
+            });
+
+            test('throwsIfReadAfterClose', () {
+              raf.closeSync();
+              expectFileSystemException('File closed', () {
+                raf.readByteSync();
+              });
+            });
+
+            test('throwsIfWriteAfterClose', () {
+              raf.closeSync();
+              expectFileSystemException('File closed', () {
+                raf.writeByteSync(0xBAD);
+              });
+            });
+
+            test('throwsIfTruncateAfterClose', () {
+              raf.closeSync();
+              expectFileSystemException('File closed', () {
+                raf.truncateSync(0);
+              });
+            });
+
+            if (mode == FileMode.WRITE || mode == FileMode.WRITE_ONLY) {
+              test('lengthIsResetToZeroWhenOpened', () {
+                expect(raf.lengthSync(), equals(0));
+              });
+            } else {
+              test('lengthIsNotModifiedWhenOpened', () {
+                expect(raf.lengthSync(), isNot(equals(0)));
+              });
+            }
+
+            if (mode == FileMode.WRITE_ONLY ||
+                mode == FileMode.WRITE_ONLY_APPEND) {
+              test('throwsIfReadByte', () {
+                expectFileSystemException('Bad file descriptor', () {
+                  raf.readByteSync();
+                });
+              });
+
+              test('throwsIfRead', () {
+                expectFileSystemException('Bad file descriptor', () {
+                  raf.readSync(2);
+                });
+              });
+
+              test('throwsIfReadInto', () {
+                expectFileSystemException('Bad file descriptor', () {
+                  raf.readIntoSync(new List<int>(5));
+                });
+              });
+            } else {
+              group('read', () {
+                setUp(() {
+                  if (mode == FileMode.WRITE) {
+                    // Write data back that we truncated when opening the file.
+                    raf.writeStringSync('pre-existing content\n');
+                  }
+                  // Reset the position to zero so we can read the content.
+                  raf.setPositionSync(0);
+                });
+
+                test('readByte', () {
+                  expect(UTF8.decode(<int>[raf.readByteSync()]), 'p');
+                });
+
+                test('read', () {
+                  List<int> bytes = raf.readSync(1024);
+                  expect(bytes.length, 21);
+                  expect(UTF8.decode(bytes), 'pre-existing content\n');
+                });
+
+                test('readIntoWithBufferLargerThanContent', () {
+                  List<int> buffer = new List<int>(1024);
+                  int numRead = raf.readIntoSync(buffer);
+                  expect(numRead, 21);
+                  expect(UTF8.decode(buffer.sublist(0, 21)),
+                      'pre-existing content\n');
+                });
+
+                test('readIntoWithBufferSmallerThanContent', () {
+                  List<int> buffer = new List<int>(10);
+                  int numRead = raf.readIntoSync(buffer);
+                  expect(numRead, 10);
+                  expect(UTF8.decode(buffer), 'pre-existi');
+                });
+
+                test('readIntoWithStart', () {
+                  List<int> buffer = new List<int>(10);
+                  int numRead = raf.readIntoSync(buffer, 2);
+                  expect(numRead, 8);
+                  expect(UTF8.decode(buffer.sublist(2)), 'pre-exis');
+                });
+
+                test('readIntoWithStartAndEnd', () {
+                  List<int> buffer = new List<int>(10);
+                  int numRead = raf.readIntoSync(buffer, 2, 5);
+                  expect(numRead, 3);
+                  expect(UTF8.decode(buffer.sublist(2, 5)), 'pre');
+                });
+              });
+            }
+
+            if (mode == FileMode.READ) {
+              test('throwsIfWriteByte', () {
+                expectFileSystemException('Bad file descriptor', () {
+                  raf.writeByteSync(0xBAD);
+                });
+              });
+
+              test('throwsIfWriteFrom', () {
+                expectFileSystemException('Bad file descriptor', () {
+                  raf.writeFromSync(<int>[1, 2, 3, 4]);
+                });
+              });
+
+              test('throwsIfWriteString', () {
+                expectFileSystemException('Bad file descriptor', () {
+                  raf.writeStringSync('This should throw.');
+                });
+              });
+            } else {
+              test('lengthGrowsAsDataIsWritten', () {
+                int lengthBefore = f.lengthSync();
+                raf.writeByteSync(0xFACE);
+                expect(raf.lengthSync(), lengthBefore + 1);
+              });
+
+              test('flush', () {
+                int lengthBefore = f.lengthSync();
+                raf.writeByteSync(0xFACE);
+                raf.flushSync();
+                expect(f.lengthSync(), lengthBefore + 1);
+              });
+
+              test('writeByte', () {
+                raf.writeByteSync(UTF8.encode('A').first);
+                raf.flushSync();
+                if (mode == FileMode.WRITE || mode == FileMode.WRITE_ONLY) {
+                  expect(f.readAsStringSync(), 'A');
+                } else {
+                  expect(f.readAsStringSync(), 'pre-existing content\nA');
+                }
+              });
+
+              test('writeFrom', () {
+                raf.writeFromSync(UTF8.encode('Hello world'));
+                raf.flushSync();
+                if (mode == FileMode.WRITE || mode == FileMode.WRITE_ONLY) {
+                  expect(f.readAsStringSync(), 'Hello world');
+                } else {
+                  expect(f.readAsStringSync(),
+                      'pre-existing content\nHello world');
+                }
+              });
+
+              test('writeFromWithStart', () {
+                raf.writeFromSync(UTF8.encode('Hello world'), 2);
+                raf.flushSync();
+                if (mode == FileMode.WRITE || mode == FileMode.WRITE_ONLY) {
+                  expect(f.readAsStringSync(), 'llo world');
+                } else {
+                  expect(
+                      f.readAsStringSync(), 'pre-existing content\nllo world');
+                }
+              });
+
+              test('writeFromWithStartAndEnd', () {
+                raf.writeFromSync(UTF8.encode('Hello world'), 2, 5);
+                raf.flushSync();
+                if (mode == FileMode.WRITE || mode == FileMode.WRITE_ONLY) {
+                  expect(f.readAsStringSync(), 'llo');
+                } else {
+                  expect(f.readAsStringSync(), 'pre-existing content\nllo');
+                }
+              });
+
+              test('writeString', () {
+                raf.writeStringSync('Hello world');
+                raf.flushSync();
+                if (mode == FileMode.WRITE || mode == FileMode.WRITE_ONLY) {
+                  expect(f.readAsStringSync(), 'Hello world');
+                } else {
+                  expect(f.readAsStringSync(),
+                      'pre-existing content\nHello world');
+                }
+              });
+            }
+
+            if (mode == FileMode.APPEND || mode == FileMode.WRITE_ONLY_APPEND) {
+              test('positionInitializedToEndOfFile', () {
+                expect(raf.positionSync(), 21);
+              });
+            } else {
+              test('positionInitializedToZero', () {
+                expect(raf.positionSync(), 0);
+              });
+            }
+
+            group('position', () {
+              setUp(() {
+                if (mode == FileMode.WRITE || mode == FileMode.WRITE_ONLY) {
+                  // Write data back that we truncated when opening the file.
+                  raf.writeStringSync('pre-existing content\n');
+                }
+              });
+
+              if (mode != FileMode.WRITE_ONLY &&
+                  mode != FileMode.WRITE_ONLY_APPEND) {
+                test('growsAfterRead', () {
+                  raf.setPositionSync(0);
+                  raf.readSync(10);
+                  expect(raf.positionSync(), 10);
+                });
+
+                test('affectsRead', () {
+                  raf.setPositionSync(5);
+                  expect(UTF8.decode(raf.readSync(5)), 'xisti');
+                });
+              }
+
+              if (mode == FileMode.READ) {
+                test('succeedsIfSetPastEndOfFile', () {
+                  raf.setPositionSync(32);
+                  expect(raf.positionSync(), 32);
+                });
+              } else {
+                test('growsAfterWrite', () {
+                  int positionBefore = raf.positionSync();
+                  raf.writeStringSync('Hello world');
+                  expect(raf.positionSync(), positionBefore + 11);
+                });
+
+                test('affectsWrite', () {
+                  raf.setPositionSync(5);
+                  raf.writeStringSync('-yo-');
+                  raf.flushSync();
+                  expect(f.readAsStringSync(), 'pre-e-yo-ing content\n');
+                });
+
+                test('succeedsIfSetAndWrittenPastEndOfFile', () {
+                  raf.setPositionSync(32);
+                  expect(raf.positionSync(), 32);
+                  raf.writeStringSync('here');
+                  raf.flushSync();
+                  List<int> bytes = f.readAsBytesSync();
+                  expect(bytes.length, 36);
+                  expect(UTF8.decode(bytes.sublist(0, 21)),
+                      'pre-existing content\n');
+                  expect(UTF8.decode(bytes.sublist(32, 36)), 'here');
+                  expect(bytes.sublist(21, 32), everyElement(0));
+                });
+              }
+
+              test('throwsIfSetToNegativeNumber', () {
+                expectFileSystemException('Invalid argument', () {
+                  raf.setPositionSync(-12);
+                });
+              });
+            });
+
+            if (mode == FileMode.READ) {
+              test('throwsIfTruncate', () {
+                expectFileSystemException('Invalid argument', () {
+                  raf.truncateSync(5);
+                });
+              });
+            } else {
+              group('truncate', () {
+                setUp(() {
+                  if (mode == FileMode.WRITE || mode == FileMode.WRITE_ONLY) {
+                    // Write data back that we truncated when opening the file.
+                    raf.writeStringSync('pre-existing content\n');
+                  }
+                });
+
+                test('succeedsIfSetWithinRangeOfContent', () {
+                  raf.truncateSync(5);
+                  raf.flushSync();
+                  expect(f.lengthSync(), 5);
+                  expect(f.readAsStringSync(), 'pre-e');
+                });
+
+                test('succeedsIfSetToZero', () {
+                  raf.truncateSync(0);
+                  raf.flushSync();
+                  expect(f.lengthSync(), 0);
+                  expect(f.readAsStringSync(), isEmpty);
+                });
+
+                test('throwsIfSetToNegativeNumber', () {
+                  expectFileSystemException('Invalid argument', () {
+                    raf.truncateSync(-2);
+                  });
+                });
+
+                test('extendsFileIfSetPastEndOfFile', () {
+                  raf.truncateSync(32);
+                  raf.flushSync();
+                  List<int> bytes = f.readAsBytesSync();
+                  expect(bytes.length, 32);
+                  expect(UTF8.decode(bytes.sublist(0, 21)),
+                      'pre-existing content\n');
+                  expect(bytes.sublist(21, 32), everyElement(0));
+                });
+              });
+            }
+          });
+        }
+
+        void testOpenWithMode(FileMode mode) {
+          testIfDoesntExistAtTail(mode);
+          testThrowsIfDoesntExistViaTraversal(mode);
+          testRandomAccessFileOperations(mode);
+        }
+
+        group('READ', () => testOpenWithMode(FileMode.READ));
+        group('WRITE', () => testOpenWithMode(FileMode.WRITE));
+        group('APPEND', () => testOpenWithMode(FileMode.APPEND));
+        group('WRITE_ONLY', () => testOpenWithMode(FileMode.WRITE_ONLY));
+        group('WRITE_ONLY_APPEND',
+            () => testOpenWithMode(FileMode.WRITE_ONLY_APPEND));
+      });
+
+      group('openRead', () {
+        test('throwsIfDoesntExist', () {
+          Stream<List<int>> stream = fs.file(ns('/foo')).openRead();
+          expect(stream.drain(),
+              throwsFileSystemException('No such file or directory'));
+        });
+
+        test('succeedsIfExistsAsFile', () async {
+          File f = fs.file(ns('/foo'))..createSync();
+          f.writeAsStringSync('Hello world', flush: true);
+          var stream = f.openRead();
+          var data = await stream.toList();
+          expect(data, hasLength(1));
+          expect(UTF8.decode(data[0]), 'Hello world');
+        });
+
+        test('throwsIfExistsAsDirectory', () {
+          fs.directory(ns('/foo')).createSync();
+          Stream<List<int>> stream = fs.file(ns('/foo')).openRead();
+          expect(stream.drain(), throwsFileSystemException('Is a directory'));
+        });
+
+        test('succeedsIfExistsAsLinkToFile', () async {
+          File f = fs.file(ns('/foo'))..createSync();
+          fs.link(ns('/bar')).createSync(ns('/foo'));
+          f.writeAsStringSync('Hello world', flush: true);
+          var stream = fs.file(ns('/bar')).openRead();
+          var data = await stream.toList();
+          expect(data, hasLength(1));
+          expect(UTF8.decode(data[0]), 'Hello world');
+        });
+
+        test('respectsStartAndEndParameters', () async {
+          File f = fs.file(ns('/foo'))..createSync();
+          f.writeAsStringSync('Hello world', flush: true);
+          var stream = f.openRead(2);
+          var data = await stream.toList();
+          expect(data, hasLength(1));
+          expect(UTF8.decode(data[0]), 'llo world');
+          stream = f.openRead(2, 5);
+          data = await stream.toList();
+          expect(data, hasLength(1));
+          expect(UTF8.decode(data[0]), 'llo');
+        });
+
+        test('throwsIfStartParameterIsNegative', () async {
+          File f = fs.file(ns('/foo'))..createSync();
+          var stream = f.openRead(-2);
+          expect(stream.drain(), throwsRangeError);
+        });
+
+        test('stopsAtEndOfFileIfEndParameterIsPastEndOfFile', () async {
+          File f = fs.file(ns('/foo'))..createSync();
+          f.writeAsStringSync('Hello world', flush: true);
+          var stream = f.openRead(2, 1024);
+          var data = await stream.toList();
+          expect(data, hasLength(1));
+          expect(UTF8.decode(data[0]), 'llo world');
+        });
+
+        test('providesSingleSubscriptionStream', () async {
+          File f = fs.file(ns('/foo'))..createSync();
+          f.writeAsStringSync('Hello world', flush: true);
+          var stream = f.openRead();
+          StreamSubscription sub1, sub2;
+          sub1 = stream.listen((data) {});
+          sub2 = stream.listen((data) {}, onError: expectAsync1((error) {
+            sub1.cancel();
+            sub2.cancel();
+            expect(
+                error,
+                isFileSystemException(
+                    'An async operation is currently pending'));
+          }));
+        });
+      });
+
+      group('openWrite', () {
+        test('createsFileIfDoesntExist', () async {
+          await fs.file(ns('/foo')).openWrite().close();
+          expect(fs.file(ns('/foo')).existsSync(), true);
+        });
+
+        test('throwsIfExistsAsDirectory', () {
+          fs.directory(ns('/foo')).createSync();
+          expect(fs.file(ns('/foo')).openWrite().close(),
+              throwsFileSystemException('Is a directory'));
+        });
+
+        test('throwsIfExistsAsLinkToDirectory', () {
+          fs.directory(ns('/foo')).createSync();
+          fs.link(ns('/bar')).createSync(ns('/foo'));
+          expect(fs.file(ns('/bar')).openWrite().close(),
+              throwsFileSystemException('Is a directory'));
+        });
+
+        test('throwsIfModeIsRead', () {
+          expect(() => fs.file(ns('/foo')).openWrite(mode: FileMode.READ),
+              throwsArgumentError);
+        });
+
+        test('succeedsIfExistsAsEmptyFile', () async {
+          File f = fs.file(ns('/foo'))..createSync();
+          IOSink sink = f.openWrite();
+          sink.write('Hello world');
+          await sink.flush();
+          await sink.close();
+          expect(f.readAsStringSync(), 'Hello world');
+        });
+
+        test('succeedsIfExistsAsLinkToFile', () async {
+          fs.file(ns('/foo')).createSync();
+          fs.link(ns('/bar')).createSync(ns('/foo'));
+          IOSink sink = fs.file(ns('/bar')).openWrite();
+          sink.write('Hello world');
+          await sink.flush();
+          await sink.close();
+          expect(fs.file(ns('/foo')).readAsStringSync(), 'Hello world');
+        });
+
+        test('overwritesContentInWriteMode', () async {
+          File f = fs.file(ns('/foo'))..createSync();
+          f.writeAsStringSync('Hello');
+          IOSink sink = f.openWrite();
+          sink.write('Goodbye');
+          await sink.flush();
+          await sink.close();
+          expect(fs.file(ns('/foo')).readAsStringSync(), 'Goodbye');
+        });
+
+        test('appendsContentInAppendMode', () async {
+          File f = fs.file(ns('/foo'))..createSync();
+          f.writeAsStringSync('Hello');
+          IOSink sink = f.openWrite(mode: FileMode.APPEND);
+          sink.write('Goodbye');
+          await sink.flush();
+          await sink.close();
+          expect(fs.file(ns('/foo')).readAsStringSync(), 'HelloGoodbye');
+        });
+
+        group('ioSink', () {
+          File f;
+          IOSink sink;
+          bool isSinkClosed = false;
+
+          Future<dynamic> closeSink() {
+            var future = sink.close();
+            isSinkClosed = true;
+            return future;
+          }
+
+          setUp(() {
+            f = fs.file(ns('/foo'));
+            sink = f.openWrite();
+          });
+
+          tearDown(() async {
+            if (!isSinkClosed) {
+              await closeSink();
+            }
+          });
+
+          test('throwsIfAddError', () async {
+            sink.addError(new ArgumentError());
+            expect(sink.done, throwsArgumentError);
+            isSinkClosed = true;
+          });
+
+          test('throwsIfEncodingIsNullAndWriteObject', () {
+            sink.encoding = null;
+            expect(() => sink.write('Hello world'), throwsNoSuchMethodError);
+          });
+
+          test('allowsChangingEncoding', () async {
+            sink.encoding = LATIN1;
+            sink.write('ÿ');
+            sink.encoding = UTF8;
+            sink.write('ÿ');
+            await sink.flush();
+            expect(await f.readAsBytes(), <int>[255, 195, 191]);
+          });
+
+          test('succeedsIfAddRawData', () async {
+            sink.add(<int>[1, 2, 3, 4]);
+            await sink.flush();
+            expect(await f.readAsBytes(), <int>[1, 2, 3, 4]);
+          });
+
+          test('succeedsIfWrite', () async {
+            sink.write('Hello world');
+            await sink.flush();
+            expect(await f.readAsString(), 'Hello world');
+          });
+
+          test('succeedsIfWriteAll', () async {
+            sink.writeAll(<String>['foo', 'bar', 'baz'], ' ');
+            await sink.flush();
+            expect(await f.readAsString(), 'foo bar baz');
+          });
+
+          test('succeedsIfWriteCharCode', () async {
+            sink.writeCharCode(35);
+            await sink.flush();
+            expect(await f.readAsString(), '#');
+          });
+
+          test('succeedsIfWriteln', () async {
+            sink.writeln('Hello world');
+            await sink.flush();
+            expect(await f.readAsString(), 'Hello world\n');
+          });
+
+          test('ignoresDataWrittenAfterClose', () async {
+            sink.write('Before close');
+            await closeSink();
+            sink.write('After close');
+            expect(await f.readAsString(), 'Before close');
+          });
+
+          test('returnsAccurateDoneFuture', () async {
+            bool done = false;
+            sink.done.then((_) => done = true);
+            expect(done, isFalse);
+            sink.write('foo');
+            expect(done, isFalse);
+            await sink.close();
+            expect(done, isTrue);
+          });
+
+          group('addStream', () {
+            StreamController<List<int>> controller;
+            bool isControllerClosed = false;
+
+            Future<dynamic> closeController() {
+              var future = controller.close();
+              isControllerClosed = true;
+              return future;
+            }
+
+            setUp(() {
+              controller = new StreamController<List<int>>();
+              sink.addStream(controller.stream);
+            });
+
+            tearDown(() async {
+              if (!isControllerClosed) {
+                await closeController();
+              }
+            });
+
+            test('succeedsIfStreamProducesData', () async {
+              controller.add(<int>[1, 2, 3, 4, 5]);
+              await closeController();
+              await sink.flush();
+              expect(await f.readAsBytes(), <int>[1, 2, 3, 4, 5]);
+            });
+
+            test('blocksCallToAddWhileStreamIsActive', () {
+              expect(() => sink.add(<int>[1, 2, 3]), throwsStateError);
+            });
+
+            test('blocksCallToWriteWhileStreamIsActive', () {
+              expect(() => sink.write('foo'), throwsStateError);
+            });
+
+            test('blocksCallToWriteAllWhileStreamIsActive', () {
+              expect(() => sink.writeAll(<String>['a', 'b']), throwsStateError);
+            });
+
+            test('blocksCallToWriteCharCodeWhileStreamIsActive', () {
+              expect(() => sink.writeCharCode(35), throwsStateError);
+            });
+
+            test('blocksCallToWritelnWhileStreamIsActive', () {
+              expect(() => sink.writeln('foo'), throwsStateError);
+            });
+
+            test('blocksCallToFlushWhileStreamIsActive', () {
+              expect(sink.flush, throwsStateError);
+            });
+          });
+        });
+      });
+
+      group('readAsBytes', () {
+        test('throwsIfDoesntExist', () {
+          expectFileSystemException('No such file or directory', () {
+            fs.file(ns('/foo')).readAsBytesSync();
+          });
+        });
+
+        test('throwsIfExistsAsDirectory', () {
+          fs.directory(ns('/foo')).createSync();
+          expectFileSystemException('Is a directory', () {
+            fs.file(ns('/foo')).readAsBytesSync();
+          });
+        });
+
+        test('throwsIfExistsAsLinkToDirectory', () {
+          fs.directory(ns('/foo')).createSync();
+          fs.link(ns('/bar')).createSync(ns('/foo'));
+          expectFileSystemException('Is a directory', () {
+            fs.file(ns('/bar')).readAsBytesSync();
+          });
+        });
+
+        test('succeedsIfExistsAsFile', () {
+          File f = fs.file(ns('/foo'))..createSync();
+          f.writeAsBytesSync(<int>[1, 2, 3, 4]);
+          expect(f.readAsBytesSync(), <int>[1, 2, 3, 4]);
+        });
+
+        test('succeedsIfExistsAsLinkToFile', () {
+          fs.file(ns('/foo')).createSync();
+          fs.link(ns('/bar')).createSync(ns('/foo'));
+          fs.file(ns('/foo')).writeAsBytesSync(<int>[1, 2, 3, 4]);
+          expect(fs.file(ns('/bar')).readAsBytesSync(), <int>[1, 2, 3, 4]);
+        });
+
+        test('returnsEmptyListForZeroByteFile', () {
+          File f = fs.file(ns('/foo'))..createSync();
+          expect(f.readAsBytesSync(), isEmpty);
+        });
+      });
+
+      group('readAsString', () {
+        test('throwsIfDoesntExist', () {
+          expectFileSystemException('No such file or directory', () {
+            fs.file(ns('/foo')).readAsStringSync();
+          });
+        });
+
+        test('throwsIfExistsAsDirectory', () {
+          fs.directory(ns('/foo')).createSync();
+          expectFileSystemException('Is a directory', () {
+            fs.file(ns('/foo')).readAsStringSync();
+          });
+        });
+
+        test('throwsIfExistsAsLinkToDirectory', () {
+          fs.directory(ns('/foo')).createSync();
+          fs.link(ns('/bar')).createSync(ns('/foo'));
+          expectFileSystemException('Is a directory', () {
+            fs.file(ns('/bar')).readAsStringSync();
+          });
+        });
+
+        test('succeedsIfExistsAsFile', () {
+          File f = fs.file(ns('/foo'))..createSync();
+          f.writeAsStringSync('Hello world');
+          expect(f.readAsStringSync(), 'Hello world');
+        });
+
+        test('succeedsIfExistsAsLinkToFile', () {
+          fs.file(ns('/foo')).createSync();
+          fs.link(ns('/bar')).createSync(ns('/foo'));
+          fs.file(ns('/foo')).writeAsStringSync('Hello world');
+          expect(fs.file(ns('/bar')).readAsStringSync(), 'Hello world');
+        });
+
+        test('returnsEmptyStringForZeroByteFile', () {
+          File f = fs.file(ns('/foo'))..createSync();
+          expect(f.readAsStringSync(), isEmpty);
+        });
+
+        test('throwsIfEncodingIsNull', () {
+          File f = fs.file(ns('/foo'))..createSync();
+          f.writeAsStringSync('Hello world');
+          expect(() => f.readAsStringSync(encoding: null),
+              throwsNoSuchMethodError);
+        });
+      });
+
+      group('readAsLines', () {
+        test('throwsIfDoesntExist', () {
+          expectFileSystemException('No such file or directory', () {
+            fs.file(ns('/foo')).readAsLinesSync();
+          });
+        });
+
+        test('throwsIfExistsAsDirectory', () {
+          fs.directory(ns('/foo')).createSync();
+          expectFileSystemException('Is a directory', () {
+            fs.file(ns('/foo')).readAsLinesSync();
+          });
+        });
+
+        test('throwsIfExistsAsLinkToDirectory', () {
+          fs.directory(ns('/foo')).createSync();
+          fs.link(ns('/bar')).createSync(ns('/foo'));
+          expectFileSystemException('Is a directory', () {
+            fs.file(ns('/bar')).readAsLinesSync();
+          });
+        });
+
+        test('succeedsIfExistsAsFile', () {
+          File f = fs.file(ns('/foo'))..createSync();
+          f.writeAsStringSync('Hello world\nHow are you?\nI am fine');
+          expect(f.readAsLinesSync(), <String>[
+            'Hello world',
+            'How are you?',
+            'I am fine',
+          ]);
+        });
+
+        test('succeedsIfExistsAsLinkToFile', () {
+          File f = fs.file(ns('/foo'))..createSync();
+          fs.link(ns('/bar')).createSync(ns('/foo'));
+          f.writeAsStringSync('Hello world\nHow are you?\nI am fine');
+          expect(f.readAsLinesSync(), <String>[
+            'Hello world',
+            'How are you?',
+            'I am fine',
+          ]);
+        });
+
+        test('returnsEmptyListForZeroByteFile', () {
+          File f = fs.file(ns('/foo'))..createSync();
+          expect(f.readAsLinesSync(), isEmpty);
+        });
+      });
+
+      group('writeAsBytes', () {
+        test('createsFileIfDoesntExist', () {
+          File f = fs.file(ns('/foo'));
+          expect(f.existsSync(), isFalse);
+          f.writeAsBytesSync(<int>[1, 2, 3, 4]);
+          expect(f.existsSync(), isTrue);
+        });
+
+        test('throwsIfExistsAsDirectory', () {
+          fs.directory(ns('/foo')).createSync();
+          expectFileSystemException('Is a directory', () {
+            fs.file(ns('/foo')).writeAsBytesSync(<int>[1, 2, 3, 4]);
+          });
+        });
+
+        test('throwsIfExistsAsLinkToDirectory', () {
+          fs.directory(ns('/foo')).createSync();
+          fs.link(ns('/bar')).createSync(ns('/foo'));
+          expectFileSystemException('Is a directory', () {
+            fs.file(ns('/foo')).writeAsBytesSync(<int>[1, 2, 3, 4]);
+          });
+        });
+
+        test('succeedsIfExistsAsLinkToFile', () {
+          File f = fs.file(ns('/foo'))..createSync();
+          fs.link(ns('/bar')).createSync(ns('/foo'));
+          fs.file(ns('/bar')).writeAsBytesSync(<int>[1, 2, 3, 4]);
+          expect(f.readAsBytesSync(), <int>[1, 2, 3, 4]);
+        });
+
+        test('throwsIfFileModeRead', () {
+          File f = fs.file(ns('/foo'))..createSync();
+          expectFileSystemException('Bad file descriptor', () {
+            f.writeAsBytesSync(<int>[1], mode: FileMode.READ);
+          });
+        });
+
+        test('overwritesContentIfFileModeWrite', () {
+          File f = fs.file(ns('/foo'))..createSync();
+          f.writeAsBytesSync(<int>[1, 2]);
+          expect(f.readAsBytesSync(), <int>[1, 2]);
+          f.writeAsBytesSync(<int>[3, 4]);
+          expect(f.readAsBytesSync(), <int>[3, 4]);
+        });
+
+        test('appendsContentIfFileModeAppend', () {
+          File f = fs.file(ns('/foo'))..createSync();
+          f.writeAsBytesSync(<int>[1, 2], mode: FileMode.APPEND);
+          expect(f.readAsBytesSync(), <int>[1, 2]);
+          f.writeAsBytesSync(<int>[3, 4], mode: FileMode.APPEND);
+          expect(f.readAsBytesSync(), <int>[1, 2, 3, 4]);
+        });
+
+        test('acceptsEmptyBytesList', () {
+          File f = fs.file(ns('/foo'))..createSync();
+          f.writeAsBytesSync(<int>[]);
+          expect(f.readAsBytesSync(), <int>[]);
+        });
+      });
+
+      group('writeAsString', () {
+        test('createsFileIfDoesntExist', () {
+          File f = fs.file(ns('/foo'));
+          expect(f.existsSync(), isFalse);
+          f.writeAsStringSync('Hello world');
+          expect(f.existsSync(), isTrue);
+        });
+
+        test('throwsIfExistsAsDirectory', () {
+          fs.directory(ns('/foo')).createSync();
+          expectFileSystemException('Is a directory', () {
+            fs.file(ns('/foo')).writeAsStringSync('Hello world');
+          });
+        });
+
+        test('throwsIfExistsAsLinkToDirectory', () {
+          fs.directory(ns('/foo')).createSync();
+          fs.link(ns('/bar')).createSync(ns('/foo'));
+          expectFileSystemException('Is a directory', () {
+            fs.file(ns('/foo')).writeAsStringSync('Hello world');
+          });
+        });
+
+        test('succeedsIfExistsAsLinkToFile', () {
+          File f = fs.file(ns('/foo'))..createSync();
+          fs.link(ns('/bar')).createSync(ns('/foo'));
+          fs.file(ns('/bar')).writeAsStringSync('Hello world');
+          expect(f.readAsStringSync(), 'Hello world');
+        });
+
+        test('throwsIfFileModeRead', () {
+          File f = fs.file(ns('/foo'))..createSync();
+          expectFileSystemException('Bad file descriptor', () {
+            f.writeAsStringSync('Hello world', mode: FileMode.READ);
+          });
+        });
+
+        test('overwritesContentIfFileModeWrite', () {
+          File f = fs.file(ns('/foo'))..createSync();
+          f.writeAsStringSync('Hello world');
+          expect(f.readAsStringSync(), 'Hello world');
+          f.writeAsStringSync('Goodbye cruel world');
+          expect(f.readAsStringSync(), 'Goodbye cruel world');
+        });
+
+        test('appendsContentIfFileModeAppend', () {
+          File f = fs.file(ns('/foo'))..createSync();
+          f.writeAsStringSync('Hello', mode: FileMode.APPEND);
+          expect(f.readAsStringSync(), 'Hello');
+          f.writeAsStringSync('Goodbye', mode: FileMode.APPEND);
+          expect(f.readAsStringSync(), 'HelloGoodbye');
+        });
+
+        test('acceptsEmptyString', () {
+          File f = fs.file(ns('/foo'))..createSync();
+          f.writeAsStringSync('');
+          expect(f.readAsStringSync(), isEmpty);
+        });
+
+        test('throwsIfNullEncoding', () {
+          File f = fs.file(ns('/foo'))..createSync();
+          expect(() => f.writeAsStringSync('Hello world', encoding: null),
+              throwsNoSuchMethodError);
+        });
+      });
+
+      group('exists', () {
+        test('trueIfExists', () {
+          fs.file(ns('/foo')).createSync();
+          expect(fs.file(ns('/foo')).existsSync(), isTrue);
+        });
+
+        test('falseIfDoesntExistAtTail', () {
+          expect(fs.file(ns('/foo')).existsSync(), isFalse);
+        });
+
+        test('falseIfDoesntExistViaTraversal', () {
+          expect(fs.file(ns('/foo/bar')).existsSync(), isFalse);
+        });
+
+        test('falseIfExistsAsDirectory', () {
+          fs.directory(ns('/foo')).createSync();
+          expect(fs.file(ns('/foo')).existsSync(), isFalse);
+        });
+
+        test('falseIfExistsAsLinkToDirectory', () {
+          fs.directory(ns('/foo')).createSync();
+          fs.link(ns('/bar')).createSync(ns('/foo'));
+          expect(fs.file(ns('/bar')).existsSync(), isFalse);
+        });
+
+        test('trueIfExistsAsLinkToFile', () {
+          fs.file(ns('/foo')).createSync();
+          fs.link(ns('/bar')).createSync(ns('/foo'));
+          expect(fs.file(ns('/bar')).existsSync(), isTrue);
+        });
+      });
+
+      group('stat', () {
+        test('isNotFoundIfDoesntExistAtTail', () {
+          FileStat stat = fs.file(ns('/foo')).statSync();
+          expect(stat.type, FileSystemEntityType.NOT_FOUND);
+        });
+
+        test('isNotFoundIfDoesntExistViaTraversal', () {
+          FileStat stat = fs.file(ns('/foo/bar')).statSync();
+          expect(stat.type, FileSystemEntityType.NOT_FOUND);
+        });
+
+        test('isDirectoryIfExistsAsDirectory', () {
+          fs.directory(ns('/foo')).createSync();
+          FileStat stat = fs.file(ns('/foo')).statSync();
+          expect(stat.type, FileSystemEntityType.DIRECTORY);
+        });
+
+        test('isFileIfExistsAsFile', () {
+          fs.file(ns('/foo')).createSync();
+          FileStat stat = fs.file(ns('/foo')).statSync();
+          expect(stat.type, FileSystemEntityType.FILE);
+        });
+
+        test('isFileIfExistsAsLinkToFile', () {
+          fs.file(ns('/foo')).createSync();
+          fs.link(ns('/bar')).createSync(ns('/foo'));
+          FileStat stat = fs.file(ns('/bar')).statSync();
+          expect(stat.type, FileSystemEntityType.FILE);
+        });
+      });
+
+      group('delete', () {
+        test('succeedsIfExistsAsFile', () {
+          fs.file(ns('/foo')).createSync();
+          expect(fs.file(ns('/foo')).existsSync(), isTrue);
+          fs.file(ns('/foo')).deleteSync();
+          expect(fs.file(ns('/foo')).existsSync(), isFalse);
+        });
+
+        test('throwsIfDoesntExistAndRecursiveFalse', () {
+          expectFileSystemException('No such file or directory', () {
+            fs.file(ns('/foo')).deleteSync();
+          });
+        });
+
+        test('throwsIfDoesntExistAndRecursiveTrue', () {
+          expectFileSystemException('No such file or directory', () {
+            fs.file(ns('/foo')).deleteSync(recursive: true);
+          });
+        });
+
+        test('succeedsIfExistsAsDirectoryAndRecursiveTrue', () {
+          fs.directory(ns('/foo')).createSync();
+          fs.file(ns('/foo')).deleteSync(recursive: true);
+          expect(fs.typeSync(ns('/foo')), FileSystemEntityType.NOT_FOUND);
+        });
+
+        test('throwsIfExistsAsDirectoryAndRecursiveFalse', () {
+          fs.directory(ns('/foo')).createSync();
+          expectFileSystemException('Is a directory', () {
+            fs.file(ns('/foo')).deleteSync();
+          });
+        });
+
+        test('succeedsIfExistsAsLinkToFileAndRecursiveTrue', () {
+          fs.file(ns('/foo')).createSync();
+          fs.link(ns('/bar')).createSync(ns('/foo'));
+          expect(fs.file(ns('/bar')).existsSync(), isTrue);
+          fs.file(ns('/bar')).deleteSync(recursive: true);
+          expect(fs.file(ns('/bar')).existsSync(), isFalse);
+        });
+
+        test('succeedsIfExistsAsLinkToFileAndRecursiveFalse', () {
+          fs.file(ns('/foo')).createSync();
+          fs.link(ns('/bar')).createSync(ns('/foo'));
+          expect(fs.file(ns('/bar')).existsSync(), isTrue);
+          fs.file(ns('/bar')).deleteSync();
+          expect(fs.file(ns('/bar')).existsSync(), isFalse);
+        });
+
+        test('succeedsIfExistsAsLinkToDirectoryAndRecursiveTrue', () {
+          fs.directory(ns('/foo')).createSync();
+          fs.link(ns('/bar')).createSync(ns('/foo'));
+          expect(fs.typeSync(ns('/bar')), FileSystemEntityType.DIRECTORY);
+          fs.file(ns('/bar')).deleteSync(recursive: true);
+          expect(fs.typeSync(ns('/bar')), FileSystemEntityType.NOT_FOUND);
+        });
+
+        test('throwsIfExistsAsLinkToDirectoryAndRecursiveFalse', () {
+          fs.directory(ns('/foo')).createSync();
+          fs.link(ns('/bar')).createSync(ns('/foo'));
+          expectFileSystemException('Is a directory', () {
+            fs.file(ns('/bar')).deleteSync();
+          });
         });
       });
     });
