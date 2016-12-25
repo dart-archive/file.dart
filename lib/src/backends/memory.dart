@@ -2,6 +2,7 @@ library file.src.backends.memory;
 
 import 'dart:async';
 import 'dart:convert';
+import 'dart:math' show min;
 
 import 'package:file/file.dart';
 import 'package:file/src/io.dart' as io;

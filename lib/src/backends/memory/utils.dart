@@ -30,6 +30,28 @@ void _checkIsDir(_Node node, _PathGenerator path) {
   }
 }
 
+/// Throws a [io.FileSystemException] if [expectedType] doesn't match
+/// [actualType].
+void _checkType(
+  FileSystemEntityType expectedType,
+  FileSystemEntityType actualType,
+  _PathGenerator path,
+) {
+  if (expectedType != actualType) {
+    String msg = expectedType == FileSystemEntityType.DIRECTORY
+        ? 'Not a directory'
+        : 'Is a directory';
+    throw new io.FileSystemException(msg, path());
+  }
+}
+
+/// Tells if the specified file mode represents a write mode.
+bool _isWriteMode(io.FileMode mode) =>
+    mode == io.FileMode.WRITE ||
+    mode == io.FileMode.APPEND ||
+    mode == io.FileMode.WRITE_ONLY ||
+    mode == io.FileMode.WRITE_ONLY_APPEND;
+
 /// Returns a [_PathGenerator] that generates a subpath of the constituent
 /// [parts] (from [start]..[end], inclusive).
 _PathGenerator _subpath(List<String> parts, int start, int end) {

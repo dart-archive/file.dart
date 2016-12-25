@@ -137,7 +137,7 @@ class _FileNode extends _RealNode {
     modified = changed = new DateTime.now().millisecondsSinceEpoch;
     accessed = source.accessed;
     mode = source.mode;
-    content = new List<int>.from(content);
+    content = new List<int>.from(source.content);
   }
 }
 

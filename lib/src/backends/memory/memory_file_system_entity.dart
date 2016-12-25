@@ -47,6 +47,17 @@ abstract class _MemoryFileSystemEntity implements FileSystemEntity {
     return node;
   }
 
+  /// Gets the node that backs this file system entity, or if that node is
+  /// a symbolic link, the target node. This also will check that the type of
+  /// the node (aftere symlink resolution) matches [expectedType]. If the type
+  /// doesn't match, this will throw a [io.FileSystemException].
+  _Node get resolvedBacking {
+    _Node node = backing;
+    node = _isLink(node) ? _resolveLinks(node, () => path) : node;
+    _checkType(expectedType, node.type, () => path);
+    return node;
+  }
+
   @override
   Uri get uri => new Uri.file(path);
 
@@ -88,10 +99,7 @@ abstract class _MemoryFileSystemEntity implements FileSystemEntity {
       if (node is _DirectoryNode && node.children.isNotEmpty) {
         throw new io.FileSystemException('Directory not empty', path);
       }
-      if (node.stat.type != expectedType) {
-        throw new io.FileSystemException(
-            'Not a ${expectedType.toString().toLowerCase()}', path);
-      }
+      _checkType(expectedType, node.stat.type, () => path);
     }
     // Once we remove this reference, the node and all its children will be
     // garbage collected; we don't need to explicitly delete all children in
@@ -183,14 +191,17 @@ abstract class _MemoryFileSystemEntity implements FileSystemEntity {
   ///
   /// If [newPath] cannot be traversed to because its directory does not exist,
   /// a [io.FileSystemException] will be thrown.
+  ///
+  /// If [resolveTailLink] is true and there is an existing link at the location
+  /// identified by [newPath], this will resolve the link to its target prior
+  /// to running the validation checks above.
   FileSystemEntity _renameSync(
     String newPath, {
     _RenameOverwriteValidator<dynamic> validateOverwriteExistingEntity,
+    bool resolveTailLink: false,
   }) {
     _Node node = backing;
-    if (node.stat.type != expectedType) {
-      throw new io.FileSystemException('No such file or directory', path);
-    }
+    _checkType(expectedType, node.stat.type, () => path);
     fileSystem._findNode(
       newPath,
       segmentVisitor: (
@@ -202,10 +213,11 @@ abstract class _MemoryFileSystemEntity implements FileSystemEntity {
       ) {
         if (currentSegment == finalSegment) {
           if (child != null) {
-            if (child.type != expectedType) {
-              throw new io.FileSystemException(
-                  'Not a ${expectedType.toString().toLowerCase()}', newPath);
-            } else if (validateOverwriteExistingEntity != null) {
+            if (resolveTailLink && _isLink(child)) {
+              child = _resolveLinks(child, () => newPath);
+            }
+            _checkType(expectedType, child.type, () => newPath);
+            if (validateOverwriteExistingEntity != null) {
               validateOverwriteExistingEntity(child);
             }
             parent.children.remove(childName);

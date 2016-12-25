@@ -350,6 +350,7 @@ void runCommonTests(
           fs.directory(ns('/bar')).createSync();
           var src = fs.directory(ns('/foo'))..createSync();
           var dest = src.renameSync(ns('/bar'));
+          expect(src.existsSync(), false);
           expect(dest.existsSync(), true);
         });
 
@@ -399,8 +400,9 @@ void runCommonTests(
           fs.directory(ns('/foo')).createSync();
           fs.link(ns('/bar')).createSync(ns('/foo'));
           fs.directory(ns('/bar')).renameSync(ns('/baz'));
-          expect(fs.directory(ns('/foo')).existsSync(), true);
-          expect(fs.link(ns('/bar')).existsSync(), false);
+          expect(fs.typeSync(ns('/foo'), followLinks: false),
+              FileSystemEntityType.DIRECTORY);
+          expect(fs.typeSync(ns('/bar')), FileSystemEntityType.NOT_FOUND);
           expect(fs.typeSync(ns('/baz'), followLinks: false),
               FileSystemEntityType.LINK);
           expect(fs.link(ns('/baz')).targetSync(), ns('/foo'));
@@ -413,6 +415,28 @@ void runCommonTests(
           expectFileSystemException('Not a directory', () {
             src.renameSync(ns('/baz'));
           });
+        });
+
+        test('succeedsWhenDestinationIsInDifferentDirectory', () {
+          var src = fs.directory(ns('/foo'))..createSync();
+          fs.directory(ns('/bar')).createSync();
+          src.renameSync(ns('/bar/baz'));
+          expect(fs.typeSync(ns('/foo')), FileSystemEntityType.NOT_FOUND);
+          expect(fs.typeSync(ns('/bar/baz')), FileSystemEntityType.DIRECTORY);
+        });
+
+        test('succeedsWhenSourceIsSymlinkToDifferentDirectory', () {
+          fs.directory(ns('/foo/subfoo')).createSync(recursive: true);
+          fs.directory(ns('/bar/subbar')).createSync(recursive: true);
+          fs.directory(ns('/baz/subbaz')).createSync(recursive: true);
+          fs.link(ns('/foo/subfoo/lnk')).createSync(ns('/bar/subbar'));
+          fs.directory(ns('/foo/subfoo/lnk')).renameSync(ns('/baz/subbaz/dst'));
+          expect(fs.typeSync(ns('/foo/subfoo/lnk')),
+              FileSystemEntityType.NOT_FOUND);
+          expect(fs.typeSync(ns('/baz/subbaz/dst'), followLinks: false),
+              FileSystemEntityType.LINK);
+          expect(fs.typeSync(ns('/baz/subbaz/dst'), followLinks: true),
+              FileSystemEntityType.DIRECTORY);
         });
       });
 
@@ -487,6 +511,16 @@ void runCommonTests(
           expect(fs.typeSync(ns('/foo'), followLinks: false),
               FileSystemEntityType.DIRECTORY);
           expect(fs.typeSync(ns('/bar'), followLinks: false),
+              FileSystemEntityType.NOT_FOUND);
+        });
+
+        test('succeedsWhenExistsAsLinkToDirectoryInDifferentDirectory', () {
+          fs.directory(ns('/foo/bar')).createSync(recursive: true);
+          fs.link(ns('/baz/qux')).createSync(ns('/foo/bar'), recursive: true);
+          fs.directory(ns('/baz/qux')).deleteSync();
+          expect(fs.typeSync(ns('/foo/bar'), followLinks: false),
+              FileSystemEntityType.DIRECTORY);
+          expect(fs.typeSync(ns('/baz/qux'), followLinks: false),
               FileSystemEntityType.NOT_FOUND);
         });
 
@@ -843,8 +877,10 @@ void runCommonTests(
           fs.link(ns('/baz')).createSync(ns('/bar'));
           f.renameSync(ns('/baz'));
           expect(fs.typeSync(ns('/foo')), FileSystemEntityType.NOT_FOUND);
-          expect(fs.typeSync(ns('/bar')), FileSystemEntityType.FILE);
-          expect(fs.typeSync(ns('/baz')), FileSystemEntityType.FILE);
+          expect(fs.typeSync(ns('/bar'), followLinks: false),
+              FileSystemEntityType.FILE);
+          expect(fs.typeSync(ns('/baz'), followLinks: false),
+              FileSystemEntityType.FILE);
         });
 
         test('throwsIfTargetExistsAsLinkToDirectory', () {
@@ -869,21 +905,27 @@ void runCommonTests(
           });
         });
 
-        test('succeedsIfSourceIsLinkToFile', () {
+        test('succeedsIfSourceExistsAsLinkToFile', () {
           fs.file(ns('/foo')).createSync();
           fs.link(ns('/bar')).createSync(ns('/foo'));
           fs.file(ns('/bar')).renameSync(ns('/baz'));
           expect(fs.typeSync(ns('/bar')), FileSystemEntityType.NOT_FOUND);
-          expect(fs.typeSync(ns('/baz')), FileSystemEntityType.FILE);
+          expect(fs.typeSync(ns('/baz'), followLinks: false),
+              FileSystemEntityType.LINK);
+          expect(fs.typeSync(ns('/baz'), followLinks: true),
+              FileSystemEntityType.FILE);
         });
       });
 
       group('copy', () {
         test('succeedsIfTargetDoesntExistAtTail', () {
-          File f = fs.file(ns('/foo'))..createSync();
+          File f = fs.file(ns('/foo'))
+            ..createSync()
+            ..writeAsStringSync('foo');
           f.copySync(ns('/bar'));
           expect(fs.file(ns('/foo')).existsSync(), true);
           expect(fs.file(ns('/bar')).existsSync(), true);
+          expect(fs.file(ns('/foo')).readAsStringSync(), 'foo');
         });
 
         test('throwsIfTargetDoesntExistViaTraversal', () {
@@ -894,11 +936,17 @@ void runCommonTests(
         });
 
         test('succeedsIfTargetExistsAsFile', () {
-          File f = fs.file(ns('/foo'))..createSync();
-          fs.file(ns('/bar')).createSync();
+          File f = fs.file(ns('/foo'))
+            ..createSync()
+            ..writeAsStringSync('foo');
+          fs.file(ns('/bar'))
+            ..createSync()
+            ..writeAsStringSync('bar');
           f.copySync(ns('/bar'));
           expect(fs.file(ns('/foo')).existsSync(), true);
           expect(fs.file(ns('/bar')).existsSync(), true);
+          expect(fs.file(ns('/foo')).readAsStringSync(), 'foo');
+          expect(fs.file(ns('/bar')).readAsStringSync(), 'foo');
         });
 
         test('throwsIfTargetExistsAsDirectory', () {
@@ -910,13 +958,22 @@ void runCommonTests(
         });
 
         test('succeedsIfTargetExistsAsLinkToFile', () {
-          File f = fs.file(ns('/foo'))..createSync();
-          fs.file(ns('/bar')).createSync();
+          File f = fs.file(ns('/foo'))
+            ..createSync()
+            ..writeAsStringSync('foo');
+          fs.file(ns('/bar'))
+            ..createSync()
+            ..writeAsStringSync('bar');
           fs.link(ns('/baz')).createSync(ns('/bar'));
           f.copySync(ns('/baz'));
-          expect(fs.typeSync(ns('/foo')), FileSystemEntityType.FILE);
-          expect(fs.typeSync(ns('/bar')), FileSystemEntityType.FILE);
-          expect(fs.typeSync(ns('/baz')), FileSystemEntityType.FILE);
+          expect(fs.typeSync(ns('/foo'), followLinks: false),
+              FileSystemEntityType.FILE);
+          expect(fs.typeSync(ns('/bar'), followLinks: false),
+              FileSystemEntityType.FILE);
+          expect(fs.typeSync(ns('/baz'), followLinks: false),
+              FileSystemEntityType.LINK);
+          expect(fs.file(ns('/foo')).readAsStringSync(), 'foo');
+          expect(fs.file(ns('/bar')).readAsStringSync(), 'foo');
         });
 
         test('throwsIfTargetExistsAsLinkToDirectory', () {
@@ -942,11 +999,66 @@ void runCommonTests(
         });
 
         test('succeedsIfSourceExistsAsLinkToFile', () {
-          fs.file(ns('/foo')).createSync();
+          fs.file(ns('/foo'))
+            ..createSync()
+            ..writeAsStringSync('foo');
           fs.link(ns('/bar')).createSync(ns('/foo'));
           fs.file(ns('/bar')).copySync(ns('/baz'));
-          expect(fs.typeSync(ns('/bar')), FileSystemEntityType.FILE);
-          expect(fs.typeSync(ns('/baz')), FileSystemEntityType.FILE);
+          expect(fs.typeSync(ns('/foo'), followLinks: false),
+              FileSystemEntityType.FILE);
+          expect(fs.typeSync(ns('/bar'), followLinks: false),
+              FileSystemEntityType.LINK);
+          expect(fs.typeSync(ns('/baz'), followLinks: false),
+              FileSystemEntityType.FILE);
+          expect(fs.file(ns('/foo')).readAsStringSync(), 'foo');
+          expect(fs.file(ns('/baz')).readAsStringSync(), 'foo');
+        });
+
+        test('succeedsIfDestinationIsInDifferentDirectoryThanSource', () {
+          File f = fs.file(ns('/foo/bar'))
+            ..createSync(recursive: true)
+            ..writeAsStringSync('foo');
+          fs.directory(ns('/baz')).createSync();
+          f.copySync(ns('/baz/qux'));
+          expect(fs.file(ns('/foo/bar')).existsSync(), isTrue);
+          expect(fs.file(ns('/baz/qux')).existsSync(), isTrue);
+          expect(fs.file(ns('/foo/bar')).readAsStringSync(), 'foo');
+          expect(fs.file(ns('/baz/qux')).readAsStringSync(), 'foo');
+        });
+
+        test('succeedsIfSourceIsLinkToFileInDifferentDirectory', () {
+          fs.file(ns('/foo/bar'))
+            ..createSync(recursive: true)
+            ..writeAsStringSync('foo');
+          fs.link(ns('/baz/qux')).createSync(ns('/foo/bar'), recursive: true);
+          fs.file(ns('/baz/qux')).copySync(ns('/baz/quux'));
+          expect(fs.typeSync(ns('/foo/bar'), followLinks: false),
+              FileSystemEntityType.FILE);
+          expect(fs.typeSync(ns('/baz/qux'), followLinks: false),
+              FileSystemEntityType.LINK);
+          expect(fs.typeSync(ns('/baz/quux'), followLinks: false),
+              FileSystemEntityType.FILE);
+          expect(fs.file(ns('/foo/bar')).readAsStringSync(), 'foo');
+          expect(fs.file(ns('/baz/quux')).readAsStringSync(), 'foo');
+        });
+
+        test('succeedsIfDestinationIsLinkToFileInDifferentDirectory', () {
+          fs.file(ns('/foo/bar'))
+            ..createSync(recursive: true)
+            ..writeAsStringSync('bar');
+          fs.file(ns('/baz/qux'))
+            ..createSync(recursive: true)
+            ..writeAsStringSync('qux');
+          fs.link(ns('/baz/quux')).createSync(ns('/foo/bar'));
+          fs.file(ns('/baz/qux')).copySync(ns('/baz/quux'));
+          expect(fs.typeSync(ns('/foo/bar'), followLinks: false),
+              FileSystemEntityType.FILE);
+          expect(fs.typeSync(ns('/baz/qux'), followLinks: false),
+              FileSystemEntityType.FILE);
+          expect(fs.typeSync(ns('/baz/quux'), followLinks: false),
+              FileSystemEntityType.LINK);
+          expect(fs.file(ns('/foo/bar')).readAsStringSync(), 'qux');
+          expect(fs.file(ns('/baz/qux')).readAsStringSync(), 'qux');
         });
       });
 
@@ -1604,6 +1716,13 @@ void runCommonTests(
             await closeSink();
             sink.write('After close');
             expect(await f.readAsString(), 'Before close');
+          });
+
+          test('ignoresCloseAfterAlreadyClosed', () async {
+            sink.write('Hello world');
+            Future f1 = closeSink();
+            Future f2 = closeSink();
+            await Future.wait([f1, f2]);
           });
 
           test('returnsAccurateDoneFuture', () async {
