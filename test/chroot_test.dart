@@ -18,9 +18,6 @@ void main() {
 
         // Bugs in MemoryFileSystem are blocking these from passing
         'File > openRead > providesSingleSubscriptionStream',
-
-        // TODO: Fix bugs causing these tests to fail, and re-enable.
-        'File > copy',
       ],
     );
   });

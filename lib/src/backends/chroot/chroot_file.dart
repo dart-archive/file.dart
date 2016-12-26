@@ -18,4 +18,12 @@ class _ChrootFile extends _ChrootFileSystemEntity<File, io.File>
 
   @override
   File get absolute => new _ChrootFile(fileSystem, _absolutePath);
+
+  @override
+  Future<File> copy(String newPath) async =>
+      wrap(await delegate.copy(fileSystem._real(newPath)));
+
+  @override
+  File copySync(String newPath) =>
+      wrap(delegate.copySync(fileSystem._real(newPath)));
 }
