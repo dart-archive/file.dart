@@ -1563,16 +1563,8 @@ void runCommonTests(
           File f = fs.file(ns('/foo'))..createSync();
           f.writeAsStringSync('Hello world', flush: true);
           var stream = f.openRead();
-          StreamSubscription sub1, sub2;
-          sub1 = stream.listen((data) {});
-          sub2 = stream.listen((data) {}, onError: expectAsync1((error) {
-            sub1.cancel();
-            sub2.cancel();
-            expect(
-                error,
-                isFileSystemException(
-                    'An async operation is currently pending'));
-          }));
+          expect(stream.isBroadcast, isFalse);
+          await stream.drain();
         });
       });
 
@@ -2185,10 +2177,448 @@ void runCommonTests(
     });
 
     group('Link', () {
-      group('stat', () {
-        test('targetNotFoundAtTailReturnsNotFound', () {});
+      group('uri', () {
+        test('whenTargetIsDirectory', () {
+          fs.directory(ns('/foo')).createSync();
+          Link l = fs.link(ns('/bar'))..createSync(ns('/foo'));
+          expect(l.uri.toString(), 'file://${ns('/bar')}');
+          expect(fs.link('bar').uri.toString(), 'bar');
+        });
 
-        test('targetNotFoundViaTraversalReturnsNotFound', () {});
+        test('whenTargetIsFile', () {
+          fs.file(ns('/foo')).createSync();
+          Link l = fs.link(ns('/bar'))..createSync(ns('/foo'));
+          expect(l.uri.toString(), 'file://${ns('/bar')}');
+          expect(fs.link('bar').uri.toString(), 'bar');
+        });
+
+        test('whenLinkDoesntExist', () {
+          expect(fs.link(ns('/foo')).uri.toString(), 'file://${ns('/foo')}');
+          expect(fs.link('foo').uri.toString(), 'foo');
+        });
+      });
+
+      group('exists', () {
+        test('isFalseIfLinkDoesntExistAtTail', () {
+          expect(fs.link(ns('/foo')).existsSync(), isFalse);
+        });
+
+        test('isFalseIfLinkDoesntExistViaTraversal', () {
+          expect(fs.link(ns('/foo/bar')).existsSync(), isFalse);
+        });
+
+        test('isFalseIfPathReferencesFile', () {
+          fs.file(ns('/foo')).createSync();
+          expect(fs.link(ns('/foo')).existsSync(), isFalse);
+        });
+
+        test('isFalseIfPathReferencesDirectory', () {
+          fs.directory(ns('/foo')).createSync();
+          expect(fs.link(ns('/foo')).existsSync(), isFalse);
+        });
+
+        test('isTrueIfTargetIsNotFound', () {
+          Link l = fs.link(ns('/foo'))..createSync(ns('/bar'));
+          expect(l.existsSync(), isTrue);
+        });
+
+        test('isTrueIfTargetIsFile', () {
+          Link l = fs.link(ns('/foo'))..createSync(ns('/bar'));
+          fs.file(ns('/bar')).createSync();
+          expect(l.existsSync(), isTrue);
+        });
+
+        test('isTrueIfTargetIsDirectory', () {
+          Link l = fs.link(ns('/foo'))..createSync(ns('/bar'));
+          fs.directory(ns('/bar')).createSync();
+          expect(l.existsSync(), isTrue);
+        });
+
+        test('isTrueIfTargetIsSymlinkLoop', () {
+          Link l = fs.link(ns('/foo'))..createSync(ns('/bar'));
+          fs.link(ns('/bar')).createSync(ns('/foo'));
+          expect(l.existsSync(), isTrue);
+        });
+      });
+
+      group('stat', () {
+        test('isNotFoundIfLinkDoesntExistAtTail', () {
+          expect(fs.link(ns('/foo')).statSync().type,
+              FileSystemEntityType.NOT_FOUND);
+        });
+
+        test('isNotFoundIfLinkDoesntExistViaTraversal', () {
+          expect(fs.link(ns('/foo/bar')).statSync().type,
+              FileSystemEntityType.NOT_FOUND);
+        });
+
+        test('isFileIfPathReferencesFile', () {
+          fs.file(ns('/foo')).createSync();
+          expect(
+              fs.link(ns('/foo')).statSync().type, FileSystemEntityType.FILE);
+        });
+
+        test('isDirectoryIfPathReferencesDirectory', () {
+          fs.directory(ns('/foo')).createSync();
+          expect(fs.link(ns('/foo')).statSync().type,
+              FileSystemEntityType.DIRECTORY);
+        });
+
+        test('isNotFoundIfTargetNotFoundAtTail', () {
+          Link l = fs.link(ns('/foo'))..createSync(ns('/bar'));
+          expect(l.statSync().type, FileSystemEntityType.NOT_FOUND);
+        });
+
+        test('isNotFoundIfTargetNotFoundViaTraversal', () {
+          Link l = fs.link(ns('/foo'))..createSync(ns('/bar/baz'));
+          expect(l.statSync().type, FileSystemEntityType.NOT_FOUND);
+        });
+
+        test('isNotFoundIfTargetIsSymlinkLoop', () {
+          Link l = fs.link(ns('/foo'))..createSync(ns('/bar'));
+          fs.link(ns('/bar')).createSync(ns('/foo'));
+          expect(l.statSync().type, FileSystemEntityType.NOT_FOUND);
+        });
+
+        test('isFileIfTargetIsFile', () {
+          Link l = fs.link(ns('/foo'))..createSync(ns('/bar'));
+          fs.file(ns('/bar')).createSync();
+          expect(l.statSync().type, FileSystemEntityType.FILE);
+        });
+
+        test('isDirectoryIfTargetIsDirectory', () {
+          Link l = fs.link(ns('/foo'))..createSync(ns('/bar'));
+          fs.directory(ns('/bar')).createSync();
+          expect(l.statSync().type, FileSystemEntityType.DIRECTORY);
+        });
+      });
+
+      group('delete', () {
+        test('throwsIfLinkDoesntExistAtTail', () {
+          expectFileSystemException('No such file or directory', () {
+            fs.link(ns('/foo')).deleteSync();
+          });
+        });
+
+        test('throwsIfLinkDoesntExistViaTraversal', () {
+          expectFileSystemException('No such file or directory', () {
+            fs.link(ns('/foo/bar')).deleteSync();
+          });
+        });
+
+        test('throwsIfPathReferencesFileAndRecursiveFalse', () {
+          fs.file(ns('/foo')).createSync();
+          expectFileSystemException('Invalid argument', () {
+            fs.link(ns('/foo')).deleteSync();
+          });
+        });
+
+        test('succeedsIfPathReferencesFileAndRecursiveTrue', () {
+          fs.file(ns('/foo')).createSync();
+          fs.link(ns('/foo')).deleteSync(recursive: true);
+          expect(fs.typeSync(ns('/foo'), followLinks: false),
+              FileSystemEntityType.NOT_FOUND);
+        });
+
+        test('throwsIfPathReferencesDirectoryAndRecursiveFalse', () {
+          fs.directory(ns('/foo')).createSync();
+          expectFileSystemException('Invalid argument', () {
+            fs.link(ns('/foo')).deleteSync();
+          });
+        });
+
+        test('succeedsIfPathReferencesDirectoryAndRecursiveTrue', () {
+          fs.directory(ns('/foo')).createSync();
+          fs.link(ns('/foo')).deleteSync(recursive: true);
+          expect(fs.typeSync(ns('/foo'), followLinks: false),
+              FileSystemEntityType.NOT_FOUND);
+        });
+
+        test('unlinksIfTargetIsFileAndRecursiveFalse', () {
+          Link l = fs.link(ns('/foo'))..createSync(ns('/bar'));
+          fs.file(ns('/bar')).createSync();
+          l.deleteSync();
+          expect(fs.typeSync(ns('/foo'), followLinks: false),
+              FileSystemEntityType.NOT_FOUND);
+          expect(fs.typeSync(ns('/bar'), followLinks: false),
+              FileSystemEntityType.FILE);
+        });
+
+        test('unlinksIfTargetIsFileAndRecursiveTrue', () {
+          Link l = fs.link(ns('/foo'))..createSync(ns('/bar'));
+          fs.file(ns('/bar')).createSync();
+          l.deleteSync(recursive: true);
+          expect(fs.typeSync(ns('/foo'), followLinks: false),
+              FileSystemEntityType.NOT_FOUND);
+          expect(fs.typeSync(ns('/bar'), followLinks: false),
+              FileSystemEntityType.FILE);
+        });
+
+        test('unlinksIfTargetIsDirectoryAndRecursiveFalse', () {
+          Link l = fs.link(ns('/foo'))..createSync(ns('/bar'));
+          fs.directory(ns('/bar')).createSync();
+          l.deleteSync();
+          expect(fs.typeSync(ns('/foo'), followLinks: false),
+              FileSystemEntityType.NOT_FOUND);
+          expect(fs.typeSync(ns('/bar'), followLinks: false),
+              FileSystemEntityType.DIRECTORY);
+        });
+
+        test('unlinksIfTargetIsDirectoryAndRecursiveTrue', () {
+          Link l = fs.link(ns('/foo'))..createSync(ns('/bar'));
+          fs.directory(ns('/bar')).createSync();
+          l.deleteSync(recursive: true);
+          expect(fs.typeSync(ns('/foo'), followLinks: false),
+              FileSystemEntityType.NOT_FOUND);
+          expect(fs.typeSync(ns('/bar'), followLinks: false),
+              FileSystemEntityType.DIRECTORY);
+        });
+
+        test('unlinksIfTargetIsSymlinkLoop', () {
+          Link l = fs.link(ns('/foo'))..createSync(ns('/bar'));
+          fs.link(ns('/bar'))..createSync(ns('/foo'));
+          l.deleteSync();
+          expect(fs.typeSync(ns('/foo'), followLinks: false),
+              FileSystemEntityType.NOT_FOUND);
+          expect(fs.typeSync(ns('/bar'), followLinks: false),
+              FileSystemEntityType.LINK);
+        });
+      });
+
+      group('parent', () {
+        test('succeedsIfLinkDoesntExist', () {
+          expect(fs.link(ns('/foo')).parent.path, ns('/'));
+        });
+
+        test('ignoresLinkTarget', () {
+          Link l = fs.link(ns('/foo/bar'))
+            ..createSync(ns('/baz/qux'), recursive: true);
+          expect(l.parent.path, ns('/foo'));
+        });
+      });
+
+      group('create', () {
+        test('succeedsIfLinkDoesntExistAtTail', () {
+          Link l = fs.link(ns('/foo'))..createSync(ns('/bar'));
+          expect(fs.typeSync(ns('/foo'), followLinks: false),
+              FileSystemEntityType.LINK);
+          expect(l.targetSync(), ns('/bar'));
+        });
+
+        test('throwsIfLinkDoesntExistViaTraversalAndRecursiveFalse', () {
+          expectFileSystemException('No such file or directory', () {
+            fs.link(ns('/foo/bar')).createSync('baz');
+          });
+        });
+
+        test('succeedsIfLinkDoesntExistViaTraversalAndRecursiveTrue', () {
+          Link l = fs.link(ns('/foo/bar'))..createSync('baz', recursive: true);
+          expect(fs.typeSync(ns('/foo'), followLinks: false),
+              FileSystemEntityType.DIRECTORY);
+          expect(fs.typeSync(ns('/foo/bar'), followLinks: false),
+              FileSystemEntityType.LINK);
+          expect(l.targetSync(), 'baz');
+        });
+
+        test('throwsIfAlreadyExistsAsFile', () {
+          fs.file(ns('/foo')).createSync();
+          expectFileSystemException('File exists', () {
+            fs.link(ns('/foo')).createSync(ns('/bar'));
+          });
+        });
+
+        test('throwsIfAlreadyExistsAsDirectory', () {
+          fs.directory(ns('/foo')).createSync();
+          expectFileSystemException('File exists', () {
+            fs.link(ns('/foo')).createSync(ns('/bar'));
+          });
+        });
+
+        test('throwsIfAlreadyExistsWithSameTarget', () {
+          fs.link(ns('/foo')).createSync(ns('/bar'));
+          expectFileSystemException('File exists', () {
+            fs.link(ns('/foo')).createSync(ns('/bar'));
+          });
+        });
+
+        test('throwsIfAlreadyExistsWithDifferentTarget', () {
+          fs.link(ns('/foo')).createSync(ns('/bar'));
+          expectFileSystemException('File exists', () {
+            fs.link(ns('/foo')).createSync(ns('/baz'));
+          });
+        });
+      });
+
+      group('update', () {
+        test('throwsIfLinkDoesntExistAtTail', () {
+          expectFileSystemException('No such file or directory', () {
+            fs.link(ns('/foo')).updateSync(ns('/bar'));
+          });
+        });
+
+        test('throwsIfLinkDoesntExistViaTraversal', () {
+          expectFileSystemException('No such file or directory', () {
+            fs.link(ns('/foo/bar')).updateSync(ns('/baz'));
+          });
+        });
+
+        test('throwsIfPathReferencesFile', () {
+          fs.file(ns('/foo')).createSync();
+          expectFileSystemException('Invalid argument', () {
+            fs.link(ns('/foo')).updateSync(ns('/bar'));
+          });
+        });
+
+        test('throwsIfPathReferencesDirectory', () {
+          fs.directory(ns('/foo')).createSync();
+          expectFileSystemException('Invalid argument', () {
+            fs.link(ns('/foo')).updateSync(ns('/bar'));
+          });
+        });
+
+        test('succeedsIfNewTargetSameAsOldTarget', () {
+          fs.link(ns('/foo')).createSync(ns('/bar'));
+          fs.link(ns('/foo')).updateSync(ns('/bar'));
+          expect(fs.typeSync(ns('/foo'), followLinks: false),
+              FileSystemEntityType.LINK);
+          expect(fs.link(ns('/foo')).targetSync(), ns('/bar'));
+        });
+
+        test('succeedsIfNewTargetDifferentFromOldTarget', () {
+          fs.link(ns('/foo')).createSync(ns('/bar'));
+          fs.link(ns('/foo')).updateSync(ns('/baz'));
+          expect(fs.typeSync(ns('/foo'), followLinks: false),
+              FileSystemEntityType.LINK);
+          expect(fs.link(ns('/foo')).targetSync(), ns('/baz'));
+        });
+      });
+
+      group('absolute', () {
+        test('returnsSamePathWhenAlreadyAbsolute', () {
+          expect(fs.link(ns('/foo')).absolute.path, ns('/foo'));
+        });
+
+        test('succeedsForRelativePaths', () {
+          expect(fs.link('foo').absolute.path, ns('/foo'));
+        });
+      });
+
+      group('target', () {
+        test('throwsIfLinkDoesntExistAtTail', () {
+          expectFileSystemException('No such file or directory', () {
+            fs.link(ns('/foo')).targetSync();
+          });
+        });
+
+        test('throwsIfLinkDoesntExistViaTraversal', () {
+          expectFileSystemException('No such file or directory', () {
+            fs.link(ns('/foo/bar')).targetSync();
+          });
+        });
+
+        test('throwsIfPathReferencesFile', () {
+          fs.file(ns('/foo')).createSync();
+          expectFileSystemException('No such file or directory', () {
+            fs.link(ns('/foo')).targetSync();
+          });
+        });
+
+        test('throwsIfPathReferencesDirectory', () {
+          fs.directory(ns('/foo')).createSync();
+          expectFileSystemException('No such file or directory', () {
+            fs.link(ns('/foo')).targetSync();
+          });
+        });
+
+        test('succeedsIfTargetIsNotFound', () {
+          Link l = fs.link(ns('/foo'))..createSync(ns('/bar'));
+          expect(l.targetSync(), ns('/bar'));
+        });
+
+        test('succeedsIfTargetIsFile', () {
+          Link l = fs.link(ns('/foo'))..createSync(ns('/bar'));
+          fs.file(ns('/bar')).createSync();
+          expect(l.targetSync(), ns('/bar'));
+        });
+
+        test('succeedsIfTargetIsDirectory', () {
+          Link l = fs.link(ns('/foo'))..createSync(ns('/bar'));
+          fs.directory(ns('/bar')).createSync();
+          expect(l.targetSync(), ns('/bar'));
+        });
+
+        test('succeedsIfTargetIsSymlinkLoop', () {
+          Link l = fs.link(ns('/foo'))..createSync(ns('/bar'));
+          fs.link(ns('/bar')).createSync(ns('/foo'));
+          expect(l.targetSync(), ns('/bar'));
+        });
+      });
+
+      group('rename', () {
+        test('throwsIfLinkDoesntExistAtTail', () {
+          expectFileSystemException('No such file or directory', () {
+            fs.link(ns('/foo')).renameSync(ns('/bar'));
+          });
+        });
+
+        test('throwsIfLinkDoesntExistViaTraversal', () {
+          expectFileSystemException('No such file or directory', () {
+            fs.link(ns('/foo/bar')).renameSync(ns('/bar'));
+          });
+        });
+
+        test('throwsIfPathReferencesFile', () {
+          fs.file(ns('/foo')).createSync();
+          expectFileSystemException('Invalid argument', () {
+            fs.link(ns('/foo')).renameSync(ns('/bar'));
+          });
+        });
+
+        test('throwsIfPathReferencesDirectory', () {
+          fs.directory(ns('/foo')).createSync();
+          expectFileSystemException('Is a directory', () {
+            fs.link(ns('/foo')).renameSync(ns('/bar'));
+          });
+        });
+
+        test('succeedsIfTargetIsFile', () {
+          Link l = fs.link(ns('/foo'))..createSync(ns('/bar'));
+          fs.file(ns('/bar')).createSync();
+          l.renameSync(ns('/baz'));
+          expect(fs.typeSync(ns('/foo'), followLinks: false),
+              FileSystemEntityType.NOT_FOUND);
+          expect(fs.typeSync(ns('/bar'), followLinks: false),
+              FileSystemEntityType.FILE);
+          expect(fs.typeSync(ns('/baz'), followLinks: false),
+              FileSystemEntityType.LINK);
+          expect(fs.link(ns('/baz')).targetSync(), ns('/bar'));
+        });
+
+        test('succeedsIfTargetIsDirectory', () {
+          Link l = fs.link(ns('/foo'))..createSync(ns('/bar'));
+          fs.directory(ns('/bar')).createSync();
+          l.renameSync(ns('/baz'));
+          expect(fs.typeSync(ns('/foo'), followLinks: false),
+              FileSystemEntityType.NOT_FOUND);
+          expect(fs.typeSync(ns('/bar'), followLinks: false),
+              FileSystemEntityType.DIRECTORY);
+          expect(fs.typeSync(ns('/baz'), followLinks: false),
+              FileSystemEntityType.LINK);
+          expect(fs.link(ns('/baz')).targetSync(), ns('/bar'));
+        });
+
+        test('succeedsIfTargetIsSymlinkLoop', () {
+          Link l = fs.link(ns('/foo'))..createSync(ns('/bar'));
+          fs.link(ns('/bar')).createSync(ns('/foo'));
+          l.renameSync(ns('/baz'));
+          expect(fs.typeSync(ns('/foo'), followLinks: false),
+              FileSystemEntityType.NOT_FOUND);
+          expect(fs.typeSync(ns('/bar'), followLinks: false),
+              FileSystemEntityType.LINK);
+          expect(fs.typeSync(ns('/baz'), followLinks: false),
+              FileSystemEntityType.LINK);
+          expect(fs.link(ns('/baz')).targetSync(), ns('/bar'));
+        });
       });
     });
   });

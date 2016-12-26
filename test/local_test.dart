@@ -47,6 +47,16 @@ void main() {
         // https://github.com/dart-lang/sdk/issues/28174
         '.+ > RandomAccessFile > writeFromWithStart',
         '.+ > RandomAccessFile > writeFromWithStartAndEnd',
+
+        // https://github.com/dart-lang/sdk/issues/28201
+        'Link > delete > throwsIfLinkDoesntExistAtTail',
+        'Link > delete > throwsIfLinkDoesntExistViaTraversal',
+        'Link > update > throwsIfLinkDoesntExistAtTail',
+        'Link > update > throwsIfLinkDoesntExistViaTraversal',
+
+        // https://github.com/dart-lang/sdk/issues/28202
+        'Link > rename > throwsIfLinkDoesntExistAtTail',
+        'Link > rename > throwsIfLinkDoesntExistViaTraversal',
       ],
     );
   });
