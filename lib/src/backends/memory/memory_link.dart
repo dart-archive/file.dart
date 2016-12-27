@@ -14,7 +14,17 @@ class _MemoryLink extends _MemoryFileSystemEntity implements Link {
   Future<Link> rename(String newPath) async => renameSync(newPath);
 
   @override
-  Link renameSync(String newPath) => _renameSync(newPath);
+  Link renameSync(String newPath) => _renameSync(
+        newPath,
+        checkType: (_Node node) {
+          if (node.type != expectedType) {
+            throw new FileSystemException(
+                node.type == FileSystemEntityType.DIRECTORY
+                    ? 'Is a directory'
+                    : 'Invalid argument');
+          }
+        },
+      );
 
   @override
   Future<Link> create(String target, {bool recursive: false}) async {
@@ -36,7 +46,7 @@ class _MemoryLink extends _MemoryFileSystemEntity implements Link {
     });
     if (preexisting) {
       // Per the spec, this is an error.
-      throw new io.FileSystemException('Creation failed', path);
+      throw new io.FileSystemException('File exists', path);
     }
   }
 
@@ -48,17 +58,29 @@ class _MemoryLink extends _MemoryFileSystemEntity implements Link {
 
   @override
   void updateSync(String target) {
-    _LinkNode node = backing;
-    node.target = target;
+    _Node node = backing;
+    _checkType(expectedType, node.type, () => path);
+    (node as _LinkNode).target = target;
   }
+
+  @override
+  void deleteSync({bool recursive: false}) => _deleteSync(
+        recursive: recursive,
+        checkType: (_Node node) =>
+            _checkType(expectedType, node.type, () => path),
+      );
 
   @override
   Future<String> target() async => targetSync();
 
   @override
   String targetSync() {
-    _LinkNode node = backing;
-    return node.target;
+    _Node node = backing;
+    if (node.type != expectedType) {
+      // Note: this may change; https://github.com/dart-lang/sdk/issues/28204
+      throw new FileSystemException('No such file or directory', path);
+    }
+    return (node as _LinkNode).target;
   }
 
   @override

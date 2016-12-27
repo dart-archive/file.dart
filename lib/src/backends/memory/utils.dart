@@ -16,6 +16,10 @@ bool _isAbsolute(String path) => path.startsWith(_separator);
 /// Generates a path to use in error messages.
 typedef dynamic _PathGenerator();
 
+/// Validator function that is expected to throw a [FileSystemException] if
+/// the node does not represent the type that is expected in any given context.
+typedef void _TypeChecker(_Node node);
+
 /// Throws a [io.FileSystemException] if [node] is null.
 void _checkExists(_Node node, _PathGenerator path) {
   if (node == null) {
@@ -38,9 +42,22 @@ void _checkType(
   _PathGenerator path,
 ) {
   if (expectedType != actualType) {
-    String msg = expectedType == FileSystemEntityType.DIRECTORY
-        ? 'Not a directory'
-        : 'Is a directory';
+    String msg;
+    switch (expectedType) {
+      case FileSystemEntityType.DIRECTORY:
+        msg = 'Not a directory';
+        break;
+      case FileSystemEntityType.FILE:
+        assert(actualType == FileSystemEntityType.DIRECTORY);
+        msg = 'Is a directory';
+        break;
+      case FileSystemEntityType.LINK:
+        msg = 'Invalid argument';
+        break;
+      default:
+        // Should not happen
+        throw new AssertionError();
+    }
     throw new io.FileSystemException(msg, path());
   }
 }

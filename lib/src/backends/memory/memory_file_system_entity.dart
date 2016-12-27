@@ -58,6 +58,17 @@ abstract class _MemoryFileSystemEntity implements FileSystemEntity {
     return node;
   }
 
+  /// Checks the expected type of this file system entity against the specified
+  /// node's `stat` type, throwing a [FileSystemException] if the types don't
+  /// match. Note that since this checks the node's `stat` type, symbolic links
+  /// will be resolved to their target type for the purpose of this validation.
+  ///
+  /// Protected methods that accept a [checkType] argument will default to this
+  /// method if the [checkType] argument is unspecified.
+  void _defaultCheckType(_Node node) {
+    _checkType(expectedType, node.stat.type, () => path);
+  }
+
   @override
   Uri get uri => new Uri.file(path);
 
@@ -93,19 +104,7 @@ abstract class _MemoryFileSystemEntity implements FileSystemEntity {
   }
 
   @override
-  void deleteSync({bool recursive: false}) {
-    _Node node = backing;
-    if (!recursive) {
-      if (node is _DirectoryNode && node.children.isNotEmpty) {
-        throw new io.FileSystemException('Directory not empty', path);
-      }
-      _checkType(expectedType, node.stat.type, () => path);
-    }
-    // Once we remove this reference, the node and all its children will be
-    // garbage collected; we don't need to explicitly delete all children in
-    // the recursive:true case.
-    node.parent.children.remove(basename);
-  }
+  void deleteSync({bool recursive: false}) => _deleteSync(recursive: recursive);
 
   @override
   Stream<io.FileSystemEvent> watch({
@@ -195,13 +194,18 @@ abstract class _MemoryFileSystemEntity implements FileSystemEntity {
   /// If [resolveTailLink] is true and there is an existing link at the location
   /// identified by [newPath], this will resolve the link to its target prior
   /// to running the validation checks above.
+  ///
+  /// If [checkType] is specified, it will be used to validate that the file
+  /// system entity that exists at [path] is of the expected type. By default,
+  /// [_defaultCheckType] is used to perform this validation.
   FileSystemEntity _renameSync(
     String newPath, {
     _RenameOverwriteValidator<dynamic> validateOverwriteExistingEntity,
     bool resolveTailLink: false,
+    _TypeChecker checkType,
   }) {
     _Node node = backing;
-    _checkType(expectedType, node.stat.type, () => path);
+    (checkType ?? _defaultCheckType)(node);
     fileSystem._findNode(
       newPath,
       segmentVisitor: (
@@ -230,6 +234,28 @@ abstract class _MemoryFileSystemEntity implements FileSystemEntity {
       },
     );
     return _clone(newPath);
+  }
+
+  /// Deletes this entity from the node tree.
+  ///
+  /// If [checkType] is specified, it will be used to validate that the file
+  /// system entity that exists at [path] is of the expected type. By default,
+  /// [_defaultCheckType] is used to perform this validation.
+  void _deleteSync({
+    bool recursive: false,
+    _TypeChecker checkType,
+  }) {
+    _Node node = backing;
+    if (!recursive) {
+      if (node is _DirectoryNode && node.children.isNotEmpty) {
+        throw new io.FileSystemException('Directory not empty', path);
+      }
+      (checkType ?? _defaultCheckType)(node);
+    }
+    // Once we remove this reference, the node and all its children will be
+    // garbage collected; we don't need to explicitly delete all children in
+    // the recursive:true case.
+    node.parent.children.remove(basename);
   }
 
   /// Creates a new entity with the same type as this entity but with the
