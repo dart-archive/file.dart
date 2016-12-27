@@ -17,41 +17,46 @@ class _ChrootLink extends _ChrootFileSystemEntity<Link, io.Link>
   io.Link get delegate => fileSystem.delegate.link(_realPath);
 
   @override
-  Future<Link> create(String target, {bool recursive: false}) async {
-    if (fileSystem._context.isAbsolute(target)) {
-      // Relative targets are left untouched.
-      target = fileSystem._real(target);
-    }
-    return wrap(await delegate.create(target, recursive: recursive));
-  }
+  Future<Link> create(String target, {bool recursive: false}) async =>
+      wrap(await delegate.create(_realTarget(target), recursive: recursive));
 
   @override
-  void createSync(String target, {bool recursive: false}) {
-    if (fileSystem._context.isAbsolute(target)) {
-      // Relative targets are left untouched.
-      target = fileSystem._real(target);
-    }
-    return delegate.createSync(target, recursive: recursive);
-  }
+  void createSync(String target, {bool recursive: false}) =>
+      delegate.createSync(_realTarget(target), recursive: recursive);
 
   @override
-  Future<String> target() async {
-    String realTarget = await delegate.target();
-    return fileSystem._local(
-      realTarget,
-      relative: fileSystem._context.isRelative(realTarget),
-    );
-  }
+  Future<Link> update(String target) async =>
+      wrap(await delegate.update(_realTarget(target)));
 
   @override
-  String targetSync() {
-    String realTarget = delegate.targetSync();
-    return fileSystem._local(
-      realTarget,
-      relative: fileSystem._context.isRelative(realTarget),
-    );
-  }
+  void updateSync(String target) => delegate.updateSync(_realTarget(target));
+
+  @override
+  Future<String> target() async => _localTarget(await delegate.target());
+
+  @override
+  String targetSync() => _localTarget(delegate.targetSync());
 
   @override
   Link get absolute => new _ChrootLink(fileSystem, _absolutePath);
+
+  /// Converts a local symlink target to a real target in the underlying file
+  /// system. Relative targets are relative to the location of the symbolic
+  /// link, so they are left untouched, whereas absolute tagets are converted
+  /// to their true absolute location in the underlying file system.
+  String _realTarget(String localTarget) {
+    return fileSystem._context.isRelative(localTarget)
+        ? localTarget
+        : fileSystem._real(localTarget);
+  }
+
+  /// Converts a real symbolic link target in the underlying file system to a
+  /// local target. Relative targets are relative to the location of the
+  /// symbolic link, so they are left untouched, whereas absolute tagets are
+  /// converted from their real path to their path in this file system.
+  String _localTarget(String realTarget) {
+    return fileSystem._context.isRelative(realTarget)
+        ? realTarget
+        : fileSystem._local(realTarget);
+  }
 }

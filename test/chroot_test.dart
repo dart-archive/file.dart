@@ -15,11 +15,6 @@ void main() {
       },
       skip: <String>[
         'File > open', // Not yet implemented in MemoryFileSystem
-
-        // TODO: fix bugs causing these tests to fail, and re-enable tests
-        'Link > create > succeedsIfLinkDoesntExistViaTraversalAndRecursiveTrue',
-        'Link > update > succeedsIfNewTargetSameAsOldTarget',
-        'Link > update > succeedsIfNewTargetDifferentFromOldTarget',
       ],
     );
   });
