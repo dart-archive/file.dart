@@ -13,7 +13,7 @@ class _MemoryDirectory extends _MemoryFileSystemEntity implements Directory {
   Uri get uri => new Uri.directory(path);
 
   @override
-  bool existsSync() => backingOrNull?.stat?.type == expectedType;
+  bool existsSync() => _backingOrNull?.stat?.type == expectedType;
 
   @override
   Future<Directory> create({bool recursive: false}) async {
@@ -75,7 +75,7 @@ class _MemoryDirectory extends _MemoryFileSystemEntity implements Directory {
 
   @override
   Directory get parent =>
-      (backingOrNull?.isRoot ?? false) ? this : super.parent;
+      (_backingOrNull?.isRoot ?? false) ? this : super.parent;
 
   @override
   Directory get absolute => super.absolute;
@@ -95,7 +95,7 @@ class _MemoryDirectory extends _MemoryFileSystemEntity implements Directory {
     bool recursive: false,
     bool followLinks: true,
   }) {
-    _DirectoryNode node = backing;
+    _DirectoryNode node = _backing;
     List<FileSystemEntity> listing = <FileSystemEntity>[];
     List<_PendingListTask> tasks = <_PendingListTask>[
       new _PendingListTask(

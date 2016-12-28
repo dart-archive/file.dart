@@ -8,7 +8,7 @@ class _MemoryLink extends _MemoryFileSystemEntity implements Link {
   io.FileSystemEntityType get expectedType => io.FileSystemEntityType.LINK;
 
   @override
-  bool existsSync() => backingOrNull?.type == expectedType;
+  bool existsSync() => _backingOrNull?.type == expectedType;
 
   @override
   Future<Link> rename(String newPath) async => renameSync(newPath);
@@ -58,7 +58,7 @@ class _MemoryLink extends _MemoryFileSystemEntity implements Link {
 
   @override
   void updateSync(String target) {
-    _Node node = backing;
+    _Node node = _backing;
     _checkType(expectedType, node.type, () => path);
     (node as _LinkNode).target = target;
   }
@@ -75,7 +75,7 @@ class _MemoryLink extends _MemoryFileSystemEntity implements Link {
 
   @override
   String targetSync() {
-    _Node node = backing;
+    _Node node = _backing;
     if (node.type != expectedType) {
       // Note: this may change; https://github.com/dart-lang/sdk/issues/28204
       throw new FileSystemException('No such file or directory', path);

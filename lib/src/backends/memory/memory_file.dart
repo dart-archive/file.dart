@@ -5,7 +5,7 @@ class _MemoryFile extends _MemoryFileSystemEntity implements File {
       : super(fileSystem, path);
 
   _FileNode get _resolvedBackingOrCreate {
-    _Node node = backingOrNull;
+    _Node node = _backingOrNull;
     if (node == null) {
       node = _doCreate();
     } else {
@@ -19,7 +19,7 @@ class _MemoryFile extends _MemoryFileSystemEntity implements File {
   io.FileSystemEntityType get expectedType => io.FileSystemEntityType.FILE;
 
   @override
-  bool existsSync() => backingOrNull?.stat?.type == expectedType;
+  bool existsSync() => _backingOrNull?.stat?.type == expectedType;
 
   @override
   Future<File> create({bool recursive: false}) async {
@@ -63,7 +63,7 @@ class _MemoryFile extends _MemoryFileSystemEntity implements File {
 
   @override
   File copySync(String newPath) {
-    _FileNode sourceNode = resolvedBacking;
+    _FileNode sourceNode = _resolvedBacking;
     fileSystem._findNode(
       newPath,
       segmentVisitor: (
@@ -100,7 +100,7 @@ class _MemoryFile extends _MemoryFileSystemEntity implements File {
   Future<int> length() async => lengthSync();
 
   @override
-  int lengthSync() => (resolvedBacking as _FileNode).size;
+  int lengthSync() => (_resolvedBacking as _FileNode).size;
 
   @override
   File get absolute => super.absolute;
@@ -109,7 +109,7 @@ class _MemoryFile extends _MemoryFileSystemEntity implements File {
   Future<DateTime> lastModified() async => lastModifiedSync();
 
   @override
-  DateTime lastModifiedSync() => (resolvedBacking as _FileNode).stat.modified;
+  DateTime lastModifiedSync() => (_resolvedBacking as _FileNode).stat.modified;
 
   @override
   Future<io.RandomAccessFile> open(
@@ -123,7 +123,7 @@ class _MemoryFile extends _MemoryFileSystemEntity implements File {
   @override
   Stream<List<int>> openRead([int start, int end]) {
     try {
-      _FileNode node = resolvedBacking;
+      _FileNode node = _resolvedBacking;
       List<int> content = node.content;
       if (start != null) {
         content = end == null
@@ -152,7 +152,7 @@ class _MemoryFile extends _MemoryFileSystemEntity implements File {
   Future<List<int>> readAsBytes() async => readAsBytesSync();
 
   @override
-  List<int> readAsBytesSync() => (resolvedBacking as _FileNode).content;
+  List<int> readAsBytesSync() => (_resolvedBacking as _FileNode).content;
 
   @override
   Future<String> readAsString({Encoding encoding: UTF8}) async =>

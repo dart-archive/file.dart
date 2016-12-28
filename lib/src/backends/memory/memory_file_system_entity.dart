@@ -29,7 +29,7 @@ abstract class _MemoryFileSystemEntity implements FileSystemEntity {
 
   /// Gets the node that backs this file system entity, or null if this
   /// entity does not exist.
-  _Node get backingOrNull {
+  _Node get _backingOrNull {
     try {
       return fileSystem._findNode(path);
     } on io.FileSystemException {
@@ -41,7 +41,7 @@ abstract class _MemoryFileSystemEntity implements FileSystemEntity {
   /// [io.FileSystemException] if this entity doesn't exist.
   ///
   /// The type of the node is not guaranteed to match [expectedType].
-  _Node get backing {
+  _Node get _backing {
     _Node node = fileSystem._findNode(path);
     _checkExists(node, () => path);
     return node;
@@ -51,8 +51,8 @@ abstract class _MemoryFileSystemEntity implements FileSystemEntity {
   /// a symbolic link, the target node. This also will check that the type of
   /// the node (aftere symlink resolution) matches [expectedType]. If the type
   /// doesn't match, this will throw a [io.FileSystemException].
-  _Node get resolvedBacking {
-    _Node node = backing;
+  _Node get _resolvedBacking {
+    _Node node = _backing;
     node = _isLink(node) ? _resolveLinks(node, () => path) : node;
     _checkType(expectedType, node.type, () => path);
     return node;
@@ -204,7 +204,7 @@ abstract class _MemoryFileSystemEntity implements FileSystemEntity {
     bool resolveTailLink: false,
     _TypeChecker checkType,
   }) {
-    _Node node = backing;
+    _Node node = _backing;
     (checkType ?? _defaultCheckType)(node);
     fileSystem._findNode(
       newPath,
@@ -245,7 +245,7 @@ abstract class _MemoryFileSystemEntity implements FileSystemEntity {
     bool recursive: false,
     _TypeChecker checkType,
   }) {
-    _Node node = backing;
+    _Node node = _backing;
     if (!recursive) {
       if (node is _DirectoryNode && node.children.isNotEmpty) {
         throw new io.FileSystemException('Directory not empty', path);
