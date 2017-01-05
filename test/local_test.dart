@@ -36,7 +36,7 @@ void main() {
         'File > create > throwsIfAlreadyExistsAsLinkToDirectory',
 
         // https://github.com/dart-lang/sdk/issues/28171
-        'File > rename > throwsIfTargetExistsAsLinkToDirectory',
+        'File > rename > throwsIfDestinationExistsAsLinkToDirectory',
 
         // https://github.com/dart-lang/sdk/issues/28172
         'File > length > throwsIfExistsAsDirectory',
@@ -55,8 +55,14 @@ void main() {
         'Link > update > throwsIfLinkDoesntExistViaTraversal',
 
         // https://github.com/dart-lang/sdk/issues/28202
-        'Link > rename > throwsIfLinkDoesntExistAtTail',
-        'Link > rename > throwsIfLinkDoesntExistViaTraversal',
+        'Link > rename > throwsIfSourceDoesntExistAtTail',
+        'Link > rename > throwsIfSourceDoesntExistViaTraversal',
+
+        // https://github.com/dart-lang/sdk/issues/28275
+        'Link > rename > throwsIfDestinationExistsAsDirectory',
+
+        // https://github.com/dart-lang/sdk/issues/28277
+        'Link > rename > throwsIfDestinationExistsAsFile',
       ],
     );
   });
