@@ -1,6 +1,9 @@
-#### 0.2.0
+#### 1.0.0
 
-* New interface
+* Unified interface to match dart:io API
+* Local file system implementation
+* In-memory file system implementation
+* Chroot file system implementation
 
 #### 0.1.0
 

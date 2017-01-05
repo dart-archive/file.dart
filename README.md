@@ -5,18 +5,13 @@
 
 A generic file system abstraction for Dart.
 
-*This package is currently experimental and subject to change*
-
 Like `dart:io`, `package:file` supplies a rich Dart-idiomatic API for accessing
 a file system.
 
 Unlike `dart:io`, `package:file`:
 
-- Does not mix synchronous and asynchronous API in one. It is up to users to
-  choose one, the other, or both.
-- Has explicit factory classes for different implementations.
 - Can be used to implement custom file systems.
-- Comes with in-memory implementation out-of-the-box, making it super-easy to
+- Comes with an in-memory implementation out-of-the-box, making it super-easy to
   test code that works with the file system.
 - Allows using multiple file systems simultaneously. A file system is a
   first-class object. Instantiate however many you want and use them all.
@@ -34,24 +29,15 @@ class FooBarFileSystem implements FileSystem { ... }
 Use the in-memory file system:
 
 ```dart
-import 'package:file/file.dart';
+import 'package:file/memory.dart';
 
-var fs = new InMemoryFileSystem();
+var fs = new MemoryFileSystem();
 ```
 
 Use the local file system (requires dart:io access):
 
 ```dart
-import 'package:file/io.dart';
+import 'package:file/local.dart';
 
 var fs = const LocalFileSystem();
-```
-
-The synchronous counterparts can be imported from:
-
-```dart
-// API and in-memory implementation
-import `package:file/sync.dart`;
-// Implementation based on "dart:io"
-import `package:file/sync_io.dart`;
 ```
