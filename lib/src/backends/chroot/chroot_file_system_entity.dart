@@ -10,12 +10,35 @@ abstract class _ChrootFileSystemEntity<T extends FileSystemEntity,
 
   _ChrootFileSystemEntity(this.fileSystem, this.path);
 
-  /// Gets the path of this entity in the underlying delegate file system.
-  String get _realPath => fileSystem._real(path);
+  @override
+  D get delegate => getDelegate();
+
+  /// Gets the delegate file system entity in the underlying file system that
+  /// corresponds to this entity's local file system path.
+  ///
+  /// If [followLinks] is true and this entity's path references a symbolic
+  /// link, then the path of the delegate entity will reference the ultimate
+  /// target of that symbolic link. Symbolic links in the middle of the path
+  /// will always be resolved in the delegate entity's path.
+  D getDelegate({bool followLinks: false}) =>
+      _rawDelegate(fileSystem._real(path, followLinks: followLinks));
+
+  /// Returns the expected type of this entity, which may differ from the type
+  /// of the entity that's found at the path specified by this entity.
+  FileSystemEntityType get expectedType;
+
+  /// Returns a delegate entity at the specified [realPath] (the path in the
+  /// underlying file system).
+  D _rawDelegate(String realPath);
 
   /// Gets the path of this entity as an absolute path (unchanged if the
   /// entity already specifies an absolute path).
   String get _absolutePath => fileSystem._context.absolute(path);
+
+  /// Tells whether this entity's path references a symbolic link.
+  bool get _isLink =>
+      fileSystem.typeSync(path, followLinks: false) ==
+      FileSystemEntityType.LINK;
 
   @override
   Directory wrapDirectory(io.Directory delegate) =>
@@ -33,77 +56,96 @@ abstract class _ChrootFileSystemEntity<T extends FileSystemEntity,
   Uri get uri => new Uri.file(path);
 
   @override
-  Future<T> rename(String newPath) async =>
-      wrap(await delegate.rename(fileSystem._real(newPath)) as D);
+  Future<bool> exists() => getDelegate(followLinks: true).exists();
 
   @override
-  T renameSync(String newPath) =>
-      wrap(delegate.renameSync(fileSystem._real(newPath)) as D);
+  bool existsSync() => getDelegate(followLinks: true).existsSync();
 
-  // Note: technically, this could be implemented using underlying async
-  // methods, but the implementation is complex enough that having two
-  // basically identical implementations seems like a bad idea (the two will
-  // diverge if we're not careful).
   @override
   Future<String> resolveSymbolicLinks() async => resolveSymbolicLinksSync();
 
   @override
-  String resolveSymbolicLinksSync() {
-    p.Context context = fileSystem._context;
-    List<String> ledger = context.split(fileSystem.root);
-    int leading = ledger.length;
-    if (!isAbsolute) {
-      ledger.addAll(context.split(fileSystem._cwd).sublist(1));
+  String resolveSymbolicLinksSync() =>
+      fileSystem._resolve(path, notFound: _NotFoundBehavior.THROW);
+
+  @override
+  Future<FileStat> stat() {
+    D delegate;
+    try {
+      delegate = getDelegate(followLinks: true);
+    } on FileSystemException {
+      return new Future<FileStat>.value(const _NotFoundFileStat());
     }
+    return delegate.stat();
+  }
 
-    List<String> segments = context.split(path);
-    if (isAbsolute) {
-      segments = segments.sublist(1);
+  @override
+  FileStat statSync() {
+    D delegate;
+    try {
+      delegate = getDelegate(followLinks: true);
+    } on FileSystemException {
+      return const _NotFoundFileStat();
     }
+    return delegate.statSync();
+  }
 
-    String subpath() => context.joinAll(ledger);
-    FileSystemEntityType getType() =>
-        fileSystem.delegate.typeSync(subpath(), followLinks: false);
+  @override
+  Future<T> delete({bool recursive: false}) async {
+    String path = fileSystem._resolve(this.path,
+        followLinks: false, notFound: _NotFoundBehavior.THROW);
 
-    for (String segment in segments) {
-      ledger.add(segment);
+    String real(String path) => fileSystem._real(path, resolve: false);
+    Future<FileSystemEntityType> type(String path) =>
+        fileSystem.delegate.type(real(path), followLinks: false);
 
-      FileSystemEntityType type = getType();
-      if (type == FileSystemEntityType.LINK) {
-        Set<String> breadcrumbs = new Set<String>();
-        while (type == FileSystemEntityType.LINK) {
-          String target = fileSystem.delegate.link(subpath()).targetSync();
-          if (context.isAbsolute(target)) {
-            ledger.clear();
-          } else {
-            ledger.removeLast();
-          }
-          ledger.addAll(context.split(target));
-
-          String resolved = context.normalize(subpath());
-          if (!breadcrumbs.add(resolved)) {
-            throw new FileSystemException('Too many levels of symbolic links');
-          }
-
-          if (!resolved.startsWith(fileSystem.root)) {
-            // The symlink target leads outside the chroot jail.
-            type = FileSystemEntityType.NOT_FOUND;
-            break;
-          }
-
-          type = getType();
+    if (await type(path) == FileSystemEntityType.LINK) {
+      if (expectedType == FileSystemEntityType.LINK) {
+        await fileSystem.delegate.link(real(path)).delete();
+      } else {
+        String resolvedPath = fileSystem._resolve(p.basename(path),
+            from: p.dirname(path), notFound: _NotFoundBehavior.ALLOW_AT_TAIL);
+        if (!recursive && await type(resolvedPath) != expectedType) {
+          String msg = expectedType == FileSystemEntityType.FILE
+              ? 'Is a directory'
+              : 'Not a directory';
+          throw new FileSystemException(msg, path);
         }
+        await fileSystem.delegate.link(real(path)).delete();
       }
-
-      if (type == FileSystemEntityType.NOT_FOUND) {
-        throw new FileSystemException('No such file or directory');
-      }
+      return this as T;
+    } else {
+      return wrap(
+          await _rawDelegate(real(path)).delete(recursive: recursive) as D);
     }
+  }
 
-    // Strip the chroot context
-    ledger.removeRange(1, leading);
+  @override
+  void deleteSync({bool recursive: false}) {
+    String path = fileSystem._resolve(this.path,
+        followLinks: false, notFound: _NotFoundBehavior.THROW);
 
-    return context.normalize(context.joinAll(ledger));
+    String real(String path) => fileSystem._real(path, resolve: false);
+    FileSystemEntityType type(String path) =>
+        fileSystem.delegate.typeSync(real(path), followLinks: false);
+
+    if (type(path) == FileSystemEntityType.LINK) {
+      if (expectedType == FileSystemEntityType.LINK) {
+        fileSystem.delegate.link(real(path)).deleteSync();
+      } else {
+        String resolvedPath = fileSystem._resolve(p.basename(path),
+            from: p.dirname(path), notFound: _NotFoundBehavior.ALLOW_AT_TAIL);
+        if (!recursive && type(resolvedPath) != expectedType) {
+          String msg = expectedType == FileSystemEntityType.FILE
+              ? 'Is a directory'
+              : 'Not a directory';
+          throw new FileSystemException(msg, path);
+        }
+        fileSystem.delegate.link(real(path)).deleteSync();
+      }
+    } else {
+      _rawDelegate(real(path)).deleteSync(recursive: recursive);
+    }
   }
 
   @override

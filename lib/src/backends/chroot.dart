@@ -1,6 +1,7 @@
 library file.src.backends.chroot;
 
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:file/file.dart';
 import 'package:file/src/forwarding.dart';
