@@ -120,7 +120,7 @@ class MemoryFileSystem extends FileSystem {
   io.FileSystemEntityType typeSync(String path, {bool followLinks: true}) {
     _Node node;
     try {
-      node = _findNode(path, resolveTailLink: followLinks);
+      node = _findNode(path, followTailLink: followLinks);
     } on io.FileSystemException {
       node = null;
     }
@@ -149,9 +149,9 @@ class MemoryFileSystem extends FileSystem {
   ///
   /// If the last element in [path] represents a symbolic link, this will
   /// return the [_LinkNode] node for the link (it will not return the
-  /// node to which the link points), unless [resolveTailLink] is true.
+  /// node to which the link points), unless [followTailLink] is true.
   /// Directory links in the middle of the path will be followed in order to
-  /// find the node regardless of the value of [resolveTailLink].
+  /// find the node regardless of the value of [followTailLink].
   ///
   /// If [segmentVisitor] is specified, it will be invoked for every path
   /// segment visited along the way starting where the reference (root folder
@@ -159,7 +159,10 @@ class MemoryFileSystem extends FileSystem {
   /// of [segmentVisitor] will be used as the backing node of that path
   /// segment, thus allowing callers to create nodes on demand in the
   /// specified path. Note that `..` and `.` segments may cause the visitor to
-  /// get invoked with the same node multiple times.
+  /// get invoked with the same node multiple times. When [segmentVisitor] is
+  /// invoked, for each path segment that resolves to a link node, the visitor
+  /// will visit the actual link node if [visitLinks] is true; otherwise it
+  /// will visit the target of the link node.
   ///
   /// If [pathWithSymlinks] is specified, the path to the node with symbolic
   /// links explicitly broken out will be appended to the buffer. `..` and `.`
@@ -168,8 +171,9 @@ class MemoryFileSystem extends FileSystem {
     String path, {
     _Node reference,
     _SegmentVisitor segmentVisitor,
+    bool visitLinks: false,
     List<String> pathWithSymlinks,
-    bool resolveTailLink: false,
+    bool followTailLink: false,
   }) {
     if (path == null) {
       throw new ArgumentError.notNull('path');
@@ -202,27 +206,37 @@ class MemoryFileSystem extends FileSystem {
           child = directory.children[basename];
       }
 
-      if (segmentVisitor != null) {
+      if (pathWithSymlinks != null) {
+        pathWithSymlinks.add(basename);
+      }
+
+      _PathGenerator subpath = _subpath(parts, 0, i);
+      if (_isLink(child) && (i < finalSegment || followTailLink)) {
+        if (visitLinks || segmentVisitor == null) {
+          if (segmentVisitor != null) {
+            child = segmentVisitor(directory, basename, child, i, finalSegment);
+          }
+          child = _resolveLinks(child, subpath, ledger: pathWithSymlinks);
+        } else {
+          child = _resolveLinks(
+            child,
+            subpath,
+            ledger: pathWithSymlinks,
+            tailVisitor:
+                (_DirectoryNode parent, String childName, _Node child) {
+              return segmentVisitor(parent, childName, child, i, finalSegment);
+            },
+          );
+        }
+      } else if (segmentVisitor != null) {
         child = segmentVisitor(directory, basename, child, i, finalSegment);
       }
 
       if (i < finalSegment) {
-        _PathGenerator subpath = _subpath(parts, 0, i);
         _checkExists(child, subpath);
-        if (pathWithSymlinks != null) {
-          pathWithSymlinks.add(basename);
-        }
-        if (_isLink(child)) {
-          child = _resolveLinks(child, subpath, ledger: pathWithSymlinks);
-        }
         _checkIsDir(child, subpath);
         directory = child;
-      } else if (pathWithSymlinks != null) {
-        pathWithSymlinks.add(basename);
       }
-    }
-    if (_isLink(child) && resolveTailLink) {
-      child = _resolveLinks(child, () => path, ledger: pathWithSymlinks);
     }
     return child;
   }

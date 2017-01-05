@@ -35,7 +35,7 @@ class _MemoryLink extends _MemoryFileSystemEntity implements Link {
   @override
   void createSync(String target, {bool recursive: false}) {
     bool preexisting = true;
-    _createSync((_DirectoryNode parent, bool isFinalSegment) {
+    _createSync(createChild: (_DirectoryNode parent, bool isFinalSegment) {
       if (isFinalSegment) {
         preexisting = false;
         return new _LinkNode(parent, target);

@@ -24,17 +24,18 @@ class _MemoryDirectory extends _MemoryFileSystemEntity implements Directory {
   @override
   void createSync({bool recursive: false}) {
     _Node node = _createSync(
-      (_DirectoryNode parent, bool isFinalSegment) {
+      followTailLink: true,
+      visitLinks: true,
+      createChild: (_DirectoryNode parent, bool isFinalSegment) {
         if (recursive || isFinalSegment) {
           return new _DirectoryNode(parent);
         }
         return null;
       },
-      resolveTailLink: true,
     );
     if (node.type != expectedType) {
       // There was an existing non-directory node at this object's path
-      throw new io.FileSystemException('Creation failed', path);
+      throw new io.FileSystemException('File exists', path);
     }
   }
 

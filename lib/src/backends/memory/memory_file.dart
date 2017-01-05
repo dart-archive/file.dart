@@ -34,7 +34,8 @@ class _MemoryFile extends _MemoryFileSystemEntity implements File {
 
   _Node _doCreate({bool recursive: false}) {
     _Node node = _createSync(
-      (_DirectoryNode parent, bool isFinalSegment) {
+      followTailLink: true,
+      createChild: (_DirectoryNode parent, bool isFinalSegment) {
         if (isFinalSegment) {
           return new _FileNode(parent);
         } else if (recursive) {
@@ -42,11 +43,11 @@ class _MemoryFile extends _MemoryFileSystemEntity implements File {
         }
         return null;
       },
-      resolveTailLink: true,
     );
     if (node.type != expectedType) {
       // There was an existing non-file entity at this object's path
-      throw new io.FileSystemException('Creation failed', path);
+      assert(node.type == FileSystemEntityType.DIRECTORY);
+      throw new io.FileSystemException('Is a directory', path);
     }
     return node;
   }
@@ -55,8 +56,19 @@ class _MemoryFile extends _MemoryFileSystemEntity implements File {
   Future<File> rename(String newPath) async => renameSync(newPath);
 
   @override
-  File renameSync(String newPath) =>
-      _renameSync(newPath, resolveTailLink: true);
+  File renameSync(String newPath) => _renameSync(
+        newPath,
+        followTailLink: true,
+        checkType: (_Node node) {
+          FileSystemEntityType actualType = node.stat.type;
+          if (actualType != expectedType) {
+            String msg = actualType == FileSystemEntityType.NOT_FOUND
+                ? 'No such file or directory'
+                : 'Is a directory';
+            throw new FileSystemException(msg, path);
+          }
+        },
+      );
 
   @override
   Future<File> copy(String newPath) async => copySync(newPath);

@@ -83,16 +83,22 @@ bool _isEmpty(String str) => str.isEmpty;
 /// the node at the end of the link chain.
 ///
 /// If a loop in the link chain is found, this will throw a
-/// [io.FileSystemException], calling [path] to generate the path.
+/// [FileSystemException], calling [path] to generate the path.
 ///
 /// If [ledger] is specified, the resolved path to the terminal node will be
 /// appended to the ledger (or overwritten in the ledger if a link target
 /// specified an absolute path). The path will not be normalized, meaning
 /// `..` and `.` path segments may be present.
+///
+/// If [tailVisitor] is specified, it will be invoked for the tail element of
+/// the last link in the symbolic link chain, and its return value will be the
+/// return value of this method (thus allowing callers to create the entity
+/// at the end of the chain on demand).
 _Node _resolveLinks(
   _LinkNode link,
   _PathGenerator path, {
   List<String> ledger,
+  _Node tailVisitor(_DirectoryNode parent, String childName, _Node child),
 }) {
   // Record a breadcrumb trail to guard against symlink loops.
   Set<_LinkNode> breadcrumbs = new Set<_LinkNode>();
@@ -112,7 +118,15 @@ _Node _resolveLinks(
       }
       ledger.addAll(link.target.split(_separator));
     }
-    node = link.referent;
+    node = link.getReferent(
+      tailVisitor: (_DirectoryNode parent, String childName, _Node child) {
+        if (tailVisitor != null && !_isLink(child)) {
+          // Only invoke [tailListener] on the final resolution pass.
+          child = tailVisitor(parent, childName, child);
+        }
+        return child;
+      },
+    );
   }
 
   return node;

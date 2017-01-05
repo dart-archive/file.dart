@@ -82,7 +82,7 @@ abstract class _MemoryFileSystemEntity implements FileSystemEntity {
   String resolveSymbolicLinksSync() {
     List<String> ledger = <String>[];
     _Node node = fileSystem._findNode(path,
-        pathWithSymlinks: ledger, resolveTailLink: true);
+        pathWithSymlinks: ledger, followTailLink: true);
     _checkExists(node, () => path);
     String resolved = ledger.join(_separator);
     if (!_isAbsolute(resolved)) {
@@ -144,15 +144,17 @@ abstract class _MemoryFileSystemEntity implements FileSystemEntity {
   /// invoked at all, and this method will return with the backing node for the
   /// existing entity (whose type may differ from this entity's type).
   ///
-  /// If [resolveTailLink] is true and the result node is a link, this will
+  /// If [followTailLink] is true and the result node is a link, this will
   /// resolve it to its target prior to returning it.
-  _Node _createSync(
-    _Node createChild(_DirectoryNode parent, bool isFinalSegment), {
-    bool resolveTailLink: false,
+  _Node _createSync({
+    _Node createChild(_DirectoryNode parent, bool isFinalSegment),
+    bool followTailLink: false,
+    bool visitLinks: false,
   }) {
     return fileSystem._findNode(
       path,
-      resolveTailLink: resolveTailLink,
+      followTailLink: followTailLink,
+      visitLinks: visitLinks,
       segmentVisitor: (
         _DirectoryNode parent,
         String childName,
@@ -191,7 +193,7 @@ abstract class _MemoryFileSystemEntity implements FileSystemEntity {
   /// If [newPath] cannot be traversed to because its directory does not exist,
   /// a [io.FileSystemException] will be thrown.
   ///
-  /// If [resolveTailLink] is true and there is an existing link at the location
+  /// If [followTailLink] is true and there is an existing link at the location
   /// identified by [newPath], this will resolve the link to its target prior
   /// to running the validation checks above.
   ///
@@ -201,7 +203,7 @@ abstract class _MemoryFileSystemEntity implements FileSystemEntity {
   FileSystemEntity _renameSync(
     String newPath, {
     _RenameOverwriteValidator<dynamic> validateOverwriteExistingEntity,
-    bool resolveTailLink: false,
+    bool followTailLink: false,
     _TypeChecker checkType,
   }) {
     _Node node = _backing;
@@ -217,10 +219,14 @@ abstract class _MemoryFileSystemEntity implements FileSystemEntity {
       ) {
         if (currentSegment == finalSegment) {
           if (child != null) {
-            if (resolveTailLink && _isLink(child)) {
-              child = _resolveLinks(child, () => newPath);
+            if (followTailLink) {
+              FileSystemEntityType childType = child.stat.type;
+              if (childType != FileSystemEntityType.NOT_FOUND) {
+                _checkType(expectedType, child.stat.type, () => newPath);
+              }
+            } else {
+              _checkType(expectedType, child.type, () => newPath);
             }
-            _checkType(expectedType, child.type, () => newPath);
             if (validateOverwriteExistingEntity != null) {
               validateOverwriteExistingEntity(child);
             }

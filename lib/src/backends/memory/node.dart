@@ -151,19 +151,42 @@ class _LinkNode extends _Node {
   }
 
   /// Gets the node backing for this link's target. Throws a
-  /// [io.FileSystemException] if this link references a non-existent file
+  /// [FileSystemException] if this link references a non-existent file
   /// system entity.
-  _Node get referent {
-    _Node node = fs._findNode(target, reference: this);
-    _checkExists(node, () => target);
-    return node;
+  ///
+  /// If [tailVisitor] is specified, it will be invoked for the tail path
+  /// segment of this link's target, and its return value will be used as the
+  /// return value of this method. If the tail path segment of this link's
+  /// target cannot be traversed into, a [FileSystemException] will be thrown,
+  /// and [tailVisitor] will not be invoked.
+  _Node getReferent({
+    _Node tailVisitor(_DirectoryNode parent, String childName, _Node child),
+  }) {
+    _Node referent = fs._findNode(
+      target,
+      reference: this,
+      segmentVisitor: (
+        _DirectoryNode parent,
+        String childName,
+        _Node child,
+        int currentSegment,
+        int finalSegment,
+      ) {
+        if (tailVisitor != null && currentSegment == finalSegment) {
+          child = tailVisitor(parent, childName, child);
+        }
+        return child;
+      },
+    );
+    _checkExists(referent, () => target);
+    return referent;
   }
 
   /// Gets the node backing for this link's target, or null if this link
   /// references a non-existent file system entity.
   _Node get referentOrNull {
     try {
-      return referent;
+      return getReferent();
     } on io.FileSystemException {
       return null;
     }
