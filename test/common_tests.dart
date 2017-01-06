@@ -343,6 +343,10 @@ void runCommonTests(
       });
 
       group('create', () {
+        test('returnsCovariantType', () async {
+          expect(await fs.directory(ns('/foo')).create(), isDirectory);
+        });
+
         test('succeedsIfAlreadyExistsAsDirectory', () {
           fs.directory(ns('/foo')).createSync();
           fs.directory(ns('/foo')).createSync();
@@ -412,6 +416,12 @@ void runCommonTests(
       });
 
       group('rename', () {
+        test('returnsCovariantType', () async {
+          Directory src() => fs.directory(ns('/foo'))..createSync();
+          expect(src().renameSync(ns('/bar')), isDirectory);
+          expect(await src().rename(ns('/baz')), isDirectory);
+        });
+
         test('succeedsIfDestinationDoesntExist', () {
           var src = fs.directory(ns('/foo'))..createSync();
           var dest = src.renameSync(ns('/bar'));
@@ -522,6 +532,11 @@ void runCommonTests(
       });
 
       group('delete', () {
+        test('returnsCovariantType', () async {
+          Directory dir = fs.directory(ns('/foo'))..createSync();
+          expect(await dir.delete(), isDirectory);
+        });
+
         test('succeedsIfEmptyDirectoryExistsAndRecursiveFalse', () {
           var dir = fs.directory(ns('/foo'))..createSync();
           dir.deleteSync();
@@ -729,6 +744,10 @@ void runCommonTests(
       });
 
       group('absolute', () {
+        test('returnsCovariantType', () {
+          expect(fs.directory('foo').absolute, isDirectory);
+        });
+
         test('returnsSamePathIfAlreadyAbsolute', () {
           expect(fs.directory(ns('/foo')).absolute.path, ns('/foo'));
         });
@@ -739,6 +758,10 @@ void runCommonTests(
       });
 
       group('parent', () {
+        test('returnsCovariantType', () {
+          expect(fs.directory('/').parent, isDirectory);
+        });
+
         test('returnsRootForRoot', () {
           expect(fs.directory('/').parent.path, '/');
         });
@@ -749,6 +772,10 @@ void runCommonTests(
       });
 
       group('createTemp', () {
+        test('returnsCovariantType', () {
+          expect(fs.directory(ns('/')).createTempSync(), isDirectory);
+        });
+
         test('throwsIfDirectoryDoesntExist', () {
           expectFileSystemException('No such file or directory', () {
             fs.directory(ns('/foo')).createTempSync();
@@ -797,6 +824,15 @@ void runCommonTests(
           fs.link('baz/quuz').createSync('../quux');
           fs.link('baz/grault').createSync('.');
           fs.currentDirectory = ns('/');
+        });
+
+        test('returnsCovariantType', () async {
+          void expectIsFileSystemEntity(entity) {
+            expect(entity, isFileSystemEntity);
+          }
+
+          dir.listSync().forEach(expectIsFileSystemEntity);
+          (await dir.list().toList()).forEach(expectIsFileSystemEntity);
         });
 
         test('returnsEmptyListForEmptyDirectory', () {
@@ -890,6 +926,10 @@ void runCommonTests(
       });
 
       group('create', () {
+        test('returnsCovariantType', () async {
+          expect(await fs.file(ns('/foo')).create(), isFile);
+        });
+
         test('succeedsIfTailDoesntAlreadyExist', () {
           fs.file(ns('/foo')).createSync();
           expect(fs.file(ns('/foo')).existsSync(), true);
@@ -975,6 +1015,12 @@ void runCommonTests(
       });
 
       group('rename', () {
+        test('returnsCovariantType', () async {
+          File f() => fs.file(ns('/foo'))..createSync();
+          expect(await f().rename(ns('/bar')), isFile);
+          expect(f().renameSync(ns('/baz')), isFile);
+        });
+
         test('succeedsIfDestinationDoesntExistAtTail', () {
           File f = fs.file(ns('/foo'))..createSync();
           f.renameSync(ns('/bar'));
@@ -1076,6 +1122,12 @@ void runCommonTests(
       });
 
       group('copy', () {
+        test('returnsCovariantType', () async {
+          File f() => fs.file(ns('/foo'))..createSync();
+          expect(await f().copy(ns('/bar')), isFile);
+          expect(f().copySync(ns('/baz')), isFile);
+        });
+
         test('succeedsIfDestinationDoesntExistAtTail', () {
           File f = fs.file(ns('/foo'))
             ..createSync()
@@ -2090,6 +2142,10 @@ void runCommonTests(
       });
 
       group('writeAsBytes', () {
+        test('returnsCovariantType', () async {
+          expect(await fs.file(ns('/foo')).writeAsBytes(<int>[]), isFile);
+        });
+
         test('createsFileIfDoesntExist', () {
           File f = fs.file(ns('/foo'));
           expect(f.existsSync(), isFalse);
@@ -2150,6 +2206,10 @@ void runCommonTests(
       });
 
       group('writeAsString', () {
+        test('returnsCovariantType', () async {
+          expect(await fs.file(ns('/foo')).writeAsString('foo'), isFile);
+        });
+
         test('createsFileIfDoesntExist', () {
           File f = fs.file(ns('/foo'));
           expect(f.existsSync(), isFalse);
@@ -2284,6 +2344,11 @@ void runCommonTests(
       });
 
       group('delete', () {
+        test('returnsCovariantType', () async {
+          File f = fs.file(ns('/foo'))..createSync();
+          expect(await f.delete(), isFile);
+        });
+
         test('succeedsIfExistsAsFile', () {
           fs.file(ns('/foo')).createSync();
           expect(fs.file(ns('/foo')).existsSync(), isTrue);
@@ -2469,6 +2534,11 @@ void runCommonTests(
       });
 
       group('delete', () {
+        test('returnsCovariantType', () async {
+          Link link = fs.link(ns('/foo'))..createSync(ns('/bar'));
+          expect(await link.delete(), isLink);
+        });
+
         test('throwsIfLinkDoesntExistAtTail', () {
           expectFileSystemException('No such file or directory', () {
             fs.link(ns('/foo')).deleteSync();
@@ -2561,6 +2631,10 @@ void runCommonTests(
       });
 
       group('parent', () {
+        test('returnsCovariantType', () {
+          expect(fs.link(ns('/foo')).parent, isDirectory);
+        });
+
         test('succeedsIfLinkDoesntExist', () {
           expect(fs.link(ns('/foo')).parent.path, ns('/'));
         });
@@ -2573,6 +2647,10 @@ void runCommonTests(
       });
 
       group('create', () {
+        test('returnsCovariantType', () async {
+          expect(await fs.link(ns('/foo')).create(ns('/bar')), isLink);
+        });
+
         test('succeedsIfLinkDoesntExistAtTail', () {
           Link l = fs.link(ns('/foo'))..createSync(ns('/bar'));
           expect(fs.typeSync(ns('/foo'), followLinks: false),
@@ -2625,6 +2703,11 @@ void runCommonTests(
       });
 
       group('update', () {
+        test('returnsCovariantType', () async {
+          Link l = fs.link(ns('/foo'))..createSync(ns('/bar'));
+          expect(await l.update(ns('/baz')), isLink);
+        });
+
         test('throwsIfLinkDoesntExistAtTail', () {
           expectFileSystemException('No such file or directory', () {
             fs.link(ns('/foo')).updateSync(ns('/bar'));
@@ -2669,6 +2752,10 @@ void runCommonTests(
       });
 
       group('absolute', () {
+        test('returnsCovariantType', () {
+          expect(fs.link('foo').absolute, isLink);
+        });
+
         test('returnsSamePathIfAlreadyAbsolute', () {
           expect(fs.link(ns('/foo')).absolute.path, ns('/foo'));
         });
@@ -2730,6 +2817,12 @@ void runCommonTests(
       });
 
       group('rename', () {
+        test('returnsCovariantType', () async {
+          Link l() => fs.link(ns('/foo'))..createSync(ns('/bar'));
+          expect(l().renameSync(ns('/bar')), isLink);
+          expect(await l().rename(ns('/bar')), isLink);
+        });
+
         test('throwsIfSourceDoesntExistAtTail', () {
           expectFileSystemException('No such file or directory', () {
             fs.link(ns('/foo')).renameSync(ns('/bar'));
@@ -2878,6 +2971,7 @@ void runCommonTests(
 const Matcher isDirectory = const _IsDirectory();
 const Matcher isFile = const _IsFile();
 const Matcher isLink = const _IsLink();
+const Matcher isFileSystemEntity = const _IsFileSystemEntity();
 
 Matcher hasPath(String path) => new _HasPath(equals(path));
 
@@ -2927,4 +3021,9 @@ class _IsDirectory extends TypeMatcher {
 class _IsLink extends TypeMatcher {
   const _IsLink() : super("Link");
   bool matches(item, Map matchState) => item is Link;
+}
+
+class _IsFileSystemEntity extends TypeMatcher {
+  const _IsFileSystemEntity() : super("FileSystemEntity");
+  bool matches(item, Map matchState) => item is FileSystemEntity;
 }

@@ -4,4 +4,11 @@ part of file.src.interface;
 abstract class FileSystemEntity implements io.FileSystemEntity {
   /// Returns the file system responsible for this entity.
   FileSystem get fileSystem;
+
+  // Override method definitions to codify the return type covariance.
+  @override
+  Future<FileSystemEntity> delete({bool recursive: false});
+
+  @override
+  Directory get parent;
 }

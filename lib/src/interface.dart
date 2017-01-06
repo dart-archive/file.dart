@@ -1,6 +1,7 @@
 library file.src.interface;
 
 import 'dart:async';
+import 'dart:convert';
 
 import 'io.dart' as io;
 
