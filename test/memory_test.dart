@@ -1,6 +1,3 @@
-@TestOn('vm')
-library file.test.local_test;
-
 import 'package:file/memory.dart';
 import 'package:test/test.dart';
 
