@@ -172,6 +172,15 @@ void runCommonTests(
           expect(fs.currentDirectory.path, ns('/foo/bar'));
         });
 
+        test('succeedsIfSetToAbsolutePathWhenCwdIsNotRoot', () {
+          fs.directory(ns('/foo/bar')).createSync(recursive: true);
+          fs.directory(ns('/baz/qux')).createSync(recursive: true);
+          fs.currentDirectory = ns('/foo/bar');
+          expect(fs.currentDirectory.path, ns('/foo/bar'));
+          fs.currentDirectory = fs.directory(ns('/baz/qux'));
+          expect(fs.currentDirectory.path, ns('/baz/qux'));
+        });
+
         test('succeedsIfSetToParentDirectory', () {
           fs.directory(ns('/foo')).createSync();
           fs.currentDirectory = 'foo';
@@ -747,6 +756,13 @@ void runCommonTests(
           fs.currentDirectory = ns('/foo');
           expect(
               fs.directory('baz').resolveSymbolicLinksSync(), ns('/foo/bar'));
+        });
+
+        test('resolvesAbsolutePathsAbsolutely', () {
+          fs.directory(ns('/foo/bar')).createSync(recursive: true);
+          fs.currentDirectory = ns('/foo');
+          expect(fs.directory(ns('/foo/bar')).resolveSymbolicLinksSync(),
+              ns('/foo/bar'));
         });
 
         test('handlesRelativeLinks', () {
