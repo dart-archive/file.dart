@@ -51,13 +51,13 @@ class MemoryFileSystem extends FileSystem {
   }
 
   @override
-  Directory directory(String path) => new _MemoryDirectory(this, path);
+  Directory directory(path) => new _MemoryDirectory(this, common.getPath(path));
 
   @override
-  File file(String path) => new _MemoryFile(this, path);
+  File file(path) => new _MemoryFile(this, common.getPath(path));
 
   @override
-  Link link(String path) => new _MemoryLink(this, path);
+  Link link(path) => new _MemoryLink(this, common.getPath(path));
 
   @override
   Directory get currentDirectory => directory(_cwd);

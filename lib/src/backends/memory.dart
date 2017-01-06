@@ -5,6 +5,7 @@ import 'dart:convert';
 import 'dart:math' show min;
 
 import 'package:file/file.dart';
+import 'package:file/src/common.dart' as common;
 import 'package:file/src/io.dart' as io;
 import 'package:path/path.dart' as p;
 

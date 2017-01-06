@@ -10,13 +10,19 @@ abstract class FileSystem {
   const FileSystem();
 
   /// Returns a reference to a [Directory] at [path].
-  Directory directory(String path);
+  ///
+  /// [path] can be either a [`String`], a [`Uri`], or a [`FileSystemEntity`].
+  Directory directory(path);
 
   /// Returns a reference to a [File] at [path].
-  File file(String path);
+  ///
+  /// [path] can be either a [`String`], a [`Uri`], or a [`FileSystemEntity`].
+  File file(path);
 
   /// Returns a reference to a [Link] at [path].
-  Link link(String path);
+  ///
+  /// [path] can be either a [`String`], a [`Uri`], or a [`FileSystemEntity`].
+  Link link(path);
 
   /// Creates a directory object pointing to the current working directory.
   Directory get currentDirectory;

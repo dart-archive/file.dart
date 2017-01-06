@@ -8,14 +8,14 @@ class LocalFileSystem extends FileSystem {
   const LocalFileSystem();
 
   @override
-  Directory directory(String path) =>
+  Directory directory(path) =>
       new _LocalDirectory(this, shim.newDirectory(path));
 
   @override
-  File file(String path) => new _LocalFile(this, shim.newFile(path));
+  File file(path) => new _LocalFile(this, shim.newFile(path));
 
   @override
-  Link link(String path) => new _LocalLink(this, shim.newLink(path));
+  Link link(path) => new _LocalLink(this, shim.newLink(path));
 
   @override
   Directory get currentDirectory => directory(shim.currentDirectory.path);

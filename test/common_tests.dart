@@ -66,6 +66,60 @@ void runCommonTests(
     });
 
     group('FileSystem', () {
+      group('directory', () {
+        test('allowsStringArgument', () {
+          expect(fs.directory(ns('/foo')), isDirectory);
+        });
+
+        test('allowsUriArgument', () {
+          expect(fs.directory(Uri.parse('file:///')), isDirectory);
+        });
+
+        test('allowsDirectoryArgument', () {
+          expect(fs.directory(new io.Directory(ns('/foo'))), isDirectory);
+        });
+
+        test('disallowsOtherArgumentType', () {
+          expect(() => fs.directory(123), throwsArgumentError);
+        });
+      });
+
+      group('file', () {
+        test('allowsStringArgument', () {
+          expect(fs.file(ns('/foo')), isFile);
+        });
+
+        test('allowsUriArgument', () {
+          expect(fs.file(Uri.parse('file:///')), isFile);
+        });
+
+        test('allowsDirectoryArgument', () {
+          expect(fs.file(new io.File(ns('/foo'))), isFile);
+        });
+
+        test('disallowsOtherArgumentType', () {
+          expect(() => fs.file(123), throwsArgumentError);
+        });
+      });
+
+      group('link', () {
+        test('allowsStringArgument', () {
+          expect(fs.link(ns('/foo')), isLink);
+        });
+
+        test('allowsUriArgument', () {
+          expect(fs.link(Uri.parse('file:///')), isLink);
+        });
+
+        test('allowsDirectoryArgument', () {
+          expect(fs.link(new io.File(ns('/foo'))), isLink);
+        });
+
+        test('disallowsOtherArgumentType', () {
+          expect(() => fs.link(123), throwsArgumentError);
+        });
+      });
+
       group('currentDirectory', () {
         test('defaultsToRoot', () {
           expect(fs.currentDirectory.path, root);

@@ -54,13 +54,13 @@ class ChrootFileSystem extends FileSystem {
   String get _localRoot => p.rootPrefix(root);
 
   @override
-  Directory directory(String path) => new _ChrootDirectory(this, path);
+  Directory directory(path) => new _ChrootDirectory(this, common.getPath(path));
 
   @override
-  File file(String path) => new _ChrootFile(this, path);
+  File file(path) => new _ChrootFile(this, common.getPath(path));
 
   @override
-  Link link(String path) => new _ChrootLink(this, path);
+  Link link(path) => new _ChrootLink(this, common.getPath(path));
 
   /// Gets the current working directory for this file system. Note that this
   /// does *not* proxy to the underlying file system's current directory in
