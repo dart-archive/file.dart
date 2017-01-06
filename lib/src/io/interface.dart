@@ -137,7 +137,7 @@ class FileSystemException implements IOException {
   String toString() {
     StringBuffer sb = new StringBuffer();
     sb.write("FileSystemException");
-    if (!message.isEmpty) {
+    if (message.isNotEmpty) {
       sb.write(": $message");
       if (path != null) {
         sb.write(", path = '$path'");
@@ -199,7 +199,7 @@ class OSError {
   String toString() {
     StringBuffer sb = new StringBuffer();
     sb.write("OS Error");
-    if (!message.isEmpty) {
+    if (message.isNotEmpty) {
       sb..write(": ")..write(message);
       if (errorCode != noErrorCode) {
         sb..write(", errno = ")..write(errorCode.toString());
