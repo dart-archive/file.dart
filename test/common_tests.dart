@@ -120,6 +120,14 @@ void runCommonTests(
         });
       });
 
+      group('systemTempDirectory', () {
+        test('existsAsDirectory', () {
+          var tmp = fs.systemTempDirectory;
+          expect(tmp, isDirectory);
+          expect(tmp.existsSync(), isTrue);
+        });
+      });
+
       group('currentDirectory', () {
         test('defaultsToRoot', () {
           expect(fs.currentDirectory.path, root);

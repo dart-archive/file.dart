@@ -17,6 +17,13 @@ class LocalFileSystem extends FileSystem {
   @override
   Link link(path) => new _LocalLink(this, shim.newLink(path));
 
+  /// Gets the directory provided by the operating system for creating temporary
+  /// files and directories in. The location of the system temp directory is
+  /// platform-dependent, and may be set by an environment variable.
+  @override
+  Directory get systemTempDirectory =>
+      new _LocalDirectory(this, shim.systemTemp());
+
   @override
   Directory get currentDirectory => directory(shim.currentDirectory.path);
 

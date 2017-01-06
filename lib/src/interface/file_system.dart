@@ -24,6 +24,12 @@ abstract class FileSystem {
   /// [path] can be either a [`String`], a [`Uri`], or a [`FileSystemEntity`].
   Link link(path);
 
+  /// Gets the system temp directory.
+  ///
+  /// It is left to file system implementations to decide how to define the
+  /// "system temp directory".
+  Directory get systemTempDirectory;
+
   /// Creates a directory object pointing to the current working directory.
   Directory get currentDirectory;
 
