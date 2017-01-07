@@ -933,17 +933,17 @@ void runCommonTests(
         test('returnsLinkObjectsIfFollowLinksFalse', () {
           var list = dir.listSync(followLinks: false);
           expect(list, hasLength(3));
-          expect(list[0], allOf(isFile, hasPath(ns('/foo/bar'))));
-          expect(list[1], allOf(isDirectory, hasPath(ns('/foo/baz'))));
-          expect(list[2], allOf(isLink, hasPath(ns('/foo/quux'))));
+          expect(list, contains(allOf(isFile, hasPath(ns('/foo/bar')))));
+          expect(list, contains(allOf(isDirectory, hasPath(ns('/foo/baz')))));
+          expect(list, contains(allOf(isLink, hasPath(ns('/foo/quux')))));
         });
 
         test('followsLinksIfFollowLinksTrue', () {
           var list = dir.listSync();
           expect(list, hasLength(3));
-          expect(list[0], allOf(isFile, hasPath(ns('/foo/bar'))));
-          expect(list[1], allOf(isDirectory, hasPath(ns('/foo/baz'))));
-          expect(list[2], allOf(isFile, hasPath(ns('/foo/quux'))));
+          expect(list, contains(allOf(isFile, hasPath(ns('/foo/bar')))));
+          expect(list, contains(allOf(isDirectory, hasPath(ns('/foo/baz')))));
+          expect(list, contains(allOf(isFile, hasPath(ns('/foo/quux')))));
         });
 
         test('returnsLinkObjectsForRecursiveLinkIfFollowLinksTrue', () {
