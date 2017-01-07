@@ -63,6 +63,9 @@ class ChrootFileSystem extends FileSystem {
   @override
   Link link(path) => new _ChrootLink(this, common.getPath(path));
 
+  @override
+  String get pathSeparator => delegate.pathSeparator;
+
   /// Gets the system temp directory. This directory will be created on-demand
   /// in the local root of the file system. Once created, its location is fixed
   /// for the life of the process.

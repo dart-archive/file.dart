@@ -60,6 +60,9 @@ class MemoryFileSystem extends FileSystem {
   @override
   Link link(path) => new _MemoryLink(this, common.getPath(path));
 
+  @override
+  String get pathSeparator => _separator;
+
   /// Gets the system temp directory. This directory will be created on-demand
   /// in the root of the file system. Once created, its location is fixed for
   /// the life of the process.

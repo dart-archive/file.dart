@@ -24,6 +24,10 @@ abstract class FileSystem {
   /// [path] can be either a [`String`], a [`Uri`], or a [`FileSystemEntity`].
   Link link(path);
 
+  /// Gets the path separator used by this file system to separate components
+  /// in file paths.
+  String get pathSeparator;
+
   /// Gets the system temp directory.
   ///
   /// It is left to file system implementations to decide how to define the

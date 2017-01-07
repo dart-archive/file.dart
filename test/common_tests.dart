@@ -120,6 +120,12 @@ void runCommonTests(
         });
       });
 
+      group('pathSeparator', () {
+        test('isAmongExpectedValues', () {
+          expect(fs.pathSeparator, anyOf('/', r'\'));
+        });
+      });
+
       group('systemTempDirectory', () {
         test('existsAsDirectory', () {
           var tmp = fs.systemTempDirectory;

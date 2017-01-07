@@ -8,6 +8,7 @@ dynamic _requiresIO() => throw new UnsupportedError(_requiresIOMsg);
 io.Directory newDirectory(_) => _requiresIO();
 io.File newFile(_) => _requiresIO();
 io.Link newLink(_) => _requiresIO();
+String get pathSeparator => _requiresIO();
 io.Directory systemTemp() => _requiresIO();
 io.Directory get currentDirectory => _requiresIO();
 set currentDirectory(dynamic _) => _requiresIO();
