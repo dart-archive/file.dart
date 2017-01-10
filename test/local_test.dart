@@ -1,6 +1,4 @@
 @TestOn('vm')
-library file.test.local_test;
-
 import 'dart:io' as io;
 
 import 'package:file/local.dart';
