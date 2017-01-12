@@ -435,7 +435,10 @@ void runCommonTests(
 
         test('throwsIfAlreadyExistsAsFile', () {
           fs.file(ns('/foo')).createSync();
-          expectFileSystemException('File exists', () {
+          // TODO(tvolkert): Change this to just be 'Not a directory'
+          // once Dart 1.22 is stable.
+          RegExp pattern = new RegExp('(File exists|Not a directory)');
+          expectFileSystemException(pattern, () {
             fs.directory(ns('/foo')).createSync();
           });
         });
@@ -449,7 +452,10 @@ void runCommonTests(
         test('throwsIfAlreadyExistsAsLinkToFile', () {
           fs.file(ns('/foo')).createSync();
           fs.link(ns('/bar')).createSync(ns('/foo'));
-          expectFileSystemException('File exists', () {
+          // TODO(tvolkert): Change this to just be 'Not a directory'
+          // once Dart 1.22 is stable.
+          RegExp pattern = new RegExp('(File exists|Not a directory)');
+          expectFileSystemException(pattern, () {
             fs.directory(ns('/bar')).createSync();
           });
         });
@@ -2655,7 +2661,10 @@ void runCommonTests(
 
         test('throwsIfPathReferencesDirectoryAndRecursiveFalse', () {
           fs.directory(ns('/foo')).createSync();
-          expectFileSystemException('Invalid argument', () {
+          // TODO(tvolkert): Change this to just be 'Is a directory'
+          // once Dart 1.22 is stable.
+          RegExp pattern = new RegExp('(Invalid argument|Is a directory)');
+          expectFileSystemException(pattern, () {
             fs.link(ns('/foo')).deleteSync();
           });
         });
@@ -2817,7 +2826,10 @@ void runCommonTests(
 
         test('throwsIfPathReferencesDirectory', () {
           fs.directory(ns('/foo')).createSync();
-          expectFileSystemException('Invalid argument', () {
+          // TODO(tvolkert): Change this to just be 'Is a directory'
+          // once Dart 1.22 is stable.
+          RegExp pattern = new RegExp('(Invalid argument|Is a directory)');
+          expectFileSystemException(pattern, () {
             fs.link(ns('/foo')).updateSync(ns('/bar'));
           });
         });
@@ -3063,16 +3075,16 @@ const Matcher isFileSystemEntity = const _IsFileSystemEntity();
 
 Matcher hasPath(String path) => new _HasPath(equals(path));
 
-Matcher isFileSystemException([String msg]) => new _FileSystemException(msg);
-Matcher throwsFileSystemException([String msg]) =>
+Matcher isFileSystemException([Pattern msg]) => new _FileSystemException(msg);
+Matcher throwsFileSystemException([Pattern msg]) =>
     new Throws(isFileSystemException(msg));
 
-void expectFileSystemException(String msg, void callback()) {
+void expectFileSystemException(Pattern msg, void callback()) {
   expect(callback, throwsFileSystemException(msg));
 }
 
 class _FileSystemException extends Matcher {
-  final String msg;
+  final Pattern msg;
   const _FileSystemException(this.msg);
 
   Description describe(Description description) =>
