@@ -92,4 +92,7 @@ class _MemoryLink extends _MemoryFileSystemEntity implements Link {
 
   @override
   Link _clone(String path) => new _MemoryLink(fileSystem, path);
+
+  @override
+  String toString() => "MemoryLink: '$path'";
 }

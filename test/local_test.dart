@@ -67,5 +67,19 @@ void main() {
         'Link > rename > throwsIfDestinationExistsAsFile',
       ],
     );
+
+    group('toString', () {
+      test('File', () {
+        expect(fs.file('/foo').toString(), "LocalFile: '/foo'");
+      });
+
+      test('Directory', () {
+        expect(fs.directory('/foo').toString(), "LocalDirectory: '/foo'");
+      });
+
+      test('Link', () {
+        expect(fs.link('/foo').toString(), "LocalLink: '/foo'");
+      });
+    });
   });
 }

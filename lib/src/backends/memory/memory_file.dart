@@ -240,6 +240,9 @@ class _MemoryFile extends _MemoryFileSystemEntity implements File {
       node.content.clear();
     }
   }
+
+  @override
+  String toString() => "MemoryFile: '$path'";
 }
 
 /// Implementation of an [io.IOSink] that's backed by a [_FileNode].

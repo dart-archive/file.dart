@@ -137,6 +137,9 @@ class _MemoryDirectory extends _MemoryFileSystemEntity implements Directory {
 
   @override
   Directory _clone(String path) => new _MemoryDirectory(fileSystem, path);
+
+  @override
+  String toString() => "MemoryDirectory: '$path'";
 }
 
 class _PendingListTask {
