@@ -4,6 +4,7 @@
 
 part of file.src.forwarding;
 
+/// A file that forwards all methods and properties to a delegate.
 abstract class ForwardingFile extends ForwardingFileSystemEntity<File, io.File>
     implements File {
   @override
