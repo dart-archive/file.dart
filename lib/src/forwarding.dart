@@ -13,5 +13,6 @@ import 'package:meta/meta.dart';
 
 part 'forwarding/forwarding_directory.dart';
 part 'forwarding/forwarding_file.dart';
+part 'forwarding/forwarding_file_system.dart';
 part 'forwarding/forwarding_file_system_entity.dart';
 part 'forwarding/forwarding_link.dart';

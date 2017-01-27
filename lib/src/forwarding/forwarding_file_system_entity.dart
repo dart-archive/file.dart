@@ -4,8 +4,10 @@
 
 part of file.src.forwarding;
 
+/// A file system entity that forwards all methods and properties to a delegate.
 abstract class ForwardingFileSystemEntity<T extends FileSystemEntity,
     D extends io.FileSystemEntity> implements FileSystemEntity {
+  /// The entity to which this entity will forward all methods and properties.
   @protected
   D get delegate;
 
