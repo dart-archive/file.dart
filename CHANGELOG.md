@@ -2,9 +2,11 @@
 
 * Improved `toString` implementations in file system entity classes
 * Added `ForwardingFileSystem` and associated forwarding classes to the
-  main `file` library.
+  main `file` library
 * Removed `FileSystem.pathSeparator`, and added a more comprehensive
-  `FileSystem.path` property.
+  `FileSystem.path` property
+* Added `FileSystemEntity.basename` and `FileSystemEntity.dirname`
+* Added the `record_replay` library
 
 #### 1.0.1
 
