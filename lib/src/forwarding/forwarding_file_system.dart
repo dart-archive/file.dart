@@ -24,7 +24,7 @@ abstract class ForwardingFileSystem extends FileSystem {
   Link link(path) => delegate.link(path);
 
   @override
-  String get pathSeparator => delegate.pathSeparator;
+  p.Context get path => delegate.path;
 
   @override
   Directory get systemTempDirectory => delegate.systemTempDirectory;

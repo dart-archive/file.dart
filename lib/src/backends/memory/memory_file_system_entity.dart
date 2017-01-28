@@ -22,10 +22,10 @@ abstract class _MemoryFileSystemEntity implements FileSystemEntity {
   _MemoryFileSystemEntity(this.fileSystem, this.path);
 
   /// Gets the part of this entity's path before the last separator.
-  String get dirname => fileSystem._context.dirname(path);
+  String get dirname => fileSystem.path.dirname(path);
 
   /// Gets the part of this entity's path after the last separator.
-  String get basename => fileSystem._context.basename(path);
+  String get basename => fileSystem.path.basename(path);
 
   /// Returns the expected type of this entity, which may differ from the type
   /// of the node that's found at the path specified by this entity.
@@ -95,7 +95,7 @@ abstract class _MemoryFileSystemEntity implements FileSystemEntity {
     if (!_isAbsolute(resolved)) {
       resolved = fileSystem._cwd + _separator + resolved;
     }
-    return fileSystem._context.normalize(resolved);
+    return fileSystem.path.normalize(resolved);
   }
 
   @override
@@ -127,7 +127,7 @@ abstract class _MemoryFileSystemEntity implements FileSystemEntity {
   FileSystemEntity get absolute {
     String absolutePath = path;
     if (!_isAbsolute(absolutePath)) {
-      absolutePath = fileSystem._context.join(fileSystem._cwd, absolutePath);
+      absolutePath = fileSystem.path.join(fileSystem._cwd, absolutePath);
     }
     return _clone(absolutePath);
   }

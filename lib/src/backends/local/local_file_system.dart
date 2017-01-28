@@ -22,7 +22,7 @@ class LocalFileSystem extends FileSystem {
   Link link(path) => new _LocalLink(this, shim.newLink(path));
 
   @override
-  String get pathSeparator => shim.pathSeparator;
+  p.Context get path => new p.Context();
 
   /// Gets the directory provided by the operating system for creating temporary
   /// files and directories in. The location of the system temp directory is

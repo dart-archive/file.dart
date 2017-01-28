@@ -10,6 +10,7 @@ import 'dart:convert';
 import 'package:file/src/io.dart' as io;
 import 'package:file/file.dart';
 import 'package:meta/meta.dart';
+import 'package:path/path.dart' as p;
 
 part 'forwarding/forwarding_directory.dart';
 part 'forwarding/forwarding_file.dart';

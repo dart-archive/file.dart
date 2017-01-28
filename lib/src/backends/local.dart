@@ -9,6 +9,7 @@ import 'dart:async';
 import 'package:file/src/forwarding.dart';
 import 'package:file/src/io.dart' as io;
 import 'package:file/file.dart';
+import 'package:path/path.dart' as p;
 
 import '../io/shim.dart' as shim;
 

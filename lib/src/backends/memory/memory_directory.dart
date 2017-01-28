@@ -49,9 +49,9 @@ class _MemoryDirectory extends _MemoryFileSystemEntity implements Directory {
   @override
   Directory createTempSync([String prefix]) {
     prefix = (prefix ?? '') + 'rand';
-    String fullPath = fileSystem._context.join(path, prefix);
-    String dirname = fileSystem._context.dirname(fullPath);
-    String basename = fileSystem._context.basename(fullPath);
+    String fullPath = fileSystem.path.join(path, prefix);
+    String dirname = fileSystem.path.dirname(fullPath);
+    String basename = fileSystem.path.basename(fullPath);
     _DirectoryNode node = fileSystem._findNode(dirname);
     _checkExists(node, () => dirname);
     _checkIsDir(node, () => dirname);
@@ -62,7 +62,7 @@ class _MemoryDirectory extends _MemoryFileSystemEntity implements Directory {
     _DirectoryNode tempDir = new _DirectoryNode(node);
     node.children[name()] = tempDir;
     return new _MemoryDirectory(
-        fileSystem, fileSystem._context.join(dirname, name()));
+        fileSystem, fileSystem.path.join(dirname, name()));
   }
 
   @override
@@ -113,7 +113,7 @@ class _MemoryDirectory extends _MemoryFileSystemEntity implements Directory {
       _PendingListTask task = tasks.removeLast();
       task.dir.children.forEach((String name, _Node child) {
         Set<_LinkNode> breadcrumbs = new Set<_LinkNode>.from(task.breadcrumbs);
-        String childPath = fileSystem._context.join(task.path, name);
+        String childPath = fileSystem.path.join(task.path, name);
         while (followLinks && _isLink(child) && breadcrumbs.add(child)) {
           _Node referent = (child as _LinkNode).referentOrNull;
           if (referent != null) {
