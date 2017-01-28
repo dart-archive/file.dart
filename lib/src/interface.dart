@@ -7,6 +7,8 @@ library file.src.interface;
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:path/path.dart' as path;
+
 import 'io.dart' as io;
 
 export 'io.dart';

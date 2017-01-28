@@ -11,7 +11,6 @@ import 'package:file/src/common.dart' as common;
 io.Directory newDirectory(path) => new io.Directory(common.getPath(path));
 io.File newFile(path) => new io.File(common.getPath(path));
 io.Link newLink(path) => new io.Link(common.getPath(path));
-String get pathSeparator => io.Platform.pathSeparator;
 io.Directory systemTemp() => io.Directory.systemTemp;
 io.Directory get currentDirectory => io.Directory.current;
 set currentDirectory(dynamic path) => io.Directory.current = path;

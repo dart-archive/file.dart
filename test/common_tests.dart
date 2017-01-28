@@ -124,9 +124,13 @@ void runCommonTests(
         });
       });
 
-      group('pathSeparator', () {
-        test('isAmongExpectedValues', () {
-          expect(fs.pathSeparator, anyOf('/', r'\'));
+      group('path', () {
+        test('hasCorrectCurrentWorkingDirectory', () {
+          expect(fs.path.current, fs.currentDirectory.path);
+        });
+
+        test('separatorIsAmongExpectedValues', () {
+          expect(fs.path.separator, anyOf('/', r'\'));
         });
       });
 

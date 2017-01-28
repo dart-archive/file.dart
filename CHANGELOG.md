@@ -1,3 +1,11 @@
+#### 1.0.2
+
+* Improved `toString` implementations in file system entity classes
+* Added `ForwardingFileSystem` and associated forwarding classes to the
+  main `file` library.
+* Removed `FileSystem.pathSeparator`, and added a more comprehensive
+  `FileSystem.path` property.
+
 #### 1.0.1
 
 * Added `FileSystem.systemTempDirectory`

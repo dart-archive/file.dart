@@ -65,7 +65,7 @@ class MemoryFileSystem extends FileSystem {
   Link link(path) => new _MemoryLink(this, common.getPath(path));
 
   @override
-  String get pathSeparator => _separator;
+  p.Context get path => new p.Context(style: p.Style.posix, current: _cwd);
 
   /// Gets the system temp directory. This directory will be created on-demand
   /// in the root of the file system. Once created, its location is fixed for
@@ -146,9 +146,6 @@ class MemoryFileSystem extends FileSystem {
     }
     return node.type;
   }
-
-  /// Gets the path context for this file system given the current working dir.
-  p.Context get _context => new p.Context(style: p.Style.posix, current: _cwd);
 
   /// Gets the node backing for the current working directory. Note that this
   /// can return null if the directory has been deleted or moved from under our

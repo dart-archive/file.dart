@@ -28,9 +28,8 @@ abstract class FileSystem {
   /// [path] can be either a [`String`], a [`Uri`], or a [`FileSystemEntity`].
   Link link(path);
 
-  /// Gets the path separator used by this file system to separate components
-  /// in file paths.
-  String get pathSeparator;
+  /// An object for manipulating paths in this file system.
+  path.Context get path;
 
   /// Gets the system temp directory.
   ///
