@@ -15,6 +15,12 @@ abstract class _LocalFileSystemEntity<T extends FileSystemEntity,
   _LocalFileSystemEntity(this.fileSystem, this.delegate);
 
   @override
+  String get dirname => fileSystem.path.dirname(path);
+
+  @override
+  String get basename => fileSystem.path.basename(path);
+
+  @override
   Directory wrapDirectory(io.Directory delegate) =>
       new _LocalDirectory(fileSystem, delegate);
 
