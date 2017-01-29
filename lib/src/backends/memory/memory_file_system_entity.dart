@@ -21,10 +21,10 @@ abstract class _MemoryFileSystemEntity implements FileSystemEntity {
 
   _MemoryFileSystemEntity(this.fileSystem, this.path);
 
-  /// Gets the part of this entity's path before the last separator.
+  @override
   String get dirname => fileSystem.path.dirname(path);
 
-  /// Gets the part of this entity's path after the last separator.
+  @override
   String get basename => fileSystem.path.basename(path);
 
   /// Returns the expected type of this entity, which may differ from the type

@@ -85,4 +85,10 @@ abstract class ForwardingFileSystemEntity<T extends FileSystemEntity,
 
   @override
   String get path => delegate.path;
+
+  @override
+  String get basename => fileSystem.path.basename(path);
+
+  @override
+  String get dirname => fileSystem.path.dirname(path);
 }

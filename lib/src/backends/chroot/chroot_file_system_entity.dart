@@ -15,6 +15,12 @@ abstract class _ChrootFileSystemEntity<T extends FileSystemEntity,
   _ChrootFileSystemEntity(this.fileSystem, this.path);
 
   @override
+  String get dirname => fileSystem.path.dirname(path);
+
+  @override
+  String get basename => fileSystem.path.basename(path);
+
+  @override
   D get delegate => getDelegate();
 
   /// Gets the delegate file system entity in the underlying file system that
