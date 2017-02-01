@@ -8,7 +8,7 @@ const String _separator = '/';
 const String _thisDir = '.';
 const String _parentDir = '..';
 
-/// Visitor callback for use with [_findNode].
+/// Visitor callback for use with `_findNode`.
 ///
 /// [parent] is the parent node of the current path segment and is guaranteed
 /// to be non-null.
@@ -22,10 +22,10 @@ const String _parentDir = '..';
 /// do things like recursively create or delete folders.
 ///
 /// [currentSegment] is the index of the current segment within the overall
-/// path that's being walked by [_findNode].
+/// path that's being walked by `_findNode`.
 ///
 /// [finalSegment] is the index of the final segment that will be walked by
-/// [_findNode].
+/// `_findNode`.
 typedef _Node _SegmentVisitor(
   _DirectoryNode parent,
   String childName,
@@ -51,18 +51,23 @@ class MemoryFileSystem extends FileSystem {
   String _systemTemp;
   String _cwd = _separator;
 
+  /// Creates a new `MemoryFileSystem`.
+  ///
+  /// The file system will be empty, and the current directory will be the
+  /// root directory.
   MemoryFileSystem() {
     _root = new _RootNode(this);
   }
 
   @override
-  Directory directory(path) => new _MemoryDirectory(this, common.getPath(path));
+  Directory directory(dynamic path) =>
+      new _MemoryDirectory(this, common.getPath(path));
 
   @override
-  File file(path) => new _MemoryFile(this, common.getPath(path));
+  File file(dynamic path) => new _MemoryFile(this, common.getPath(path));
 
   @override
-  Link link(path) => new _MemoryLink(this, common.getPath(path));
+  Link link(dynamic path) => new _MemoryLink(this, common.getPath(path));
 
   @override
   p.Context get path => new p.Context(style: p.Style.posix, current: _cwd);

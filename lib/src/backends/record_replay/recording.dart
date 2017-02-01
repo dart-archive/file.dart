@@ -20,9 +20,10 @@ abstract class Recording {
 }
 
 /// An [Recording] in progress that can be serialized to disk for later use
-/// in [ReplayFileSystem].
+/// in `ReplayFileSystem`.
 ///
 /// Live recordings exist only in memory until [flush] is called.
+// TODO(tvolkert): Link to ReplayFileSystem in docs once it's implemented
 abstract class LiveRecording extends Recording {
   /// The directory in which recording files will be stored.
   ///

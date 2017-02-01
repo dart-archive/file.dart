@@ -12,9 +12,9 @@ import 'package:file/testing.dart';
 import 'package:test/test.dart';
 import 'package:test/test.dart' as testpkg show group, test;
 
-void expectFileSystemException(dynamic msg, void callback()) {
-  expect(callback, throwsFileSystemException(msg));
-}
+/// Callback used in [runCommonTests] to produce the root folder in which all
+/// file system entities will be created.
+typedef String RootPathGenerator();
 
 /// Runs a suite of tests common to all file system implementations. All file
 /// system implementations should run *at least* these tests to ensure
@@ -31,10 +31,10 @@ void expectFileSystemException(dynamic msg, void callback()) {
 /// Entries may use regular expression syntax.
 void runCommonTests(
   FileSystem createFileSystem(), {
-  String root(),
+  RootPathGenerator root,
   List<String> skip: const <String>[],
 }) {
-  var rootfn = root;
+  RootPathGenerator rootfn = root;
 
   group('common', () {
     FileSystem fs;
@@ -42,7 +42,7 @@ void runCommonTests(
 
     List<String> stack = <String>[];
 
-    void skipIfNecessary(description, callback()) {
+    void skipIfNecessary(String description, callback()) {
       stack.add(description);
       bool matchesCurrentFrame(String input) =>
           new RegExp('^$input\$').hasMatch(stack.join(' > '));
@@ -52,10 +52,10 @@ void runCommonTests(
       stack.removeLast();
     }
 
-    void group(description, body()) =>
+    void group(String description, body()) =>
         skipIfNecessary(description, () => testpkg.group(description, body));
 
-    void test(description, body()) =>
+    void test(String description, body()) =>
         skipIfNecessary(description, () => testpkg.test(description, body));
 
     /// Returns [path] prefixed by the [root] namespace.
@@ -141,7 +141,7 @@ void runCommonTests(
 
       group('systemTempDirectory', () {
         test('existsAsDirectory', () {
-          var tmp = fs.systemTempDirectory;
+          Directory tmp = fs.systemTempDirectory;
           expect(tmp, isDirectory);
           expect(tmp.existsSync(), isTrue);
         });
@@ -270,20 +270,20 @@ void runCommonTests(
 
         test('isDirectoryForDirectory', () {
           fs.directory(ns('/foo')).createSync();
-          var stat = fs.statSync(ns('/foo'));
+          FileStat stat = fs.statSync(ns('/foo'));
           expect(stat.type, FileSystemEntityType.DIRECTORY);
         });
 
         test('isFileForFile', () {
           fs.file(ns('/foo')).createSync();
-          var stat = fs.statSync(ns('/foo'));
+          FileStat stat = fs.statSync(ns('/foo'));
           expect(stat.type, FileSystemEntityType.FILE);
         });
 
         test('isFileForLinkToFile', () {
           fs.file(ns('/foo')).createSync();
           fs.link(ns('/bar')).createSync(ns('/foo'));
-          var stat = fs.statSync(ns('/bar'));
+          FileStat stat = fs.statSync(ns('/bar'));
           expect(stat.type, FileSystemEntityType.FILE);
         });
 
@@ -291,7 +291,7 @@ void runCommonTests(
           fs.link(ns('/foo')).createSync(ns('/bar'));
           fs.link(ns('/bar')).createSync(ns('/baz'));
           fs.link(ns('/baz')).createSync(ns('/foo'));
-          var stat = fs.statSync(ns('/foo'));
+          FileStat stat = fs.statSync(ns('/foo'));
           expect(stat.type, FileSystemEntityType.NOT_FOUND);
         });
       });
@@ -337,32 +337,33 @@ void runCommonTests(
       group('type', () {
         test('isFileForFile', () {
           fs.file(ns('/foo')).createSync();
-          var type = fs.typeSync(ns('/foo'));
+          FileSystemEntityType type = fs.typeSync(ns('/foo'));
           expect(type, FileSystemEntityType.FILE);
         });
 
         test('isDirectoryForDirectory', () {
           fs.directory(ns('/foo')).createSync();
-          var type = fs.typeSync(ns('/foo'));
+          FileSystemEntityType type = fs.typeSync(ns('/foo'));
           expect(type, FileSystemEntityType.DIRECTORY);
         });
 
         test('isDirectoryForAncestorOfRoot', () {
-          var type = fs.typeSync('../../../../../../../..');
+          FileSystemEntityType type = fs.typeSync('../../../../../../../..');
           expect(type, FileSystemEntityType.DIRECTORY);
         });
 
         test('isFileForLinkToFileAndFollowLinksTrue', () {
           fs.file(ns('/foo')).createSync();
           fs.link(ns('/bar')).createSync(ns('/foo'));
-          var type = fs.typeSync(ns('/bar'));
+          FileSystemEntityType type = fs.typeSync(ns('/bar'));
           expect(type, FileSystemEntityType.FILE);
         });
 
         test('isLinkForLinkToFileAndFollowLinksFalse', () {
           fs.file(ns('/foo')).createSync();
           fs.link(ns('/bar')).createSync(ns('/foo'));
-          var type = fs.typeSync(ns('/bar'), followLinks: false);
+          FileSystemEntityType type =
+              fs.typeSync(ns('/bar'), followLinks: false);
           expect(type, FileSystemEntityType.LINK);
         });
 
@@ -370,17 +371,17 @@ void runCommonTests(
           fs.link(ns('/foo')).createSync(ns('/bar'));
           fs.link(ns('/bar')).createSync(ns('/baz'));
           fs.link(ns('/baz')).createSync(ns('/foo'));
-          var type = fs.typeSync(ns('/foo'));
+          FileSystemEntityType type = fs.typeSync(ns('/foo'));
           expect(type, FileSystemEntityType.NOT_FOUND);
         });
 
         test('isNotFoundForNoEntityAtTail', () {
-          var type = fs.typeSync(ns('/foo'));
+          FileSystemEntityType type = fs.typeSync(ns('/foo'));
           expect(type, FileSystemEntityType.NOT_FOUND);
         });
 
         test('isNotFoundForNoDirectoryInTraversal', () {
-          var type = fs.typeSync(ns('/foo/bar/baz'));
+          FileSystemEntityType type = fs.typeSync(ns('/foo/bar/baz'));
           expect(type, FileSystemEntityType.NOT_FOUND);
         });
       });
@@ -519,30 +520,30 @@ void runCommonTests(
         });
 
         test('succeedsIfDestinationDoesntExist', () {
-          var src = fs.directory(ns('/foo'))..createSync();
-          var dest = src.renameSync(ns('/bar'));
+          Directory src = fs.directory(ns('/foo'))..createSync();
+          Directory dest = src.renameSync(ns('/bar'));
           expect(dest.path, ns('/bar'));
           expect(dest.existsSync(), true);
         });
 
         test('succeedsIfDestinationIsEmptyDirectory', () {
           fs.directory(ns('/bar')).createSync();
-          var src = fs.directory(ns('/foo'))..createSync();
-          var dest = src.renameSync(ns('/bar'));
+          Directory src = fs.directory(ns('/foo'))..createSync();
+          Directory dest = src.renameSync(ns('/bar'));
           expect(src.existsSync(), false);
           expect(dest.existsSync(), true);
         });
 
         test('throwsIfDestinationIsFile', () {
           fs.file(ns('/bar')).createSync();
-          var src = fs.directory(ns('/foo'))..createSync();
+          Directory src = fs.directory(ns('/foo'))..createSync();
           expectFileSystemException('Not a directory', () {
             src.renameSync(ns('/bar'));
           });
         });
 
         test('throwsIfDestinationParentFolderDoesntExist', () {
-          var src = fs.directory(ns('/foo'))..createSync();
+          Directory src = fs.directory(ns('/foo'))..createSync();
           expectFileSystemException('No such file or directory', () {
             src.renameSync(ns('/bar/baz'));
           });
@@ -550,7 +551,7 @@ void runCommonTests(
 
         test('throwsIfDestinationIsNonEmptyDirectory', () {
           fs.file(ns('/bar/baz')).createSync(recursive: true);
-          var src = fs.directory(ns('/foo'))..createSync();
+          Directory src = fs.directory(ns('/foo'))..createSync();
           // The error will be 'Directory not empty' on OS X, but it will be
           // 'File exists' on Linux, so we just ignore it here in the test.
           expectFileSystemException(null, () {
@@ -596,7 +597,7 @@ void runCommonTests(
         });
 
         test('throwsIfDestinationIsLinkToEmptyDirectory', () {
-          var src = fs.directory(ns('/foo'))..createSync();
+          Directory src = fs.directory(ns('/foo'))..createSync();
           fs.directory(ns('/bar')).createSync();
           fs.link(ns('/baz')).createSync(ns('/bar'));
           expectFileSystemException('Not a directory', () {
@@ -605,7 +606,7 @@ void runCommonTests(
         });
 
         test('succeedsIfDestinationIsInDifferentDirectory', () {
-          var src = fs.directory(ns('/foo'))..createSync();
+          Directory src = fs.directory(ns('/foo'))..createSync();
           fs.directory(ns('/bar')).createSync();
           src.renameSync(ns('/bar/baz'));
           expect(fs.typeSync(ns('/foo')), FileSystemEntityType.NOT_FOUND);
@@ -634,19 +635,19 @@ void runCommonTests(
         });
 
         test('succeedsIfEmptyDirectoryExistsAndRecursiveFalse', () {
-          var dir = fs.directory(ns('/foo'))..createSync();
+          Directory dir = fs.directory(ns('/foo'))..createSync();
           dir.deleteSync();
           expect(dir.existsSync(), false);
         });
 
         test('succeedsIfEmptyDirectoryExistsAndRecursiveTrue', () {
-          var dir = fs.directory(ns('/foo'))..createSync();
+          Directory dir = fs.directory(ns('/foo'))..createSync();
           dir.deleteSync(recursive: true);
           expect(dir.existsSync(), false);
         });
 
         test('throwsIfNonEmptyDirectoryExistsAndRecursiveFalse', () {
-          var dir = fs.directory(ns('/foo'))..createSync();
+          Directory dir = fs.directory(ns('/foo'))..createSync();
           fs.file(ns('/foo/bar')).createSync();
           expectFileSystemException('Directory not empty', () {
             dir.deleteSync();
@@ -654,7 +655,7 @@ void runCommonTests(
         });
 
         test('succeedsIfNonEmptyDirectoryExistsAndRecursiveTrue', () {
-          var dir = fs.directory(ns('/foo'))..createSync();
+          Directory dir = fs.directory(ns('/foo'))..createSync();
           fs.file(ns('/foo/bar')).createSync();
           dir.deleteSync(recursive: true);
           expect(fs.directory(ns('/foo')).existsSync(), false);
@@ -823,7 +824,7 @@ void runCommonTests(
         test('handlesParentAndThisFolderReferences', () {
           fs.directory(ns('/foo/bar/baz')).createSync(recursive: true);
           fs.link(ns('/foo/bar/baz/qux')).createSync('../..');
-          var resolved = fs
+          String resolved = fs
               .directory(ns('/foo/./bar/baz/../baz/qux/bar'))
               .resolveSymbolicLinksSync();
           expect(resolved, ns('/foo/bar'));
@@ -839,7 +840,7 @@ void runCommonTests(
           fs.link(ns('/foo/bar/baz')).createSync('../../qux', recursive: true);
           fs.link(ns('/qux')).createSync('quux');
           fs.link(ns('/quux/quuz')).createSync(ns('/foo'), recursive: true);
-          var resolved = fs
+          String resolved = fs
               .directory(ns('/foo//bar/./baz/quuz/bar/..///bar/baz/'))
               .resolveSymbolicLinksSync();
           expect(resolved, ns('/quux'));
@@ -887,29 +888,29 @@ void runCommonTests(
 
         test('resolvesNameCollisions', () {
           fs.directory(ns('/foo/bar')).createSync(recursive: true);
-          var tmp = fs.directory(ns('/foo')).createTempSync('bar');
+          Directory tmp = fs.directory(ns('/foo')).createTempSync('bar');
           expect(tmp.path,
               allOf(isNot(ns('/foo/bar')), startsWith(ns('/foo/bar'))));
         });
 
         test('succeedsWithoutPrefix', () {
-          var dir = fs.directory(ns('/foo'))..createSync();
+          Directory dir = fs.directory(ns('/foo'))..createSync();
           expect(dir.createTempSync().path, startsWith(ns('/foo/')));
         });
 
         test('succeedsWithPrefix', () {
-          var dir = fs.directory(ns('/foo'))..createSync();
+          Directory dir = fs.directory(ns('/foo'))..createSync();
           expect(dir.createTempSync('bar').path, startsWith(ns('/foo/bar')));
         });
 
         test('succeedsWithNestedPathPrefixThatExists', () {
           fs.directory(ns('/foo/bar')).createSync(recursive: true);
-          var tmp = fs.directory(ns('/foo')).createTempSync('bar/baz');
+          Directory tmp = fs.directory(ns('/foo')).createTempSync('bar/baz');
           expect(tmp.path, startsWith(ns('/foo/bar/baz')));
         });
 
         test('throwsWithNestedPathPrefixThatDoesntExist', () {
-          var dir = fs.directory(ns('/foo'))..createSync();
+          Directory dir = fs.directory(ns('/foo'))..createSync();
           expectFileSystemException('No such file or directory', () {
             dir.createTempSync('bar/baz');
           });
@@ -930,7 +931,7 @@ void runCommonTests(
         });
 
         test('returnsCovariantType', () async {
-          void expectIsFileSystemEntity(entity) {
+          void expectIsFileSystemEntity(dynamic entity) {
             expect(entity, isFileSystemEntity);
           }
 
@@ -939,7 +940,7 @@ void runCommonTests(
         });
 
         test('returnsEmptyListForEmptyDirectory', () {
-          var empty = fs.directory(ns('/bar'))..createSync();
+          Directory empty = fs.directory(ns('/bar'))..createSync();
           expect(empty.listSync(), isEmpty);
         });
 
@@ -950,7 +951,7 @@ void runCommonTests(
         });
 
         test('returnsLinkObjectsIfFollowLinksFalse', () {
-          var list = dir.listSync(followLinks: false);
+          List<FileSystemEntity> list = dir.listSync(followLinks: false);
           expect(list, hasLength(3));
           expect(list, contains(allOf(isFile, hasPath(ns('/foo/bar')))));
           expect(list, contains(allOf(isDirectory, hasPath(ns('/foo/baz')))));
@@ -958,7 +959,7 @@ void runCommonTests(
         });
 
         test('followsLinksIfFollowLinksTrue', () {
-          var list = dir.listSync();
+          List<FileSystemEntity> list = dir.listSync();
           expect(list, hasLength(3));
           expect(list, contains(allOf(isFile, hasPath(ns('/foo/bar')))));
           expect(list, contains(allOf(isDirectory, hasPath(ns('/foo/baz')))));
@@ -1005,7 +1006,8 @@ void runCommonTests(
         test('childEntriesNotNormalized', () {
           dir = fs.directory(ns('/bar/baz'))..createSync(recursive: true);
           fs.file(ns('/bar/baz/qux')).createSync();
-          var list = fs.directory(ns('/bar//../bar/./baz')).listSync();
+          List<FileSystemEntity> list =
+              fs.directory(ns('/bar//../bar/./baz')).listSync();
           expect(list, hasLength(1));
           expect(list[0], allOf(isFile, hasPath(ns('/bar//../bar/./baz/qux'))));
         });
@@ -1013,8 +1015,9 @@ void runCommonTests(
         test('symlinksToNotFoundAlwaysReturnedAsLinks', () {
           dir = fs.directory(ns('/bar'))..createSync();
           fs.link(ns('/bar/baz')).createSync('qux');
-          for (bool followLinks in [true, false]) {
-            var list = dir.listSync(followLinks: followLinks);
+          for (bool followLinks in const <bool>[true, false]) {
+            List<FileSystemEntity> list =
+                dir.listSync(followLinks: followLinks);
             expect(list, hasLength(1));
             expect(list[0], allOf(isLink, hasPath(ns('/bar/baz'))));
           }
@@ -1459,7 +1462,7 @@ void runCommonTests(
             });
           } else {
             test('createsFileIfDoesntExistAtTail', () {
-              var raf = fs.file(ns('/bar')).openSync(mode: mode);
+              RandomAccessFile raf = fs.file(ns('/bar')).openSync(mode: mode);
               raf.closeSync();
               expect(fs.file(ns('/bar')).existsSync(), true);
             });
@@ -1833,8 +1836,8 @@ void runCommonTests(
         test('succeedsIfExistsAsFile', () async {
           File f = fs.file(ns('/foo'))..createSync();
           f.writeAsStringSync('Hello world', flush: true);
-          var stream = f.openRead();
-          var data = await stream.toList();
+          Stream<List<int>> stream = f.openRead();
+          List<List<int>> data = await stream.toList();
           expect(data, hasLength(1));
           expect(UTF8.decode(data[0]), 'Hello world');
         });
@@ -1849,8 +1852,8 @@ void runCommonTests(
           File f = fs.file(ns('/foo'))..createSync();
           fs.link(ns('/bar')).createSync(ns('/foo'));
           f.writeAsStringSync('Hello world', flush: true);
-          var stream = fs.file(ns('/bar')).openRead();
-          var data = await stream.toList();
+          Stream<List<int>> stream = fs.file(ns('/bar')).openRead();
+          List<List<int>> data = await stream.toList();
           expect(data, hasLength(1));
           expect(UTF8.decode(data[0]), 'Hello world');
         });
@@ -1858,8 +1861,8 @@ void runCommonTests(
         test('respectsStartAndEndParameters', () async {
           File f = fs.file(ns('/foo'))..createSync();
           f.writeAsStringSync('Hello world', flush: true);
-          var stream = f.openRead(2);
-          var data = await stream.toList();
+          Stream<List<int>> stream = f.openRead(2);
+          List<List<int>> data = await stream.toList();
           expect(data, hasLength(1));
           expect(UTF8.decode(data[0]), 'llo world');
           stream = f.openRead(2, 5);
@@ -1870,15 +1873,15 @@ void runCommonTests(
 
         test('throwsIfStartParameterIsNegative', () async {
           File f = fs.file(ns('/foo'))..createSync();
-          var stream = f.openRead(-2);
+          Stream<List<int>> stream = f.openRead(-2);
           expect(stream.drain(), throwsRangeError);
         });
 
         test('stopsAtEndOfFileIfEndParameterIsPastEndOfFile', () async {
           File f = fs.file(ns('/foo'))..createSync();
           f.writeAsStringSync('Hello world', flush: true);
-          var stream = f.openRead(2, 1024);
-          var data = await stream.toList();
+          Stream<List<int>> stream = f.openRead(2, 1024);
+          List<List<int>> data = await stream.toList();
           expect(data, hasLength(1));
           expect(UTF8.decode(data[0]), 'llo world');
         });
@@ -1886,7 +1889,7 @@ void runCommonTests(
         test('providesSingleSubscriptionStream', () async {
           File f = fs.file(ns('/foo'))..createSync();
           f.writeAsStringSync('Hello world', flush: true);
-          var stream = f.openRead();
+          Stream<List<int>> stream = f.openRead();
           expect(stream.isBroadcast, isFalse);
           await stream.drain();
         });
@@ -1961,7 +1964,7 @@ void runCommonTests(
           bool isSinkClosed = false;
 
           Future<dynamic> closeSink() {
-            var future = sink.close();
+            Future<dynamic> future = sink.close();
             isSinkClosed = true;
             return future;
           }
@@ -2036,14 +2039,14 @@ void runCommonTests(
 
           test('ignoresCloseAfterAlreadyClosed', () async {
             sink.write('Hello world');
-            Future f1 = closeSink();
-            Future f2 = closeSink();
-            await Future.wait([f1, f2]);
+            Future<dynamic> f1 = closeSink();
+            Future<dynamic> f2 = closeSink();
+            await Future.wait(<Future<dynamic>>[f1, f2]);
           });
 
           test('returnsAccurateDoneFuture', () async {
             bool done = false;
-            sink.done.then((_) => done = true);
+            sink.done.then((_) => done = true); // ignore: unawaited_futures
             expect(done, isFalse);
             sink.write('foo');
             expect(done, isFalse);
@@ -2056,7 +2059,7 @@ void runCommonTests(
             bool isControllerClosed = false;
 
             Future<dynamic> closeController() {
-              var future = controller.close();
+              Future<dynamic> future = controller.close();
               isControllerClosed = true;
               return future;
             }

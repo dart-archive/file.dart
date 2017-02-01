@@ -76,7 +76,7 @@ abstract class _ChrootFileSystemEntity<T extends FileSystemEntity,
 
   @override
   String resolveSymbolicLinksSync() =>
-      fileSystem._resolve(path, notFound: _NotFoundBehavior.THROW);
+      fileSystem._resolve(path, notFound: _NotFoundBehavior.throwError);
 
   @override
   Future<FileStat> stat() {
@@ -103,7 +103,7 @@ abstract class _ChrootFileSystemEntity<T extends FileSystemEntity,
   @override
   Future<T> delete({bool recursive: false}) async {
     String path = fileSystem._resolve(this.path,
-        followLinks: false, notFound: _NotFoundBehavior.THROW);
+        followLinks: false, notFound: _NotFoundBehavior.throwError);
 
     String real(String path) => fileSystem._real(path, resolve: false);
     Future<FileSystemEntityType> type(String path) =>
@@ -114,7 +114,7 @@ abstract class _ChrootFileSystemEntity<T extends FileSystemEntity,
         await fileSystem.delegate.link(real(path)).delete();
       } else {
         String resolvedPath = fileSystem._resolve(p.basename(path),
-            from: p.dirname(path), notFound: _NotFoundBehavior.ALLOW_AT_TAIL);
+            from: p.dirname(path), notFound: _NotFoundBehavior.allowAtTail);
         if (!recursive && await type(resolvedPath) != expectedType) {
           String msg = expectedType == FileSystemEntityType.FILE
               ? 'Is a directory'
@@ -133,7 +133,7 @@ abstract class _ChrootFileSystemEntity<T extends FileSystemEntity,
   @override
   void deleteSync({bool recursive: false}) {
     String path = fileSystem._resolve(this.path,
-        followLinks: false, notFound: _NotFoundBehavior.THROW);
+        followLinks: false, notFound: _NotFoundBehavior.throwError);
 
     String real(String path) => fileSystem._real(path, resolve: false);
     FileSystemEntityType type(String path) =>
@@ -144,7 +144,7 @@ abstract class _ChrootFileSystemEntity<T extends FileSystemEntity,
         fileSystem.delegate.link(real(path)).deleteSync();
       } else {
         String resolvedPath = fileSystem._resolve(p.basename(path),
-            from: p.dirname(path), notFound: _NotFoundBehavior.ALLOW_AT_TAIL);
+            from: p.dirname(path), notFound: _NotFoundBehavior.allowAtTail);
         if (!recursive && type(resolvedPath) != expectedType) {
           String msg = expectedType == FileSystemEntityType.FILE
               ? 'Is a directory'

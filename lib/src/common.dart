@@ -4,7 +4,8 @@
 
 import 'package:file/src/io.dart' as io;
 
-String getPath(path) {
+/// Gets the string path represented by the specified generic [path].
+String getPath(dynamic path) {
   if (path is io.FileSystemEntity) {
     return path.path;
   } else if (path is String) {

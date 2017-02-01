@@ -15,13 +15,13 @@ abstract class ForwardingFileSystem extends FileSystem {
   ForwardingFileSystem(this.delegate);
 
   @override
-  Directory directory(path) => delegate.directory(path);
+  Directory directory(dynamic path) => delegate.directory(path);
 
   @override
-  File file(path) => delegate.file(path);
+  File file(dynamic path) => delegate.file(path);
 
   @override
-  Link link(path) => delegate.link(path);
+  Link link(dynamic path) => delegate.link(path);
 
   @override
   p.Context get path => delegate.path;

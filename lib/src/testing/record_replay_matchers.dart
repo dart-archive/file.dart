@@ -88,14 +88,15 @@ abstract class RecordedInvocation<T extends RecordedInvocation<T>>
   }
 
   /// @nodoc
+  @override
   bool matches(dynamic item, Map<dynamic, dynamic> matchState) {
     if (!_typeMatcher.matches(item, matchState)) {
-      addStateInfo(matchState, {'matcher': _typeMatcher});
+      addStateInfo(matchState, <String, Matcher>{'matcher': _typeMatcher});
       return false;
     }
     for (Matcher matcher in _fieldMatchers) {
       if (!matcher.matches(item, matchState)) {
-        addStateInfo(matchState, {'matcher': matcher});
+        addStateInfo(matchState, <String, Matcher>{'matcher': matcher});
         return false;
       }
     }
@@ -103,15 +104,20 @@ abstract class RecordedInvocation<T extends RecordedInvocation<T>>
   }
 
   /// @nodoc
-  Description describeMismatch(dynamic item, Description mismatchDescription,
-      Map matchState, bool verbose) {
+  @override
+  Description describeMismatch(
+    dynamic item,
+    Description description,
+    Map<dynamic, dynamic> matchState,
+    bool verbose,
+  ) {
     Matcher matcher = matchState['matcher'];
-    matcher.describeMismatch(
-        item, mismatchDescription, matchState['state'], verbose);
-    return mismatchDescription;
+    matcher.describeMismatch(item, description, matchState['state'], verbose);
+    return description;
   }
 
   /// @nodoc
+  @override
   Description describe(Description description) {
     String divider = '\n  - ';
     return _typeMatcher
@@ -208,17 +214,22 @@ class _Target extends Matcher {
 
   @override
   Description describeMismatch(
-      dynamic item, Description desc, Map matchState, bool verbose) {
-    desc.add('was invoked on: ${item.object}').add('\n   Which: ');
+    dynamic item,
+    Description description,
+    Map<dynamic, dynamic> matchState,
+    bool verbose,
+  ) {
+    description.add('was invoked on: ${item.object}').add('\n   Which: ');
     Description matcherDesc = new StringDescription();
     _matcher.describeMismatch(item.object, matcherDesc, matchState, verbose);
-    desc.add(matcherDesc.toString());
-    return desc;
+    description.add(matcherDesc.toString());
+    return description;
   }
 
-  Description describe(Description description) {
-    description.add('on object: ');
-    return _matcher.describe(description);
+  @override
+  Description describe(Description desc) {
+    desc.add('on object: ');
+    return _matcher.describe(desc);
   }
 }
 
@@ -232,18 +243,23 @@ class _Result extends Matcher {
       _matcher.matches(item.result, matchState);
 
   @override
-  Description describeMismatch(dynamic item, Description mismatchDescription,
-      Map matchState, bool verbose) {
-    mismatchDescription.add('returned: ${item.result}').add('\n   Which: ');
+  Description describeMismatch(
+    dynamic item,
+    Description description,
+    Map<dynamic, dynamic> matchState,
+    bool verbose,
+  ) {
+    description.add('returned: ${item.result}').add('\n   Which: ');
     Description matcherDesc = new StringDescription();
     _matcher.describeMismatch(item.result, matcherDesc, matchState, verbose);
-    mismatchDescription.add(matcherDesc.toString());
-    return mismatchDescription;
+    description.add(matcherDesc.toString());
+    return description;
   }
 
-  Description describe(Description description) {
-    description.add('with result: ');
-    return _matcher.describe(description);
+  @override
+  Description describe(Description desc) {
+    desc.add('with result: ');
+    return _matcher.describe(desc);
   }
 }
 
@@ -257,8 +273,12 @@ class _Type extends Matcher {
       _kTypeMatchers[type].matches(item, matchState);
 
   @override
-  Description describeMismatch(dynamic item, Description desc,
-      Map<dynamic, dynamic> matchState, bool verbose) {
+  Description describeMismatch(
+    dynamic item,
+    Description description,
+    Map<dynamic, dynamic> matchState,
+    bool verbose,
+  ) {
     Type type;
     for (Type matchType in _kTypeMatchers.keys) {
       Matcher matcher = _kTypeMatchers[matchType];
@@ -268,11 +288,11 @@ class _Type extends Matcher {
       }
     }
     if (type != null) {
-      desc.add('is ').add(_kTypeDescriptions[type]);
+      description.add('is ').add(_kTypeDescriptions[type]);
     } else {
-      desc.add('is a ${item.runtimeType}');
+      description.add('is a ${item.runtimeType}');
     }
-    return desc;
+    return description;
   }
 
   @override
@@ -289,21 +309,24 @@ class _MethodName extends Matcher {
       _matcher.matches(getSymbolName(item.method), matchState);
 
   @override
-  Description describeMismatch(dynamic item, Description mismatchDescription,
-      Map matchState, bool verbose) {
+  Description describeMismatch(
+    dynamic item,
+    Description description,
+    Map<dynamic, dynamic> matchState,
+    bool verbose,
+  ) {
     String methodName = getSymbolName(item.method);
-    mismatchDescription
-        .add('invoked method: \'$methodName\'')
-        .add('\n   Which: ');
+    description.add('invoked method: \'$methodName\'').add('\n   Which: ');
     Description matcherDesc = new StringDescription();
     _matcher.describeMismatch(methodName, matcherDesc, matchState, verbose);
-    mismatchDescription.add(matcherDesc.toString());
-    return mismatchDescription;
+    description.add(matcherDesc.toString());
+    return description;
   }
 
-  Description describe(Description description) {
-    description.add('method: ');
-    return _matcher.describe(description);
+  @override
+  Description describe(Description desc) {
+    desc.add('method: ');
+    return _matcher.describe(desc);
   }
 }
 
@@ -317,15 +340,20 @@ class _PositionalArguments extends Matcher {
       _matcher.matches(item.positionalArguments, matchState);
 
   @override
-  Description describeMismatch(dynamic item, Description desc,
-      Map<dynamic, dynamic> matchState, bool verbose) {
+  Description describeMismatch(
+    dynamic item,
+    Description description,
+    Map<dynamic, dynamic> matchState,
+    bool verbose,
+  ) {
     return _matcher.describeMismatch(
-        item.positionalArguments, desc, matchState, verbose);
+        item.positionalArguments, description, matchState, verbose);
   }
 
-  Description describe(Description description) {
-    description.add('with positional arguments: ');
-    return _matcher.describe(description);
+  @override
+  Description describe(Description desc) {
+    desc.add('with positional arguments: ');
+    return _matcher.describe(desc);
   }
 }
 
@@ -343,12 +371,17 @@ class _NamedArgument extends Matcher {
       _matcher.matches(item.namedArguments, matchState);
 
   @override
-  Description describeMismatch(dynamic item, Description desc,
-      Map<dynamic, dynamic> matchState, bool verbose) {
+  Description describeMismatch(
+    dynamic item,
+    Description description,
+    Map<dynamic, dynamic> matchState,
+    bool verbose,
+  ) {
     return _matcher.describeMismatch(
-        item.namedArguments, desc, matchState, verbose);
+        item.namedArguments, description, matchState, verbose);
   }
 
+  @override
   Description describe(Description description) =>
       description.add('with named argument "$name" = $value');
 }
@@ -363,18 +396,21 @@ class _GetPropertyName extends Matcher {
       _matcher.matches(getSymbolName(item.property), matchState);
 
   @override
-  Description describeMismatch(dynamic item, Description mismatchDescription,
-      Map matchState, bool verbose) {
+  Description describeMismatch(
+    dynamic item,
+    Description description,
+    Map<dynamic, dynamic> matchState,
+    bool verbose,
+  ) {
     String propertyName = getSymbolName(item.property);
-    mismatchDescription
-        .add('got property: \'$propertyName\'')
-        .add('\n   Which: ');
+    description.add('got property: \'$propertyName\'').add('\n   Which: ');
     Description matcherDesc = new StringDescription();
     _matcher.describeMismatch(propertyName, matcherDesc, matchState, verbose);
-    mismatchDescription.add(matcherDesc.toString());
-    return mismatchDescription;
+    description.add(matcherDesc.toString());
+    return description;
   }
 
+  @override
   Description describe(Description description) {
     description.add('gets property: ');
     return _matcher.describe(description);
@@ -398,18 +434,21 @@ class _SetPropertyName extends Matcher {
   }
 
   @override
-  Description describeMismatch(dynamic item, Description mismatchDescription,
-      Map matchState, bool verbose) {
+  Description describeMismatch(
+    dynamic item,
+    Description description,
+    Map<dynamic, dynamic> matchState,
+    bool verbose,
+  ) {
     String propertyName = _getPropertyName(item);
-    mismatchDescription
-        .add('set property: \'$propertyName\'')
-        .add('\n   Which: ');
+    description.add('set property: \'$propertyName\'').add('\n   Which: ');
     Description matcherDesc = new StringDescription();
     _matcher.describeMismatch(propertyName, matcherDesc, matchState, verbose);
-    mismatchDescription.add(matcherDesc.toString());
-    return mismatchDescription;
+    description.add(matcherDesc.toString());
+    return description;
   }
 
+  @override
   Description describe(Description description) {
     description.add('of property: ');
     return _matcher.describe(description);
@@ -426,15 +465,20 @@ class _SetValue extends Matcher {
       _matcher.matches(item.value, matchState);
 
   @override
-  Description describeMismatch(dynamic item, Description mismatchDescription,
-      Map matchState, bool verbose) {
-    mismatchDescription.add('set value: ${item.value}').add('\n   Which: ');
+  Description describeMismatch(
+    dynamic item,
+    Description description,
+    Map<dynamic, dynamic> matchState,
+    bool verbose,
+  ) {
+    description.add('set value: ${item.value}').add('\n   Which: ');
     Description matcherDesc = new StringDescription();
     _matcher.describeMismatch(item.value, matcherDesc, matchState, verbose);
-    mismatchDescription.add(matcherDesc.toString());
-    return mismatchDescription;
+    description.add(matcherDesc.toString());
+    return description;
   }
 
+  @override
   Description describe(Description description) {
     description.add('to value: ');
     return _matcher.describe(description);

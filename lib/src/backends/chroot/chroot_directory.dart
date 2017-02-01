@@ -6,6 +6,8 @@ part of file.src.backends.chroot;
 
 class _ChrootDirectory extends _ChrootFileSystemEntity<Directory, io.Directory>
     with ForwardingDirectory {
+  _ChrootDirectory(ChrootFileSystem fs, String path) : super(fs, path);
+
   factory _ChrootDirectory.wrapped(
     ChrootFileSystem fs,
     Directory delegate, {
@@ -14,8 +16,6 @@ class _ChrootDirectory extends _ChrootFileSystemEntity<Directory, io.Directory>
     String localPath = fs._local(delegate.path, relative: relative);
     return new _ChrootDirectory(fs, localPath);
   }
-
-  _ChrootDirectory(ChrootFileSystem fs, String path) : super(fs, path);
 
   @override
   FileSystemEntityType get expectedType => FileSystemEntityType.DIRECTORY;

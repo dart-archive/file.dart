@@ -5,7 +5,8 @@
 part of file.src.backends.memory;
 
 class _MemoryFileStat implements io.FileStat {
-  static const _notFound = const _MemoryFileStat._internalNotFound();
+  static const _MemoryFileStat _notFound =
+      const _MemoryFileStat._internalNotFound();
 
   @override
   final DateTime changed;
@@ -45,7 +46,16 @@ class _MemoryFileStat implements io.FileStat {
   @override
   String modeString() {
     int permissions = mode & 0xFFF;
-    var codes = const ['---', '--x', '-w-', '-wx', 'r--', 'r-x', 'rw-', 'rwx'];
+    List<String> codes = const <String>[
+      '---',
+      '--x',
+      '-w-',
+      '-wx',
+      'r--',
+      'r-x',
+      'rw-',
+      'rwx',
+    ];
     List<String> result = <String>[];
     result
       ..add(codes[(permissions >> 6) & 0x7])

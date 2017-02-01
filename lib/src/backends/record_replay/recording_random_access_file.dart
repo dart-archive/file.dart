@@ -12,12 +12,19 @@ import 'mutable_recording.dart';
 import 'recording_file_system.dart';
 import 'recording_proxy_mixin.dart';
 
+/// [RandomAccessFile] implementation that records all invocation activity to
+/// its file system's recording.
 class RecordingRandomAccessFile extends Object
     with RecordingProxyMixin
     implements RandomAccessFile {
+  /// The file system that owns this random access file.
   final RecordingFileSystem fileSystem;
+
+  /// The random access file to which this random access file delegates its
+  /// functionality while recording.
   final RandomAccessFile delegate;
 
+  /// Creates a new `RecordingRandomAccessFile`.
   RecordingRandomAccessFile(this.fileSystem, this.delegate) {
     methods.addAll(<Symbol, Function>{
       #close: _close,

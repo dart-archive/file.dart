@@ -5,6 +5,7 @@
 import 'dart:convert';
 
 import 'package:file/file.dart';
+import 'package:file/src/io.dart' as io;
 import 'package:path/path.dart' as p;
 
 import 'common.dart';
@@ -35,19 +36,20 @@ class _TypeMatcher<T> {
 /// When encoding an object, we will walk this map in iteration order looking
 /// for a matching encoder. Thus, when there are two encoders that match an
 //  object, the first one will win.
-const Map<_TypeMatcher, _Encoder> _kEncoders = const <_TypeMatcher, _Encoder>{
+const Map<_TypeMatcher<dynamic>, _Encoder> _kEncoders =
+    const <_TypeMatcher<dynamic>, _Encoder>{
   const _TypeMatcher<num>(): _encodeRaw,
   const _TypeMatcher<bool>(): _encodeRaw,
   const _TypeMatcher<String>(): _encodeRaw,
   const _TypeMatcher<Null>(): _encodeRaw,
-  const _TypeMatcher<List>(): _encodeRaw,
-  const _TypeMatcher<Map>(): _encodeMap,
-  const _TypeMatcher<Iterable>(): _encodeIterable,
+  const _TypeMatcher<List<dynamic>>(): _encodeRaw,
+  const _TypeMatcher<Map<dynamic, dynamic>>(): _encodeMap,
+  const _TypeMatcher<Iterable<dynamic>>(): _encodeIterable,
   const _TypeMatcher<Symbol>(): getSymbolName,
   const _TypeMatcher<DateTime>(): _encodeDateTime,
   const _TypeMatcher<Uri>(): _encodeUri,
   const _TypeMatcher<p.Context>(): _encodePathContext,
-  const _TypeMatcher<EventImpl>(): _encodeEvent,
+  const _TypeMatcher<EventImpl<dynamic>>(): _encodeEvent,
   const _TypeMatcher<FileSystem>(): _encodeFileSystem,
   const _TypeMatcher<RecordingDirectory>(): _encodeFileSystemEntity,
   const _TypeMatcher<RecordingFile>(): _encodeFileSystemEntity,
@@ -70,7 +72,7 @@ const Map<_TypeMatcher, _Encoder> _kEncoders = const <_TypeMatcher, _Encoder>{
 ///   - [JsonEncoder.withIndent]
 dynamic encode(dynamic object) {
   _Encoder encoder = _encodeDefault;
-  for (_TypeMatcher matcher in _kEncoders.keys) {
+  for (_TypeMatcher<dynamic> matcher in _kEncoders.keys) {
     if (matcher.check(object)) {
       encoder = _kEncoders[matcher];
       break;
@@ -112,14 +114,15 @@ Map<String, String> _encodePathContext(p.Context context) => <String, String>{
       'cwd': context.current,
     };
 
-Map<String, dynamic> _encodeEvent(EventImpl event) => event.encode();
+Map<String, dynamic> _encodeEvent(EventImpl<dynamic> event) => event.encode();
 
 String _encodeFileSystem(FileSystem fs) => kFileSystemEncodedValue;
 
 /// Encodes a file system entity by using its `uid` as a reference identifier.
 /// During replay, this allows us to tie the return value of of one event to
 /// the object of another.
-String _encodeFileSystemEntity(RecordingFileSystemEntity entity) {
+String _encodeFileSystemEntity(
+    RecordingFileSystemEntity<FileSystemEntity, io.FileSystemEntity> entity) {
   return '${entity.runtimeType}@${entity.uid}';
 }
 

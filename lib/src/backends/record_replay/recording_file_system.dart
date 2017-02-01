@@ -16,7 +16,7 @@ import 'recording_proxy_mixin.dart';
 ///
 /// This will record all invocations (methods, property getters, and property
 /// setters) that occur on it, in an opaque format that can later be used in
-/// [ReplayFileSystem]. All activity in the [File], [Directory], [Link],
+/// `ReplayFileSystem`. All activity in the [File], [Directory], [Link],
 /// [IOSink], and [RandomAccessFile] instances returned from this API will also
 /// be recorded.
 ///
@@ -35,7 +35,8 @@ import 'recording_proxy_mixin.dart';
 ///     order.
 ///
 /// See also:
-///   - [ReplayFileSystem]
+///   - `ReplayFileSystem`
+// TODO(tvolkert): Link to ReplayFileSystem in docs once it's implemented
 abstract class RecordingFileSystem extends FileSystem {
   /// Creates a new `RecordingFileSystem`.
   ///
@@ -73,9 +74,11 @@ abstract class RecordingFileSystem extends FileSystem {
   Stopwatch get stopwatch;
 }
 
+/// Non-exported implementation class for `RecordingFileSystem`.
 class RecordingFileSystemImpl extends FileSystem
     with RecordingProxyMixin
     implements RecordingFileSystem {
+  /// Creates a new `RecordingFileSystemImpl`.
   RecordingFileSystemImpl(
       this.delegate, Directory destination, Stopwatch recordingStopwatch)
       : recording = new MutableRecording(destination),

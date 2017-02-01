@@ -37,7 +37,7 @@ void main() {
       test('supportsMultipleActions', () {
         fs.directory('/foo').createSync();
         fs.file('/foo/bar').writeAsStringSync('BAR');
-        var events = recording.events;
+        List<InvocationEvent<dynamic>> events = recording.events;
         expect(events, hasLength(4));
         expect(events[0], invokesMethod('directory'));
         expect(events[1], invokesMethod('createSync'));
@@ -50,51 +50,54 @@ void main() {
       group('FileSystem', () {
         test('directory', () {
           fs.directory('/foo');
-          var events = recording.events;
+          List<InvocationEvent<dynamic>> events = recording.events;
           expect(events, hasLength(1));
           expect(
-              events[0],
-              invokesMethod('directory')
-                  .on(fs)
-                  .withPositionalArguments(['/foo']).withResult(isDirectory));
+            events[0],
+            invokesMethod('directory').on(fs).withPositionalArguments(
+                <String>['/foo']).withResult(isDirectory),
+          );
         });
 
         test('file', () {
           fs.file('/foo');
-          var events = recording.events;
+          List<InvocationEvent<dynamic>> events = recording.events;
           expect(events, hasLength(1));
           expect(
-              events[0],
-              invokesMethod('file')
-                  .on(fs)
-                  .withPositionalArguments(['/foo']).withResult(isFile));
+            events[0],
+            invokesMethod('file')
+                .on(fs)
+                .withPositionalArguments(<String>['/foo']).withResult(isFile),
+          );
         });
 
         test('link', () {
           fs.link('/foo');
-          var events = recording.events;
+          List<InvocationEvent<dynamic>> events = recording.events;
           expect(events, hasLength(1));
           expect(
-              events[0],
-              invokesMethod('link')
-                  .on(fs)
-                  .withPositionalArguments(['/foo']).withResult(isLink));
+            events[0],
+            invokesMethod('link')
+                .on(fs)
+                .withPositionalArguments(<String>['/foo']).withResult(isLink),
+          );
         });
 
         test('path', () {
           fs.path;
-          var events = recording.events;
+          List<InvocationEvent<dynamic>> events = recording.events;
           expect(events, hasLength(1));
           expect(
-              events[0],
-              getsProperty('path')
-                  .on(fs)
-                  .withResult(const isInstanceOf<p.Context>()));
+            events[0],
+            getsProperty('path')
+                .on(fs)
+                .withResult(const isInstanceOf<p.Context>()),
+          );
         });
 
         test('systemTempDirectory', () {
           fs.systemTempDirectory;
-          var events = recording.events;
+          List<InvocationEvent<dynamic>> events = recording.events;
           expect(events, hasLength(1));
           expect(
               events[0],
@@ -106,7 +109,7 @@ void main() {
         group('currentDirectory', () {
           test('get', () {
             fs.currentDirectory;
-            var events = recording.events;
+            List<InvocationEvent<dynamic>> events = recording.events;
             expect(events, hasLength(1));
             expect(
                 events[0],
@@ -118,7 +121,7 @@ void main() {
           test('setToString', () {
             delegate.directory('/foo').createSync();
             fs.currentDirectory = '/foo';
-            var events = recording.events;
+            List<InvocationEvent<dynamic>> events = recording.events;
             expect(events, hasLength(1));
             expect(events[0],
                 setsProperty('currentDirectory').on(fs).toValue('/foo'));
@@ -127,7 +130,7 @@ void main() {
           test('setToRecordingDirectory', () {
             delegate.directory('/foo').createSync();
             fs.currentDirectory = fs.directory('/foo');
-            var events = recording.events;
+            List<InvocationEvent<dynamic>> events = recording.events;
             expect(events.length, greaterThanOrEqualTo(2));
             expect(events[0], invokesMethod().withResult(isDirectory));
             Directory directory = events[0].result;
@@ -142,7 +145,7 @@ void main() {
             Directory dir = delegate.directory('/foo');
             dir.createSync();
             fs.currentDirectory = dir;
-            var events = recording.events;
+            List<InvocationEvent<dynamic>> events = recording.events;
             expect(events, hasLength(1));
             expect(events[0],
                 setsProperty('currentDirectory').on(fs).toValue(isDirectory));
@@ -152,26 +155,24 @@ void main() {
         test('stat', () async {
           delegate.file('/foo').createSync();
           await fs.stat('/foo');
-          var events = recording.events;
+          List<InvocationEvent<dynamic>> events = recording.events;
           expect(events, hasLength(1));
           expect(
             events[0],
-            invokesMethod('stat')
-                .on(fs)
-                .withPositionalArguments(['/foo']).withResult(isFileStat),
+            invokesMethod('stat').on(fs).withPositionalArguments(
+                <String>['/foo']).withResult(isFileStat),
           );
         });
 
         test('statSync', () {
           delegate.file('/foo').createSync();
           fs.statSync('/foo');
-          var events = recording.events;
+          List<InvocationEvent<dynamic>> events = recording.events;
           expect(events, hasLength(1));
           expect(
             events[0],
-            invokesMethod('statSync')
-                .on(fs)
-                .withPositionalArguments(['/foo']).withResult(isFileStat),
+            invokesMethod('statSync').on(fs).withPositionalArguments(
+                <String>['/foo']).withResult(isFileStat),
           );
         });
 
@@ -179,29 +180,29 @@ void main() {
           delegate.file('/foo').createSync();
           delegate.file('/bar').createSync();
           await fs.identical('/foo', '/bar');
-          var events = recording.events;
+          List<InvocationEvent<dynamic>> events = recording.events;
           expect(events, hasLength(1));
           expect(
               events[0],
               invokesMethod('identical').on(fs).withPositionalArguments(
-                  ['/foo', '/bar']).withResult(isFalse));
+                  <String>['/foo', '/bar']).withResult(isFalse));
         });
 
         test('identicalSync', () {
           delegate.file('/foo').createSync();
           delegate.file('/bar').createSync();
           fs.identicalSync('/foo', '/bar');
-          var events = recording.events;
+          List<InvocationEvent<dynamic>> events = recording.events;
           expect(events, hasLength(1));
           expect(
               events[0],
               invokesMethod('identicalSync').on(fs).withPositionalArguments(
-                  ['/foo', '/bar']).withResult(isFalse));
+                  <String>['/foo', '/bar']).withResult(isFalse));
         });
 
         test('isWatchSupported', () {
           fs.isWatchSupported;
-          var events = recording.events;
+          List<InvocationEvent<dynamic>> events = recording.events;
           expect(events, hasLength(1));
           expect(events[0],
               getsProperty('isWatchSupported').on(fs).withResult(isFalse));
@@ -210,23 +211,23 @@ void main() {
         test('type', () async {
           delegate.file('/foo').createSync();
           await fs.type('/foo');
-          var events = recording.events;
+          List<InvocationEvent<dynamic>> events = recording.events;
           expect(events, hasLength(1));
           expect(
               events[0],
               invokesMethod('type').on(fs).withPositionalArguments(
-                  ['/foo']).withResult(FileSystemEntityType.FILE));
+                  <String>['/foo']).withResult(FileSystemEntityType.FILE));
         });
 
         test('typeSync', () {
           delegate.file('/foo').createSync();
           fs.typeSync('/foo');
-          var events = recording.events;
+          List<InvocationEvent<dynamic>> events = recording.events;
           expect(events, hasLength(1));
           expect(
               events[0],
               invokesMethod('typeSync').on(fs).withPositionalArguments(
-                  ['/foo']).withResult(FileSystemEntityType.FILE));
+                  <String>['/foo']).withResult(FileSystemEntityType.FILE));
         });
       });
 

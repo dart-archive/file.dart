@@ -11,22 +11,23 @@ part of file.src.interface;
 /// dependence on the library (and the associated implications of using that
 /// implementation in the browser).
 abstract class FileSystem {
+  /// Creates a new `FileSystem`.
   const FileSystem();
 
   /// Returns a reference to a [Directory] at [path].
   ///
   /// [path] can be either a [`String`], a [`Uri`], or a [`FileSystemEntity`].
-  Directory directory(path);
+  Directory directory(dynamic path);
 
   /// Returns a reference to a [File] at [path].
   ///
   /// [path] can be either a [`String`], a [`Uri`], or a [`FileSystemEntity`].
-  File file(path);
+  File file(dynamic path);
 
   /// Returns a reference to a [Link] at [path].
   ///
   /// [path] can be either a [`String`], a [`Uri`], or a [`FileSystemEntity`].
-  Link link(path);
+  Link link(dynamic path);
 
   /// An object for manipulating paths in this file system.
   path.Context get path;
@@ -47,7 +48,7 @@ abstract class FileSystem {
   /// Relative paths will be resolved by the underlying file system
   /// implementation (meaning it is up to the underlying implementation to
   /// decide whether to support relative paths).
-  set currentDirectory(path);
+  set currentDirectory(dynamic path);
 
   /// Asynchronously calls the operating system's stat() function on [path].
   /// Returns a Future which completes with a [FileStat] object containing
@@ -86,27 +87,27 @@ abstract class FileSystem {
   /// exist.
   bool identicalSync(String path1, String path2);
 
-  /// Tests if [watch] is supported on the current system.
+  /// Tests if [FileSystemEntity.watch] is supported on the current system.
   bool get isWatchSupported;
 
   /// Finds the type of file system object that a [path] points to. Returns
   /// a Future<FileSystemEntityType> that completes with the result.
   ///
-  /// [FileSystemEntityType.LINK] will only be returned if [followLinks] is
+  /// [io.FileSystemEntityType.LINK] will only be returned if [followLinks] is
   /// `false`, and [path] points to a link
   ///
   /// If the [path] does not point to a file system object or an error occurs
-  /// then [FileSystemEntityType.NOT_FOUND] is returned.
+  /// then [io.FileSystemEntityType.NOT_FOUND] is returned.
   Future<io.FileSystemEntityType> type(String path, {bool followLinks: true});
 
   /// Syncronously finds the type of file system object that a [path] points
   /// to. Returns a [FileSystemEntityType].
   ///
-  /// [FileSystemEntityType.LINK] will only be returned if [followLinks] is
+  /// [io.FileSystemEntityType.LINK] will only be returned if [followLinks] is
   /// `false`, and [path] points to a link
   ///
   /// If the [path] does not point to a file system object or an error occurs
-  /// then [FileSystemEntityType.NOT_FOUND] is returned.
+  /// then [io.FileSystemEntityType.NOT_FOUND] is returned.
   io.FileSystemEntityType typeSync(String path, {bool followLinks: true});
 
   /// Checks if [`type(path)`](type) returns [io.FileSystemEntityType.FILE].

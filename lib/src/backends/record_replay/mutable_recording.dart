@@ -24,7 +24,8 @@ class MutableRecording implements LiveRecording {
   final Directory destination;
 
   @override
-  List<InvocationEvent<dynamic>> get events => new List.unmodifiable(_events);
+  List<InvocationEvent<dynamic>> get events =>
+      new List<InvocationEvent<dynamic>>.unmodifiable(_events);
 
   // TODO(tvolkert): Add ability to wait for all Future and Stream results
   @override

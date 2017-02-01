@@ -51,6 +51,12 @@ Matcher isFileSystemException([dynamic message]) =>
 Matcher throwsFileSystemException([dynamic message]) =>
     new Throws(isFileSystemException(message));
 
+/// Expects the specified [callback] to throw a [FileSystemException] with the
+/// specified [message].
+void expectFileSystemException(dynamic message, void callback()) {
+  expect(callback, throwsFileSystemException(message));
+}
+
 class _FileSystemException extends Matcher {
   final Matcher _matcher;
 
@@ -91,7 +97,11 @@ class _HasPath extends Matcher {
 
   @override
   Description describeMismatch(
-      item, Description desc, Map matchState, bool verbose) {
+    dynamic item,
+    Description desc,
+    Map<dynamic, dynamic> matchState,
+    bool verbose,
+  ) {
     desc.add('has path: \'${item.path}\'').add('\n   Which: ');
     Description pathDesc = new StringDescription();
     _matcher.describeMismatch(item.path, pathDesc, matchState, verbose);

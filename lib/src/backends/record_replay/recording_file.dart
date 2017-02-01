@@ -13,8 +13,11 @@ import 'recording_file_system_entity.dart';
 import 'recording_io_sink.dart';
 import 'recording_random_access_file.dart';
 
+/// [File] implementation that records all invocation activity to its file
+/// system's recording.
 class RecordingFile extends RecordingFileSystemEntity<File, io.File>
     implements File {
+  /// Creates a new `RecordingFile`.
   RecordingFile(RecordingFileSystem fileSystem, io.File delegate)
       : super(fileSystem, delegate) {
     methods.addAll(<Symbol, Function>{
@@ -63,12 +66,17 @@ class RecordingFile extends RecordingFileSystemEntity<File, io.File>
       _wrapRandomAccessFile(delegate.openSync(mode: mode));
 
   IOSink _openWrite({FileMode mode: FileMode.WRITE, Encoding encoding: UTF8}) {
-    IOSink sink = delegate.openWrite(mode: mode, encoding: encoding);
-    return new RecordingIOSink(fileSystem, sink);
+    return new RecordingIOSink(
+      fileSystem,
+      delegate.openWrite(mode: mode, encoding: encoding),
+    );
   }
 
-  Future<File> _writeAsBytes(List<int> bytes,
-          {FileMode mode: FileMode.WRITE, bool flush: false}) =>
+  Future<File> _writeAsBytes(
+    List<int> bytes, {
+    FileMode mode: FileMode.WRITE,
+    bool flush: false,
+  }) =>
       delegate.writeAsBytes(bytes, mode: mode, flush: flush).then(wrap);
 
   Future<File> _writeAsString(

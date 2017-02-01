@@ -53,7 +53,9 @@ abstract class MethodEvent<T> extends InvocationEvent<T> {
   Map<Symbol, dynamic> get namedArguments;
 }
 
+/// Non-exported implementation of [InvocationEvent].
 abstract class EventImpl<T> implements InvocationEvent<T> {
+  /// Creates a new `EventImpl`.
   EventImpl(this.object, this.result, this.timestamp);
 
   @override
@@ -76,8 +78,10 @@ abstract class EventImpl<T> implements InvocationEvent<T> {
   String toString() => encode().toString();
 }
 
+/// Non-exported implementation of [PropertyGetEvent].
 class PropertyGetEventImpl<T> extends EventImpl<T>
     implements PropertyGetEvent<T> {
+  /// Create a new `PropertyGetEventImpl`.
   PropertyGetEventImpl(Object object, this.property, T result, int timestamp)
       : super(object, result, timestamp);
 
@@ -91,8 +95,10 @@ class PropertyGetEventImpl<T> extends EventImpl<T>
       }..addAll(super.encode());
 }
 
+/// Non-exported implementation of [PropertySetEvent].
 class PropertySetEventImpl<T> extends EventImpl<Null>
     implements PropertySetEvent<T> {
+  /// Create a new `PropertySetEventImpl`.
   PropertySetEventImpl(Object object, this.property, this.value, int timestamp)
       : super(object, null, timestamp);
 
@@ -110,11 +116,21 @@ class PropertySetEventImpl<T> extends EventImpl<Null>
       }..addAll(super.encode());
 }
 
+/// Non-exported implementation of [MethodEvent].
 class MethodEventImpl<T> extends EventImpl<T> implements MethodEvent<T> {
-  MethodEventImpl(Object object, this.method, List<dynamic> positionalArguments,
-      Map<Symbol, dynamic> namedArguments, T result, int timestamp)
-      : this.positionalArguments = new List.unmodifiable(positionalArguments),
-        this.namedArguments = new Map.unmodifiable(namedArguments),
+  /// Create a new `MethodEventImpl`.
+  MethodEventImpl(
+    Object object,
+    this.method,
+    List<dynamic> positionalArguments,
+    Map<Symbol, dynamic> namedArguments,
+    T result,
+    int timestamp,
+  )
+      : this.positionalArguments =
+            new List<dynamic>.unmodifiable(positionalArguments),
+        this.namedArguments =
+            new Map<Symbol, dynamic>.unmodifiable(namedArguments),
         super(object, result, timestamp);
 
   @override

@@ -6,6 +6,8 @@ part of file.src.backends.chroot;
 
 class _ChrootLink extends _ChrootFileSystemEntity<Link, io.Link>
     with ForwardingLink {
+  _ChrootLink(ChrootFileSystem fs, String path) : super(fs, path);
+
   factory _ChrootLink.wrapped(
     ChrootFileSystem fs,
     io.Link delegate, {
@@ -14,8 +16,6 @@ class _ChrootLink extends _ChrootFileSystemEntity<Link, io.Link>
     String localPath = fs._local(delegate.path, relative: relative);
     return new _ChrootLink(fs, localPath);
   }
-
-  _ChrootLink(ChrootFileSystem fs, String path) : super(fs, path);
 
   @override
   Future<bool> exists() => delegate.exists();
