@@ -2,20 +2,68 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-part of file.src.backends.record_replay;
+import 'recording.dart';
 
 /// Base class for recordable file system invocation events.
-abstract class _Event<T> {
-  /// The object on which the invocation occurred.
-  final Object object;
+///
+/// Instances of this class will be aggregated in a [Recording]
+abstract class InvocationEvent<T> {
+  /// The object on which the invocation occurred. Will always be non-null.
+  Object get object;
 
-  /// The return value of the invocation (always `null` for setters).
-  final T result;
+  /// The return value of the invocation. This may be null (and will always be
+  /// `null` for setters).
+  T get result;
 
   /// The stopwatch value (in milliseconds) when the invocation occurred.
-  final int timestamp;
+  ///
+  /// This value is recorded when the invocation first occurs, not when the
+  /// delegate returns.
+  int get timestamp;
+}
 
-  _Event(this.object, this.result, this.timestamp);
+/// A recordable invocation of a property getter on a file system object.
+abstract class PropertyGetEvent<T> extends InvocationEvent<T> {
+  /// The property that was retrieved.
+  Symbol get property;
+}
+
+/// A recordable invocation of a property setter on a file system object.
+abstract class PropertySetEvent<T> extends InvocationEvent<Null> {
+  /// The property that was set.
+  ///
+  /// All setter property symbols will have a trailing equals sign. For example,
+  /// if the `foo` property was set, this value will be a symbol of `foo=`.
+  Symbol get property;
+
+  /// The value to which [property] was set. This is distinct from [result],
+  /// which is always `null` for setters.
+  T get value;
+}
+
+/// A recordable invocation of a method on a file system object.
+abstract class MethodEvent<T> extends InvocationEvent<T> {
+  /// The method that was invoked.
+  Symbol get method;
+
+  /// The positional arguments that were passed to the method.
+  List<dynamic> get positionalArguments;
+
+  /// The named arguments that were passed to the method.
+  Map<Symbol, dynamic> get namedArguments;
+}
+
+abstract class EventImpl<T> implements InvocationEvent<T> {
+  EventImpl(this.object, this.result, this.timestamp);
+
+  @override
+  final Object object;
+
+  @override
+  final T result;
+
+  @override
+  final int timestamp;
 
   /// Encodes this event into a JSON-ready format.
   Map<String, dynamic> encode() => <String, dynamic>{
@@ -23,15 +71,18 @@ abstract class _Event<T> {
         'result': result,
         'timestamp': timestamp,
       };
+
+  @override
+  String toString() => encode().toString();
 }
 
-/// A recordable invocation of a property getter on a file system object.
-class _PropertyGetEvent<T> extends _Event<T> {
-  /// The property that was retrieved.
-  final Symbol property;
-
-  _PropertyGetEvent(Object object, this.property, T result, int timestamp)
+class PropertyGetEventImpl<T> extends EventImpl<T>
+    implements PropertyGetEvent<T> {
+  PropertyGetEventImpl(Object object, this.property, T result, int timestamp)
       : super(object, result, timestamp);
+
+  @override
+  final Symbol property;
 
   @override
   Map<String, dynamic> encode() => <String, dynamic>{
@@ -40,16 +91,16 @@ class _PropertyGetEvent<T> extends _Event<T> {
       }..addAll(super.encode());
 }
 
-/// A recordable invocation of a property setter on a file system object.
-class _PropertySetEvent<T> extends _Event<Null> {
-  /// The property that was set.
+class PropertySetEventImpl<T> extends EventImpl<Null>
+    implements PropertySetEvent<T> {
+  PropertySetEventImpl(Object object, this.property, this.value, int timestamp)
+      : super(object, null, timestamp);
+
+  @override
   final Symbol property;
 
-  /// The value to which [property] was set.
+  @override
   final T value;
-
-  _PropertySetEvent(Object object, this.property, this.value, int timestamp)
-      : super(object, null, timestamp);
 
   @override
   Map<String, dynamic> encode() => <String, dynamic>{
@@ -59,20 +110,21 @@ class _PropertySetEvent<T> extends _Event<Null> {
       }..addAll(super.encode());
 }
 
-/// A recordable invocation of a method on a file system object.
-class _MethodEvent<T> extends _Event<T> {
-  /// The method that was invoked.
+class MethodEventImpl<T> extends EventImpl<T> implements MethodEvent<T> {
+  MethodEventImpl(Object object, this.method, List<dynamic> positionalArguments,
+      Map<Symbol, dynamic> namedArguments, T result, int timestamp)
+      : this.positionalArguments = new List.unmodifiable(positionalArguments),
+        this.namedArguments = new Map.unmodifiable(namedArguments),
+        super(object, result, timestamp);
+
+  @override
   final Symbol method;
 
-  /// The positional arguments that were passed to the method.
+  @override
   final List<dynamic> positionalArguments;
 
-  /// The named arguments that were passed to the method.
+  @override
   final Map<Symbol, dynamic> namedArguments;
-
-  _MethodEvent(Object object, this.method, this.positionalArguments,
-      this.namedArguments, T result, int timestamp)
-      : super(object, result, timestamp);
 
   @override
   Map<String, dynamic> encode() => <String, dynamic>{

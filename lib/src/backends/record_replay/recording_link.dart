@@ -2,11 +2,17 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-part of file.src.backends.record_replay;
+import 'dart:async';
 
-class _RecordingLink extends _RecordingFileSystemEntity<Link, io.Link>
+import 'package:file/file.dart';
+import 'package:file/src/io.dart' as io;
+
+import 'recording_file_system.dart';
+import 'recording_file_system_entity.dart';
+
+class RecordingLink extends RecordingFileSystemEntity<Link, io.Link>
     implements Link {
-  _RecordingLink(RecordingFileSystem fileSystem, io.Link delegate)
+  RecordingLink(RecordingFileSystem fileSystem, io.Link delegate)
       : super(fileSystem, delegate) {
     methods.addAll(<Symbol, Function>{
       #create: _create,
@@ -19,10 +25,10 @@ class _RecordingLink extends _RecordingFileSystemEntity<Link, io.Link>
   }
 
   @override
-  Link _wrap(io.Link delegate) => super._wrap(delegate) ?? _wrapLink(delegate);
+  Link wrap(io.Link delegate) => super.wrap(delegate) ?? wrapLink(delegate);
 
   Future<Link> _create(String target, {bool recursive: false}) =>
-      delegate.create(target, recursive: recursive).then(_wrap);
+      delegate.create(target, recursive: recursive).then(wrap);
 
-  Future<Link> _update(String target) => delegate.update(target).then(_wrap);
+  Future<Link> _update(String target) => delegate.update(target).then(wrap);
 }

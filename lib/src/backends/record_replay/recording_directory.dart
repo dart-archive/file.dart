@@ -2,12 +2,18 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-part of file.src.backends.record_replay;
+import 'dart:async';
 
-class _RecordingDirectory
-    extends _RecordingFileSystemEntity<Directory, io.Directory>
+import 'package:file/file.dart';
+import 'package:file/src/io.dart' as io;
+
+import 'recording_file_system.dart';
+import 'recording_file_system_entity.dart';
+
+class RecordingDirectory
+    extends RecordingFileSystemEntity<Directory, io.Directory>
     implements Directory {
-  _RecordingDirectory(RecordingFileSystem fileSystem, io.Directory delegate)
+  RecordingDirectory(RecordingFileSystem fileSystem, io.Directory delegate)
       : super(fileSystem, delegate) {
     methods.addAll(<Symbol, Function>{
       #create: _create,
@@ -20,17 +26,17 @@ class _RecordingDirectory
   }
 
   @override
-  Directory _wrap(io.Directory delegate) =>
-      super._wrap(delegate) ?? _wrapDirectory(delegate);
+  Directory wrap(io.Directory delegate) =>
+      super.wrap(delegate) ?? wrapDirectory(delegate);
 
   Future<Directory> _create({bool recursive: false}) =>
-      delegate.create(recursive: recursive).then(_wrap);
+      delegate.create(recursive: recursive).then(wrap);
 
   Future<Directory> _createTemp([String prefix]) =>
-      delegate.createTemp(prefix).then(_wrap);
+      delegate.createTemp(prefix).then(wrap);
 
   Directory _createTempSync([String prefix]) =>
-      _wrap(delegate.createTempSync(prefix));
+      wrap(delegate.createTempSync(prefix));
 
   Stream<FileSystemEntity> _list(
           {bool recursive: false, bool followLinks: true}) =>
@@ -47,11 +53,11 @@ class _RecordingDirectory
 
   FileSystemEntity _wrapGeneric(io.FileSystemEntity entity) {
     if (entity is io.File) {
-      return _wrapFile(entity);
+      return wrapFile(entity);
     } else if (entity is io.Directory) {
-      return _wrapDirectory(entity);
+      return wrapDirectory(entity);
     } else if (entity is io.Link) {
-      return _wrapLink(entity);
+      return wrapLink(entity);
     }
     throw new FileSystemException('Unsupported type: $entity', entity.path);
   }

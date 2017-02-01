@@ -2,15 +2,22 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-part of file.src.backends.record_replay;
+import 'dart:convert';
 
-class _RecordingIOSink extends Object
-    with _RecordingProxyMixin
+import 'package:file/file.dart';
+
+import 'common.dart';
+import 'mutable_recording.dart';
+import 'recording_file_system.dart';
+import 'recording_proxy_mixin.dart';
+
+class RecordingIOSink extends Object
+    with RecordingProxyMixin
     implements IOSink {
   final RecordingFileSystem fileSystem;
   final IOSink delegate;
 
-  _RecordingIOSink(this.fileSystem, this.delegate) {
+  RecordingIOSink(this.fileSystem, this.delegate) {
     methods.addAll(<Symbol, Function>{
       #add: delegate.add,
       #write: delegate.write,
@@ -31,10 +38,10 @@ class _RecordingIOSink extends Object
   }
 
   /// A unique entity id.
-  final int uid = _uid;
+  final int uid = newUid();
 
   @override
-  Recording get recording => fileSystem.recording;
+  MutableRecording get recording => fileSystem.recording;
 
   @override
   Stopwatch get stopwatch => fileSystem.stopwatch;

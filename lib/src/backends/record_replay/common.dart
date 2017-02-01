@@ -2,20 +2,22 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-part of file.src.backends.record_replay;
-
 /// Encoded value of the file system in a recording.
-const String _kFileSystemEncodedValue = '__fs__';
+const String kFileSystemEncodedValue = '__fs__';
 
-const String _kManifestName = 'MANIFEST.txt';
+/// The name of the recording manifest file.
+const String kManifestName = 'MANIFEST.txt';
 
 /// Gets an id guaranteed to be unique on this isolate for objects within this
 /// library.
-int get _uid => __nextUid++;
-int __nextUid = 1;
+int newUid() => _nextUid++;
+int _nextUid = 1;
 
 /// Gets the name of the specified [symbol].
 // TODO(tvolkert): Symbol.name (https://github.com/dart-lang/sdk/issues/28372)
-String _getSymbolName(Symbol symbol) {
-  return new RegExp(r'Symbol\("(.*)"\)').firstMatch(symbol.toString()).group(1);
+String getSymbolName(Symbol symbol) {
+  // Format of `str` is `Symbol("<name>")`
+  String str = symbol.toString();
+  int offset = str.indexOf('"') + 1;
+  return str.substring(offset, str.indexOf('"', offset));
 }

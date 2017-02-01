@@ -2,7 +2,12 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-part of file.src.backends.record_replay;
+import 'dart:async';
+
+import 'package:meta/meta.dart';
+
+import 'events.dart';
+import 'mutable_recording.dart';
 
 /// Mixin that enables recording of property accesses, property mutations, and
 /// method invocations.
@@ -53,11 +58,12 @@ part of file.src.backends.record_replay;
 /// Methods that return [Stream]s will be recorded immediately, but their
 /// return values will be recorded as a [List] that will grow as the stream
 /// produces data.
-abstract class _RecordingProxyMixin {
+abstract class RecordingProxyMixin {
   /// Maps method names to delegate functions.
   ///
   /// Invocations of methods listed in this map will be recorded after
   /// invoking the underlying delegate function.
+  @protected
   final Map<Symbol, Function> methods = <Symbol, Function>{};
 
   /// Maps property getter and setter names to delegate functions.
@@ -68,12 +74,15 @@ abstract class _RecordingProxyMixin {
   /// The keys for property getters are the simple property names, whereas the
   /// keys for property setters are the property names followed by an equals
   /// sign (e.g. `propertyName=`).
+  @protected
   final Map<Symbol, Function> properties = <Symbol, Function>{};
 
   /// The object to which invocation events will be recorded.
-  Recording get recording;
+  @protected
+  MutableRecording get recording;
 
   /// The stopwatch used to record invocation timestamps.
+  @protected
   Stopwatch get stopwatch;
 
   /// Handles invocations for which there is no concrete implementation
@@ -102,17 +111,17 @@ abstract class _RecordingProxyMixin {
     }
 
     T recordEvent<T>(T value) {
-      _Event<T> event;
+      InvocationEvent<T> event;
       if (invocation.isGetter) {
-        event = new _PropertyGetEvent(this, name, value, time);
+        event = new PropertyGetEventImpl(this, name, value, time);
       } else if (invocation.isSetter) {
         // TODO(tvolkert): Remove indirection once SDK 1.22 is in stable branch
-        dynamic tmp = new _PropertySetEvent(this, name, args[0], time);
-        event = tmp;
+        dynamic temp = new PropertySetEventImpl(this, name, args[0], time);
+        event = temp;
       } else {
-        event = new _MethodEvent(this, name, args, namedArgs, value, time);
+        event = new MethodEventImpl(this, name, args, namedArgs, value, time);
       }
-      recording._add(event);
+      recording.add(event);
       return value;
     }
 
@@ -143,7 +152,7 @@ abstract class _RecordingProxyMixin {
 /// A function reference that, when invoked, will record the invocation.
 class _MethodProxy extends Object implements Function {
   /// The object on which the method was originally invoked.
-  final _RecordingProxyMixin object;
+  final RecordingProxyMixin object;
 
   /// The name of the method that was originally invoked.
   final Symbol methodName;

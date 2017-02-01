@@ -8,8 +8,13 @@ import 'dart:convert';
 import 'dart:io' as io;
 
 import 'package:file/file.dart';
+import 'package:file/testing.dart';
 import 'package:test/test.dart';
 import 'package:test/test.dart' as testpkg show group, test;
+
+void expectFileSystemException(dynamic msg, void callback()) {
+  expect(callback, throwsFileSystemException(msg));
+}
 
 /// Runs a suite of tests common to all file system implementations. All file
 /// system implementations should run *at least* these tests to ensure
@@ -441,8 +446,8 @@ void runCommonTests(
           fs.file(ns('/foo')).createSync();
           // TODO(tvolkert): Change this to just be 'Not a directory'
           // once Dart 1.22 is stable.
-          RegExp pattern = new RegExp('(File exists|Not a directory)');
-          expectFileSystemException(pattern, () {
+          String pattern = '(File exists|Not a directory)';
+          expectFileSystemException(matches(pattern), () {
             fs.directory(ns('/foo')).createSync();
           });
         });
@@ -458,8 +463,8 @@ void runCommonTests(
           fs.link(ns('/bar')).createSync(ns('/foo'));
           // TODO(tvolkert): Change this to just be 'Not a directory'
           // once Dart 1.22 is stable.
-          RegExp pattern = new RegExp('(File exists|Not a directory)');
-          expectFileSystemException(pattern, () {
+          String pattern = '(File exists|Not a directory)';
+          expectFileSystemException(matches(pattern), () {
             fs.directory(ns('/bar')).createSync();
           });
         });
@@ -2667,8 +2672,8 @@ void runCommonTests(
           fs.directory(ns('/foo')).createSync();
           // TODO(tvolkert): Change this to just be 'Is a directory'
           // once Dart 1.22 is stable.
-          RegExp pattern = new RegExp('(Invalid argument|Is a directory)');
-          expectFileSystemException(pattern, () {
+          String pattern = '(Invalid argument|Is a directory)';
+          expectFileSystemException(matches(pattern), () {
             fs.link(ns('/foo')).deleteSync();
           });
         });
@@ -2832,8 +2837,8 @@ void runCommonTests(
           fs.directory(ns('/foo')).createSync();
           // TODO(tvolkert): Change this to just be 'Is a directory'
           // once Dart 1.22 is stable.
-          RegExp pattern = new RegExp('(Invalid argument|Is a directory)');
-          expectFileSystemException(pattern, () {
+          String pattern = '(Invalid argument|Is a directory)';
+          expectFileSystemException(matches(pattern), () {
             fs.link(ns('/foo')).updateSync(ns('/bar'));
           });
         });
@@ -3070,64 +3075,4 @@ void runCommonTests(
       });
     });
   });
-}
-
-const Matcher isDirectory = const _IsDirectory();
-const Matcher isFile = const _IsFile();
-const Matcher isLink = const _IsLink();
-const Matcher isFileSystemEntity = const _IsFileSystemEntity();
-
-Matcher hasPath(String path) => new _HasPath(equals(path));
-
-Matcher isFileSystemException([Pattern msg]) => new _FileSystemException(msg);
-Matcher throwsFileSystemException([Pattern msg]) =>
-    new Throws(isFileSystemException(msg));
-
-void expectFileSystemException(Pattern msg, void callback()) {
-  expect(callback, throwsFileSystemException(msg));
-}
-
-class _FileSystemException extends Matcher {
-  final Pattern msg;
-  const _FileSystemException(this.msg);
-
-  Description describe(Description description) =>
-      description.add('FileSystemException with msg "$msg"');
-
-  bool matches(item, Map matchState) {
-    if (item is FileSystemException) {
-      return (msg == null ||
-          item.message.contains(msg) ||
-          (item.osError?.message?.contains(msg) ?? false));
-    }
-    return false;
-  }
-}
-
-// TODO: make this provide a better description of errors.
-class _HasPath extends Matcher {
-  final Matcher _path;
-  const _HasPath(this._path);
-  Description describe(Description description) => _path.describe(description);
-  bool matches(item, Map matchState) => _path.matches(item.path, matchState);
-}
-
-class _IsFile extends TypeMatcher {
-  const _IsFile() : super("File");
-  bool matches(item, Map matchState) => item is File;
-}
-
-class _IsDirectory extends TypeMatcher {
-  const _IsDirectory() : super("Directory");
-  bool matches(item, Map matchState) => item is Directory;
-}
-
-class _IsLink extends TypeMatcher {
-  const _IsLink() : super("Link");
-  bool matches(item, Map matchState) => item is Link;
-}
-
-class _IsFileSystemEntity extends TypeMatcher {
-  const _IsFileSystemEntity() : super("FileSystemEntity");
-  bool matches(item, Map matchState) => item is FileSystemEntity;
 }

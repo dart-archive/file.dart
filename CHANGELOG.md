@@ -7,6 +7,7 @@
   `FileSystem.path` property
 * Added `FileSystemEntity.basename` and `FileSystemEntity.dirname`
 * Added the `record_replay` library
+* Added the `testing` library
 
 #### 1.0.1
 

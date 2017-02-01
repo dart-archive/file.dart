@@ -2,15 +2,23 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-part of file.src.backends.record_replay;
+import 'dart:async';
+import 'dart:convert';
 
-class _RecordingRandomAccessFile extends Object
-    with _RecordingProxyMixin
+import 'package:file/file.dart';
+
+import 'common.dart';
+import 'mutable_recording.dart';
+import 'recording_file_system.dart';
+import 'recording_proxy_mixin.dart';
+
+class RecordingRandomAccessFile extends Object
+    with RecordingProxyMixin
     implements RandomAccessFile {
   final RecordingFileSystem fileSystem;
   final RandomAccessFile delegate;
 
-  _RecordingRandomAccessFile(this.fileSystem, this.delegate) {
+  RecordingRandomAccessFile(this.fileSystem, this.delegate) {
     methods.addAll(<Symbol, Function>{
       #close: _close,
       #closeSync: delegate.closeSync,
@@ -48,16 +56,16 @@ class _RecordingRandomAccessFile extends Object
   }
 
   /// A unique entity id.
-  final int uid = _uid;
+  final int uid = newUid();
 
   @override
-  Recording get recording => fileSystem.recording;
+  MutableRecording get recording => fileSystem.recording;
 
   @override
   Stopwatch get stopwatch => fileSystem.stopwatch;
 
   RandomAccessFile _wrap(RandomAccessFile raw) =>
-      raw == delegate ? this : new _RecordingRandomAccessFile(fileSystem, raw);
+      raw == delegate ? this : new RecordingRandomAccessFile(fileSystem, raw);
 
   Future<RandomAccessFile> _close() => delegate.close().then(_wrap);
 

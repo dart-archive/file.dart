@@ -2,11 +2,20 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-part of file.src.backends.record_replay;
+import 'dart:async';
+import 'dart:convert';
 
-class _RecordingFile extends _RecordingFileSystemEntity<File, io.File>
+import 'package:file/file.dart';
+import 'package:file/src/io.dart' as io;
+
+import 'recording_file_system.dart';
+import 'recording_file_system_entity.dart';
+import 'recording_io_sink.dart';
+import 'recording_random_access_file.dart';
+
+class RecordingFile extends RecordingFileSystemEntity<File, io.File>
     implements File {
-  _RecordingFile(RecordingFileSystem fileSystem, io.File delegate)
+  RecordingFile(RecordingFileSystem fileSystem, io.File delegate)
       : super(fileSystem, delegate) {
     methods.addAll(<Symbol, Function>{
       #create: _create,
@@ -35,17 +44,17 @@ class _RecordingFile extends _RecordingFileSystemEntity<File, io.File>
   }
 
   @override
-  File _wrap(io.File delegate) => super._wrap(delegate) ?? _wrapFile(delegate);
+  File wrap(io.File delegate) => super.wrap(delegate) ?? wrapFile(delegate);
 
   RandomAccessFile _wrapRandomAccessFile(RandomAccessFile delegate) =>
-      new _RecordingRandomAccessFile(fileSystem, delegate);
+      new RecordingRandomAccessFile(fileSystem, delegate);
 
   Future<File> _create({bool recursive: false}) =>
-      delegate.create(recursive: recursive).then(_wrap);
+      delegate.create(recursive: recursive).then(wrap);
 
-  Future<File> _copy(String newPath) => delegate.copy(newPath).then(_wrap);
+  Future<File> _copy(String newPath) => delegate.copy(newPath).then(wrap);
 
-  File _copySync(String newPath) => _wrap(delegate.copySync(newPath));
+  File _copySync(String newPath) => wrap(delegate.copySync(newPath));
 
   Future<RandomAccessFile> _open({FileMode mode: FileMode.READ}) =>
       delegate.open(mode: mode).then(_wrapRandomAccessFile);
@@ -55,12 +64,12 @@ class _RecordingFile extends _RecordingFileSystemEntity<File, io.File>
 
   IOSink _openWrite({FileMode mode: FileMode.WRITE, Encoding encoding: UTF8}) {
     IOSink sink = delegate.openWrite(mode: mode, encoding: encoding);
-    return new _RecordingIOSink(fileSystem, sink);
+    return new RecordingIOSink(fileSystem, sink);
   }
 
   Future<File> _writeAsBytes(List<int> bytes,
           {FileMode mode: FileMode.WRITE, bool flush: false}) =>
-      delegate.writeAsBytes(bytes, mode: mode, flush: flush).then(_wrap);
+      delegate.writeAsBytes(bytes, mode: mode, flush: flush).then(wrap);
 
   Future<File> _writeAsString(
     String contents, {
@@ -70,5 +79,5 @@ class _RecordingFile extends _RecordingFileSystemEntity<File, io.File>
   }) =>
       delegate
           .writeAsString(contents, mode: mode, encoding: encoding, flush: flush)
-          .then(_wrap);
+          .then(wrap);
 }

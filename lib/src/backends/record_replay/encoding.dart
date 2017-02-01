@@ -2,7 +2,19 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-part of file.src.backends.record_replay;
+import 'dart:convert';
+
+import 'package:file/file.dart';
+import 'package:path/path.dart' as p;
+
+import 'common.dart';
+import 'events.dart';
+import 'recording_directory.dart';
+import 'recording_file.dart';
+import 'recording_file_system_entity.dart';
+import 'recording_io_sink.dart';
+import 'recording_link.dart';
+import 'recording_random_access_file.dart';
 
 /// Encodes an object into a JSON-ready representation.
 typedef dynamic _Encoder(dynamic object);
@@ -31,17 +43,17 @@ const Map<_TypeMatcher, _Encoder> _kEncoders = const <_TypeMatcher, _Encoder>{
   const _TypeMatcher<List>(): _encodeRaw,
   const _TypeMatcher<Map>(): _encodeMap,
   const _TypeMatcher<Iterable>(): _encodeIterable,
-  const _TypeMatcher<Symbol>(): _getSymbolName,
+  const _TypeMatcher<Symbol>(): getSymbolName,
   const _TypeMatcher<DateTime>(): _encodeDateTime,
   const _TypeMatcher<Uri>(): _encodeUri,
   const _TypeMatcher<p.Context>(): _encodePathContext,
-  const _TypeMatcher<_Event>(): _encodeEvent,
+  const _TypeMatcher<EventImpl>(): _encodeEvent,
   const _TypeMatcher<FileSystem>(): _encodeFileSystem,
-  const _TypeMatcher<_RecordingDirectory>(): _encodeFileSystemEntity,
-  const _TypeMatcher<_RecordingFile>(): _encodeFileSystemEntity,
-  const _TypeMatcher<_RecordingLink>(): _encodeFileSystemEntity,
-  const _TypeMatcher<_RecordingIOSink>(): _encodeIOSink,
-  const _TypeMatcher<_RecordingRandomAccessFile>(): _encodeRandomAccessFile,
+  const _TypeMatcher<RecordingDirectory>(): _encodeFileSystemEntity,
+  const _TypeMatcher<RecordingFile>(): _encodeFileSystemEntity,
+  const _TypeMatcher<RecordingLink>(): _encodeFileSystemEntity,
+  const _TypeMatcher<RecordingIOSink>(): _encodeIOSink,
+  const _TypeMatcher<RecordingRandomAccessFile>(): _encodeRandomAccessFile,
   const _TypeMatcher<Encoding>(): _encodeEncoding,
   const _TypeMatcher<FileMode>(): _encodeFileMode,
   const _TypeMatcher<FileStat>(): _encodeFileStat,
@@ -56,7 +68,7 @@ const Map<_TypeMatcher, _Encoder> _kEncoders = const <_TypeMatcher, _Encoder>{
 ///
 /// See also:
 ///   - [JsonEncoder.withIndent]
-dynamic _encode(dynamic object) {
+dynamic encode(dynamic object) {
   _Encoder encoder = _encodeDefault;
   for (_TypeMatcher matcher in _kEncoders.keys) {
     if (matcher.check(object)) {
@@ -85,7 +97,7 @@ List<T> _encodeIterable<T>(Iterable<T> iterable) => iterable.toList();
 Map<String, T> _encodeMap<T>(Map<dynamic, T> map) {
   Map<String, T> encoded = <String, T>{};
   for (dynamic key in map.keys) {
-    String encodedKey = _encode(key);
+    String encodedKey = encode(key);
     encoded[encodedKey] = map[key];
   }
   return encoded;
@@ -100,22 +112,22 @@ Map<String, String> _encodePathContext(p.Context context) => <String, String>{
       'cwd': context.current,
     };
 
-Map<String, dynamic> _encodeEvent(_Event event) => event.encode();
+Map<String, dynamic> _encodeEvent(EventImpl event) => event.encode();
 
-String _encodeFileSystem(FileSystem fs) => _kFileSystemEncodedValue;
+String _encodeFileSystem(FileSystem fs) => kFileSystemEncodedValue;
 
 /// Encodes a file system entity by using its `uid` as a reference identifier.
 /// During replay, this allows us to tie the return value of of one event to
 /// the object of another.
-String _encodeFileSystemEntity(_RecordingFileSystemEntity entity) {
+String _encodeFileSystemEntity(RecordingFileSystemEntity entity) {
   return '${entity.runtimeType}@${entity.uid}';
 }
 
-String _encodeIOSink(_RecordingIOSink sink) {
+String _encodeIOSink(RecordingIOSink sink) {
   return '${sink.runtimeType}@${sink.uid}';
 }
 
-String _encodeRandomAccessFile(_RecordingRandomAccessFile raf) {
+String _encodeRandomAccessFile(RecordingRandomAccessFile raf) {
   return '${raf.runtimeType}@${raf.uid}';
 }
 
