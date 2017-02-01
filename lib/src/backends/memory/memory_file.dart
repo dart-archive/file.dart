@@ -336,7 +336,8 @@ class _FileSink implements io.IOSink {
   }
 
   @override
-  Future<Null> flush() {
+  // TODO(tvolkert): Change to Future<Null> once Dart 1.22 is stable
+  Future<dynamic> flush() {
     _checkNotStreaming();
     return _pendingWrites;
   }
