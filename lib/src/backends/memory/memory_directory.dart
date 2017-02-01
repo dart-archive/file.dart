@@ -55,7 +55,7 @@ class _MemoryDirectory extends _MemoryFileSystemEntity implements Directory {
     _DirectoryNode node = fileSystem._findNode(dirname);
     _checkExists(node, () => dirname);
     _checkIsDir(node, () => dirname);
-    var name = () => '$basename$_tempCounter';
+    String name() => '$basename$_tempCounter';
     while (node.children.containsKey(name())) {
       _tempCounter++;
     }
@@ -90,7 +90,7 @@ class _MemoryDirectory extends _MemoryFileSystemEntity implements Directory {
     bool recursive: false,
     bool followLinks: true,
   }) =>
-      new Stream.fromIterable(listSync(
+      new Stream<FileSystemEntity>.fromIterable(listSync(
         recursive: recursive,
         followLinks: followLinks,
       ));

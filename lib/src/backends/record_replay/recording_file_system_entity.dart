@@ -16,10 +16,13 @@ import 'recording_file_system.dart';
 import 'recording_link.dart';
 import 'recording_proxy_mixin.dart';
 
+/// [FileSystemEntity] implementation that records all invocation activity to
+/// its file system's recording.
 abstract class RecordingFileSystemEntity<T extends FileSystemEntity,
         D extends io.FileSystemEntity> extends Object
     with RecordingProxyMixin
     implements FileSystemEntity {
+  /// Creates a new `RecordingFileSystemEntity`.
   RecordingFileSystemEntity(this.fileSystem, this.delegate) {
     methods.addAll(<Symbol, Function>{
       #exists: delegate.exists,
@@ -56,28 +59,36 @@ abstract class RecordingFileSystemEntity<T extends FileSystemEntity,
   @override
   Stopwatch get stopwatch => fileSystem.stopwatch;
 
+  /// The entity to which this entity delegates its functionality while
+  /// recording.
   @protected
   final D delegate;
 
   /// Returns an entity with the same file system and same type as this
   /// entity but backed by the specified delegate.
   ///
-  /// If the specified delegate is the same as this entity's delegate, this
-  /// will return this entity.
-  ///
-  /// Subclasses should override this method to instantiate the correct wrapped
-  /// type if this super implementation returns `null`.
+  /// This base implementation checks to see if the specified delegate is the
+  /// same as this entity's delegate, and if so, it returns this entity.
+  /// Otherwise it returns `null`. Subclasses should override this method to
+  /// instantiate the correct wrapped type only if this super implementation
+  /// returns `null`.
   @protected
   @mustCallSuper
   T wrap(D delegate) => delegate == this.delegate ? this as T : null;
 
+  /// Returns a directory with the same file system as this entity but backed
+  /// by the specified delegate directory.
   @protected
   Directory wrapDirectory(io.Directory delegate) =>
       new RecordingDirectory(fileSystem, delegate);
 
+  /// Returns a file with the same file system as this entity but backed
+  /// by the specified delegate file.
   @protected
   File wrapFile(io.File delegate) => new RecordingFile(fileSystem, delegate);
 
+  /// Returns a link with the same file system as this entity but backed
+  /// by the specified delegate link.
   @protected
   Link wrapLink(io.Link delegate) => new RecordingLink(fileSystem, delegate);
 

@@ -113,13 +113,15 @@ abstract class RecordingProxyMixin {
     T recordEvent<T>(T value) {
       InvocationEvent<T> event;
       if (invocation.isGetter) {
-        event = new PropertyGetEventImpl(this, name, value, time);
+        event = new PropertyGetEventImpl<T>(this, name, value, time);
       } else if (invocation.isSetter) {
         // TODO(tvolkert): Remove indirection once SDK 1.22 is in stable branch
-        dynamic temp = new PropertySetEventImpl(this, name, args[0], time);
+        dynamic temp =
+            new PropertySetEventImpl<dynamic>(this, name, args[0], time);
         event = temp;
       } else {
-        event = new MethodEventImpl(this, name, args, namedArgs, value, time);
+        event =
+            new MethodEventImpl<T>(this, name, args, namedArgs, value, time);
       }
       recording.add(event);
       return value;

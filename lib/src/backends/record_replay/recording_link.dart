@@ -10,8 +10,11 @@ import 'package:file/src/io.dart' as io;
 import 'recording_file_system.dart';
 import 'recording_file_system_entity.dart';
 
+/// [Link] implementation that records all invocation activity to its file
+/// system's recording.
 class RecordingLink extends RecordingFileSystemEntity<Link, io.Link>
     implements Link {
+  /// Creates a new `RecordingLink`.
   RecordingLink(RecordingFileSystem fileSystem, io.Link delegate)
       : super(fileSystem, delegate) {
     methods.addAll(<Symbol, Function>{

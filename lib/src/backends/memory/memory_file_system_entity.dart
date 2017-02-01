@@ -4,7 +4,7 @@
 
 part of file.src.backends.memory;
 
-/// Validator function for use with [_renameSync]. This will be invoked if the
+/// Validator function for use with `_renameSync`. This will be invoked if the
 /// rename would overwrite an existing entity at the new path. If this operation
 /// should not be allowed, this function is expected to throw a
 /// [io.FileSystemException]. The lack of such an exception will be interpreted
@@ -53,7 +53,7 @@ abstract class _MemoryFileSystemEntity implements FileSystemEntity {
 
   /// Gets the node that backs this file system entity, or if that node is
   /// a symbolic link, the target node. This also will check that the type of
-  /// the node (aftere symlink resolution) matches [expectedType]. If the type
+  /// the node (after symlink resolution) matches [expectedType]. If the type
   /// doesn't match, this will throw a [io.FileSystemException].
   _Node get _resolvedBacking {
     _Node node = _backing;
@@ -67,8 +67,8 @@ abstract class _MemoryFileSystemEntity implements FileSystemEntity {
   /// match. Note that since this checks the node's `stat` type, symbolic links
   /// will be resolved to their target type for the purpose of this validation.
   ///
-  /// Protected methods that accept a [checkType] argument will default to this
-  /// method if the [checkType] argument is unspecified.
+  /// Protected methods that accept a `checkType` argument will default to this
+  /// method if the `checkType` argument is unspecified.
   void _defaultCheckType(_Node node) {
     _checkType(expectedType, node.stat.type, () => path);
   }
@@ -140,9 +140,9 @@ abstract class _MemoryFileSystemEntity implements FileSystemEntity {
   /// calling [createChild] for each segment whose child does not already exist.
   ///
   /// When [createChild] is invoked:
-  /// - [parent] will be the parent node for the current segment and is
+  /// - `parent` will be the parent node for the current segment and is
   ///   guaranteed to be non-null.
-  /// - [isFinalSegment] will indicate whether the current segment is the tail
+  /// - `isFinalSegment` will indicate whether the current segment is the tail
   ///   segment, which in turn indicates that this is the segment into which to
   ///   create the node for this entity.
   ///

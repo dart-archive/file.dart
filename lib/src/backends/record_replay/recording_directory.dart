@@ -10,9 +10,12 @@ import 'package:file/src/io.dart' as io;
 import 'recording_file_system.dart';
 import 'recording_file_system_entity.dart';
 
+/// [Directory] implementation that records all invocation activity to its file
+/// system's recording.
 class RecordingDirectory
     extends RecordingFileSystemEntity<Directory, io.Directory>
     implements Directory {
+  /// Creates a new `RecordingDirectory`.
   RecordingDirectory(RecordingFileSystem fileSystem, io.Directory delegate)
       : super(fileSystem, delegate) {
     methods.addAll(<Symbol, Function>{

@@ -146,9 +146,9 @@ class _MemoryFile extends _MemoryFileSystemEntity implements File {
             ? content.sublist(start)
             : content.sublist(start, min(end, content.length));
       }
-      return new Stream.fromIterable(<List<int>>[content]);
+      return new Stream<List<int>>.fromIterable(<List<int>>[content]);
     } catch (e) {
-      return new Stream.fromFuture(new Future.error(e));
+      return new Stream<List<int>>.fromFuture(new Future<List<int>>.error(e));
     }
   }
 
@@ -262,7 +262,7 @@ class _FileSink implements io.IOSink {
     io.FileMode mode,
     Encoding encoding,
   ) {
-    Future<_FileNode> node = new Future.microtask(() {
+    Future<_FileNode> node = new Future<_FileNode>.microtask(() {
       _FileNode node = file._resolvedBackingOrCreate;
       file._truncateIfNecessary(node, mode);
       return node;
@@ -288,7 +288,7 @@ class _FileSink implements io.IOSink {
   void write(Object obj) => add(encoding.encode(obj?.toString() ?? 'null'));
 
   @override
-  void writeAll(Iterable objects, [String separator = ""]) {
+  void writeAll(Iterable<dynamic> objects, [String separator = ""]) {
     bool firstIter = true;
     for (dynamic obj in objects) {
       if (!firstIter && separator != null) {
@@ -309,23 +309,24 @@ class _FileSink implements io.IOSink {
   void writeCharCode(int charCode) => write(new String.fromCharCode(charCode));
 
   @override
-  void addError(error, [StackTrace stackTrace]) {
+  void addError(dynamic error, [StackTrace stackTrace]) {
     _checkNotStreaming();
     _completer.completeError(error, stackTrace);
   }
 
   @override
-  Future addStream(Stream<List<int>> stream) {
+  Future<Null> addStream(Stream<List<int>> stream) {
     _checkNotStreaming();
     _streamCompleter = new Completer<Null>();
-    var finish = () {
+    void finish() {
       _streamCompleter.complete();
       _streamCompleter = null;
-    };
+    }
+
     stream.listen(
       (List<int> data) => _addData(data),
       cancelOnError: true,
-      onError: (error, StackTrace stackTrace) {
+      onError: (dynamic error, StackTrace stackTrace) {
         _completer.completeError(error, stackTrace);
         finish();
       },
@@ -335,19 +336,20 @@ class _FileSink implements io.IOSink {
   }
 
   @override
-  Future flush() {
+  // TODO(tvolkert): Change to Future<Null> once Dart 1.22 is stable
+  Future<dynamic> flush() {
     _checkNotStreaming();
     return _pendingWrites;
   }
 
   @override
-  Future close() {
+  Future<Null> close() {
     _checkNotStreaming();
     if (!_isClosed) {
       _isClosed = true;
       _pendingWrites.then(
         (_) => _completer.complete(),
-        onError: (error, stackTrace) =>
+        onError: (dynamic error, StackTrace stackTrace) =>
             _completer.completeError(error, stackTrace),
       );
     }
@@ -355,7 +357,7 @@ class _FileSink implements io.IOSink {
   }
 
   @override
-  Future get done => _completer.future;
+  Future<Null> get done => _completer.future;
 
   void _addData(List<int> data) {
     _pendingWrites = _pendingWrites.then((_FileNode node) {

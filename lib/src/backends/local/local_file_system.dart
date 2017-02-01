@@ -9,17 +9,18 @@ part of file.src.backends.local;
 /// Since this implementation of the [FileSystem] interface delegates to
 /// `dart:io`, is is not suitable for use in the browser.
 class LocalFileSystem extends FileSystem {
+  /// Creates a new `LocalFileSystem`.
   const LocalFileSystem();
 
   @override
-  Directory directory(path) =>
+  Directory directory(dynamic path) =>
       new _LocalDirectory(this, shim.newDirectory(path));
 
   @override
-  File file(path) => new _LocalFile(this, shim.newFile(path));
+  File file(dynamic path) => new _LocalFile(this, shim.newFile(path));
 
   @override
-  Link link(path) => new _LocalLink(this, shim.newLink(path));
+  Link link(dynamic path) => new _LocalLink(this, shim.newLink(path));
 
   @override
   p.Context get path => new p.Context();

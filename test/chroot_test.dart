@@ -9,6 +9,7 @@ import 'package:file/chroot.dart';
 import 'package:file/file.dart';
 import 'package:file/local.dart';
 import 'package:file/memory.dart';
+import 'package:file/testing.dart';
 import 'package:test/test.dart';
 
 import 'common_tests.dart';

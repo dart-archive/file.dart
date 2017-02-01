@@ -60,13 +60,14 @@ class ChrootFileSystem extends FileSystem {
   String get _localRoot => p.rootPrefix(root);
 
   @override
-  Directory directory(path) => new _ChrootDirectory(this, common.getPath(path));
+  Directory directory(dynamic path) =>
+      new _ChrootDirectory(this, common.getPath(path));
 
   @override
-  File file(path) => new _ChrootFile(this, common.getPath(path));
+  File file(dynamic path) => new _ChrootFile(this, common.getPath(path));
 
   @override
-  Link link(path) => new _ChrootLink(this, common.getPath(path));
+  Link link(dynamic path) => new _ChrootLink(this, common.getPath(path));
 
   @override
   p.Context get path =>
@@ -99,7 +100,7 @@ class ChrootFileSystem extends FileSystem {
   /// Gets the path context for this file system given the current working dir.
 
   @override
-  set currentDirectory(path) {
+  set currentDirectory(dynamic path) {
     String value;
     if (path is io.Directory) {
       value = path.path;
@@ -109,7 +110,7 @@ class ChrootFileSystem extends FileSystem {
       throw new ArgumentError('Invalid type for "path": ${path?.runtimeType}');
     }
 
-    value = _resolve(value, notFound: _NotFoundBehavior.THROW);
+    value = _resolve(value, notFound: _NotFoundBehavior.throwError);
     String realPath = _real(value, resolve: false);
     switch (delegate.typeSync(realPath, followLinks: false)) {
       case FileSystemEntityType.DIRECTORY:
@@ -128,7 +129,7 @@ class ChrootFileSystem extends FileSystem {
     try {
       path = _resolve(path);
     } on FileSystemException {
-      return new Future.value(const _NotFoundFileStat());
+      return new Future<FileStat>.value(const _NotFoundFileStat());
     }
     return delegate.stat(_real(path, resolve: false));
   }
@@ -164,7 +165,8 @@ class ChrootFileSystem extends FileSystem {
     try {
       realPath = _real(path, followLinks: followLinks);
     } on FileSystemException {
-      return new Future.value(FileSystemEntityType.NOT_FOUND);
+      return new Future<FileSystemEntityType>.value(
+          FileSystemEntityType.NOT_FOUND);
     }
     return delegate.type(realPath, followLinks: false);
   }
@@ -244,14 +246,20 @@ class ChrootFileSystem extends FileSystem {
   /// only if [followLinks] is `true`. Symbolic links found in the middle of
   /// the path will always be resolved.
   ///
-  /// If [throwIfNotFound] is `true`, and the path cannot be resolved, a file
-  /// system exception is thrown - otherwise the resolution will halt and the
-  /// partially resolved path will be returned.
+  /// If the path cannot be resolved, and [notFound] is:
+  ///   - [_NotFoundBehavior.throwError]: a [FileSystemException] is thrown.
+  ///   - [_NotFoundBehavior.mkdir]: the path will be created as needed.
+  ///   - [_NotFoundBehavior.allowAtTail]: a [FileSystemException] is thrown,
+  ///     unless only the *tail* path element cannot be resolved, in which case
+  ///     the resolution will halt at the tail element, and the partially
+  ///     resolved path will be returned.
+  ///   - [_NotFoundBehavior.allow] (the default), the resolution will halt and
+  ///     the partially resolved path will be returned.
   String _resolve(
     String path, {
     String from,
     bool followLinks: true,
-    _NotFoundBehavior notFound: _NotFoundBehavior.ALLOW,
+    _NotFoundBehavior notFound: _NotFoundBehavior.allow,
   }) {
     p.Context ctx = _context;
     String root = _localRoot;
@@ -304,19 +312,19 @@ class ChrootFileSystem extends FileSystem {
           }
 
           switch (notFound) {
-            case _NotFoundBehavior.MKDIR:
+            case _NotFoundBehavior.mkdir:
               if (parts.isNotEmpty) {
                 delegate.directory(realPath).createSync();
               }
               break;
-            case _NotFoundBehavior.ALLOW:
+            case _NotFoundBehavior.allow:
               return returnEarly();
-            case _NotFoundBehavior.ALLOW_AT_TAIL:
+            case _NotFoundBehavior.allowAtTail:
               if (parts.isEmpty) {
                 return returnEarly();
               }
               throw notFoundException();
-            case _NotFoundBehavior.THROW:
+            case _NotFoundBehavior.throwError:
               throw notFoundException();
           }
           break;
@@ -351,10 +359,10 @@ class _ChrootJailException implements IOException {}
 
 /// What to do when `NOT_FOUND` paths are encountered while resolving.
 enum _NotFoundBehavior {
-  ALLOW,
-  ALLOW_AT_TAIL,
-  THROW,
-  MKDIR,
+  allow,
+  allowAtTail,
+  throwError,
+  mkdir,
 }
 
 /// A [FileStat] representing a `NOT_FOUND` entity.

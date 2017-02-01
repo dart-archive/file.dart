@@ -11,12 +11,18 @@ import 'mutable_recording.dart';
 import 'recording_file_system.dart';
 import 'recording_proxy_mixin.dart';
 
+/// [IOSink] implementation that records all invocation activity to its file
+/// system's recording.
 class RecordingIOSink extends Object
     with RecordingProxyMixin
     implements IOSink {
+  /// The file system that owns this sink.
   final RecordingFileSystem fileSystem;
+
+  /// The sink to which this sink delegates its functionality while recording.
   final IOSink delegate;
 
+  /// Creates a new `RecordingIOSink`.
   RecordingIOSink(this.fileSystem, this.delegate) {
     methods.addAll(<Symbol, Function>{
       #add: delegate.add,
