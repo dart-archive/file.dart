@@ -87,6 +87,18 @@ abstract class RecordedInvocation<T extends RecordedInvocation<T>>
     return this;
   }
 
+  /// Limits the scope of the match to invocations that were recorded with the
+  /// specified [timestamp].
+  ///
+  /// [timestamp] may be an `int` or a [Matcher]. If it is an `int`, it will
+  /// be automatically wrapped in an equality matcher.
+  ///
+  /// Returns this matcher for chaining.
+  T withTimestamp(dynamic timestamp) {
+    _fieldMatchers.add(new _Timestamp(timestamp));
+    return this;
+  }
+
   /// @nodoc
   @override
   bool matches(dynamic item, Map<dynamic, dynamic> matchState) {
@@ -162,6 +174,15 @@ class MethodInvocation extends RecordedInvocation<MethodInvocation> {
     _fieldMatchers.add(new _NamedArgument(name, value));
     return this;
   }
+
+  /// Limits the scope of the match to method invocations that specified no
+  /// named arguments.
+  ///
+  /// Returns this matcher for chaining.
+  MethodInvocation withNoNamedArguments() {
+    _fieldMatchers.add(const _NoNamedArguments());
+    return this;
+  }
 }
 
 /// Matchers that matches against [PropertyGetEvent] instances.
@@ -219,10 +240,12 @@ class _Target extends Matcher {
     Map<dynamic, dynamic> matchState,
     bool verbose,
   ) {
-    description.add('was invoked on: ${item.object}').add('\n   Which: ');
+    description.add('was invoked on: ${item.object}');
     Description matcherDesc = new StringDescription();
     _matcher.describeMismatch(item.object, matcherDesc, matchState, verbose);
-    description.add(matcherDesc.toString());
+    if (matcherDesc.length > 0) {
+      description.add('\n   Which: ').add(matcherDesc.toString());
+    }
     return description;
   }
 
@@ -249,16 +272,50 @@ class _Result extends Matcher {
     Map<dynamic, dynamic> matchState,
     bool verbose,
   ) {
-    description.add('returned: ${item.result}').add('\n   Which: ');
+    description.add('returned: ${item.result}');
     Description matcherDesc = new StringDescription();
     _matcher.describeMismatch(item.result, matcherDesc, matchState, verbose);
-    description.add(matcherDesc.toString());
+    if (matcherDesc.length > 0) {
+      description.add('\n   Which: ').add(matcherDesc.toString());
+    }
     return description;
   }
 
   @override
   Description describe(Description desc) {
     desc.add('with result: ');
+    return _matcher.describe(desc);
+  }
+}
+
+class _Timestamp extends Matcher {
+  final Matcher _matcher;
+
+  _Timestamp(dynamic timestamp) : _matcher = wrapMatcher(timestamp);
+
+  @override
+  bool matches(dynamic item, Map<dynamic, dynamic> matchState) =>
+      _matcher.matches(item.timestamp, matchState);
+
+  @override
+  Description describeMismatch(
+    dynamic item,
+    Description description,
+    Map<dynamic, dynamic> matchState,
+    bool verbose,
+  ) {
+    description.add('has timestamp: ${item.timestamp}');
+    Description matcherDesc = new StringDescription();
+    _matcher.describeMismatch(item.timestamp, matcherDesc, matchState, verbose);
+    if (matcherDesc.length > 0) {
+      description.add('\n   Which: ').add(matcherDesc.toString());
+    }
+    return description;
+  }
+
+  @override
+  Description describe(Description desc) {
+    desc.add('with timestamp: ');
     return _matcher.describe(desc);
   }
 }
@@ -316,10 +373,12 @@ class _MethodName extends Matcher {
     bool verbose,
   ) {
     String methodName = getSymbolName(item.method);
-    description.add('invoked method: \'$methodName\'').add('\n   Which: ');
+    description.add('invoked method: \'$methodName\'');
     Description matcherDesc = new StringDescription();
     _matcher.describeMismatch(methodName, matcherDesc, matchState, verbose);
-    description.add(matcherDesc.toString());
+    if (matcherDesc.length > 0) {
+      description.add('\n   Which: ').add(matcherDesc.toString());
+    }
     return description;
   }
 
@@ -386,6 +445,31 @@ class _NamedArgument extends Matcher {
       description.add('with named argument "$name" = $value');
 }
 
+class _NoNamedArguments extends Matcher {
+  final Matcher _matcher = isEmpty;
+
+  const _NoNamedArguments();
+
+  @override
+  bool matches(dynamic item, Map<dynamic, dynamic> matchState) =>
+      _matcher.matches(item.namedArguments, matchState);
+
+  @override
+  Description describeMismatch(
+    dynamic item,
+    Description description,
+    Map<dynamic, dynamic> matchState,
+    bool verbose,
+  ) {
+    return _matcher.describeMismatch(
+        item.namedArguments, description, matchState, verbose);
+  }
+
+  @override
+  Description describe(Description description) =>
+      description.add('with no named arguments');
+}
+
 class _GetPropertyName extends Matcher {
   final Matcher _matcher;
 
@@ -403,10 +487,12 @@ class _GetPropertyName extends Matcher {
     bool verbose,
   ) {
     String propertyName = getSymbolName(item.property);
-    description.add('got property: \'$propertyName\'').add('\n   Which: ');
+    description.add('got property: \'$propertyName\'');
     Description matcherDesc = new StringDescription();
     _matcher.describeMismatch(propertyName, matcherDesc, matchState, verbose);
-    description.add(matcherDesc.toString());
+    if (matcherDesc.length > 0) {
+      description.add('\n   Which: ').add(matcherDesc.toString());
+    }
     return description;
   }
 
@@ -441,10 +527,12 @@ class _SetPropertyName extends Matcher {
     bool verbose,
   ) {
     String propertyName = _getPropertyName(item);
-    description.add('set property: \'$propertyName\'').add('\n   Which: ');
+    description.add('set property: \'$propertyName\'');
     Description matcherDesc = new StringDescription();
     _matcher.describeMismatch(propertyName, matcherDesc, matchState, verbose);
-    description.add(matcherDesc.toString());
+    if (matcherDesc.length > 0) {
+      description.add('\n   Which: ').add(matcherDesc.toString());
+    }
     return description;
   }
 
@@ -471,10 +559,12 @@ class _SetValue extends Matcher {
     Map<dynamic, dynamic> matchState,
     bool verbose,
   ) {
-    description.add('set value: ${item.value}').add('\n   Which: ');
+    description.add('set value: ${item.value}');
     Description matcherDesc = new StringDescription();
     _matcher.describeMismatch(item.value, matcherDesc, matchState, verbose);
-    description.add(matcherDesc.toString());
+    if (matcherDesc.length > 0) {
+      description.add('\n   Which: ').add(matcherDesc.toString());
+    }
     return description;
   }
 

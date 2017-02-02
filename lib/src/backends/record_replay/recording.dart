@@ -35,9 +35,20 @@ abstract class LiveRecording extends Recording {
   /// Writes this recording to disk.
   ///
   /// Live recordings will *not* call `flush` on themselves, so it is up to
-  /// callers to call this method when they wish to write the recording to disk.
+  /// callers to call this method when they wish to write the recording to
+  /// disk.
+  ///
+  /// If [awaitPendingResults] is specified, this will wait the specified
+  /// duration for any results that are `Future`s or `Stream`s to complete
+  /// before serializing the recording to disk. Futures that don't complete
+  /// within the specified duration will have their results recorded as `null`,
+  /// and streams that don't send a "done" event within the specified duration
+  /// will have their results recorded as the list of events the stream has
+  /// fired thus far.
+  ///
+  /// Throws a [StateError] if a flush is already in progress.
   ///
   /// Returns a future that completes once the recording has been fully written
   /// to disk.
-  Future<Null> flush();
+  Future<Null> flush({Duration awaitPendingResults});
 }

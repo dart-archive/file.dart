@@ -21,3 +21,13 @@ String getSymbolName(Symbol symbol) {
   int offset = str.indexOf('"') + 1;
   return str.substring(offset, str.indexOf('"', offset));
 }
+
+/// This class is a work-around for the "is" operator not accepting a variable
+/// value as its right operand (https://github.com/dart-lang/sdk/issues/27680).
+class TypeMatcher<T> {
+  /// Creates a type matcher for the given type parameter.
+  const TypeMatcher();
+
+  /// Returns `true` if the given object is of type `T`.
+  bool matches(dynamic object) => object is T;
+}
