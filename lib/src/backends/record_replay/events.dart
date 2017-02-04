@@ -2,7 +2,10 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:async';
+
 import 'recording.dart';
+import 'result_reference.dart';
 
 /// Base class for recordable file system invocation events.
 ///
@@ -53,53 +56,83 @@ abstract class MethodEvent<T> extends InvocationEvent<T> {
   Map<Symbol, dynamic> get namedArguments;
 }
 
-/// Non-exported implementation of [InvocationEvent].
-abstract class EventImpl<T> implements InvocationEvent<T> {
-  /// Creates a new `EventImpl`.
-  EventImpl(this.object, this.result, this.timestamp);
+/// An [InvocationEvent] that's in the process of being recorded.
+abstract class LiveInvocationEvent<T> implements InvocationEvent<T> {
+  /// Creates a new `LiveInvocationEvent`.
+  LiveInvocationEvent(this.object, this._result, this.timestamp);
+
+  final dynamic _result;
 
   @override
   final Object object;
 
   @override
-  final T result;
+  T get result {
+    dynamic result = _result;
+    while (result is ResultReference) {
+      ResultReference<dynamic> reference = result;
+      result = reference.recordedValue;
+    }
+    return result;
+  }
 
   @override
   final int timestamp;
 
-  /// Encodes this event into a JSON-ready format.
-  Map<String, dynamic> encode() => <String, dynamic>{
+  /// A [Future] that completes once [result] is ready for serialization.
+  ///
+  /// If [result] is a [Future], this future completes when [result] completes.
+  /// If [result] is a [Stream], this future completes when the stream sends a
+  /// "done" event. If [result] is neither a future nor a stream, this future
+  /// completes immediately.
+  ///
+  /// It is legal for [serialize] to be called before this future completes,
+  /// but doing so will cause incomplete results to be serialized. Results that
+  /// are unfinished futures will be serialized as `null`, and results that are
+  /// unfinished streams will be serialized as the data that has been received
+  /// thus far.
+  Future<Null> get done async {
+    dynamic result = _result;
+    while (result is ResultReference) {
+      ResultReference<dynamic> reference = result;
+      await reference.complete;
+      result = reference.recordedValue;
+    }
+  }
+
+  /// Returns this event as a JSON-serializable object.
+  Map<String, dynamic> serialize() => <String, dynamic>{
         'object': object,
-        'result': result,
+        'result': _result,
         'timestamp': timestamp,
       };
 
   @override
-  String toString() => encode().toString();
+  String toString() => serialize().toString();
 }
 
-/// Non-exported implementation of [PropertyGetEvent].
-class PropertyGetEventImpl<T> extends EventImpl<T>
+/// A [PropertyGetEvent] that's in the process of being recorded.
+class LivePropertyGetEvent<T> extends LiveInvocationEvent<T>
     implements PropertyGetEvent<T> {
-  /// Create a new `PropertyGetEventImpl`.
-  PropertyGetEventImpl(Object object, this.property, T result, int timestamp)
+  /// Creates a new `LivePropertyGetEvent`.
+  LivePropertyGetEvent(Object object, this.property, T result, int timestamp)
       : super(object, result, timestamp);
 
   @override
   final Symbol property;
 
   @override
-  Map<String, dynamic> encode() => <String, dynamic>{
+  Map<String, dynamic> serialize() => <String, dynamic>{
         'type': 'get',
         'property': property,
-      }..addAll(super.encode());
+      }..addAll(super.serialize());
 }
 
-/// Non-exported implementation of [PropertySetEvent].
-class PropertySetEventImpl<T> extends EventImpl<Null>
+/// A [PropertySetEvent] that's in the process of being recorded.
+class LivePropertySetEvent<T> extends LiveInvocationEvent<Null>
     implements PropertySetEvent<T> {
-  /// Create a new `PropertySetEventImpl`.
-  PropertySetEventImpl(Object object, this.property, this.value, int timestamp)
+  /// Creates a new `LivePropertySetEvent`.
+  LivePropertySetEvent(Object object, this.property, this.value, int timestamp)
       : super(object, null, timestamp);
 
   @override
@@ -109,17 +142,18 @@ class PropertySetEventImpl<T> extends EventImpl<Null>
   final T value;
 
   @override
-  Map<String, dynamic> encode() => <String, dynamic>{
+  Map<String, dynamic> serialize() => <String, dynamic>{
         'type': 'set',
         'property': property,
         'value': value,
-      }..addAll(super.encode());
+      }..addAll(super.serialize());
 }
 
-/// Non-exported implementation of [MethodEvent].
-class MethodEventImpl<T> extends EventImpl<T> implements MethodEvent<T> {
-  /// Create a new `MethodEventImpl`.
-  MethodEventImpl(
+/// A [MethodEvent] that's in the process of being recorded.
+class LiveMethodEvent<T> extends LiveInvocationEvent<T>
+    implements MethodEvent<T> {
+  /// Creates a new `LiveMethodEvent`.
+  LiveMethodEvent(
     Object object,
     this.method,
     List<dynamic> positionalArguments,
@@ -143,10 +177,10 @@ class MethodEventImpl<T> extends EventImpl<T> implements MethodEvent<T> {
   final Map<Symbol, dynamic> namedArguments;
 
   @override
-  Map<String, dynamic> encode() => <String, dynamic>{
+  Map<String, dynamic> serialize() => <String, dynamic>{
         'type': 'invoke',
         'method': method,
         'positionalArguments': positionalArguments,
         'namedArguments': namedArguments,
-      }..addAll(super.encode());
+      }..addAll(super.serialize());
 }

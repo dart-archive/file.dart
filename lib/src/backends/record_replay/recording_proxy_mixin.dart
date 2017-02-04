@@ -8,6 +8,7 @@ import 'package:meta/meta.dart';
 
 import 'events.dart';
 import 'mutable_recording.dart';
+import 'result_reference.dart';
 
 /// Mixin that enables recording of property accesses, property mutations, and
 /// method invocations.
@@ -110,44 +111,37 @@ abstract class RecordingProxyMixin {
           : super.noSuchMethod(invocation);
     }
 
-    T recordEvent<T>(T value) {
-      InvocationEvent<T> event;
-      if (invocation.isGetter) {
-        event = new PropertyGetEventImpl<T>(this, name, value, time);
-      } else if (invocation.isSetter) {
-        // TODO(tvolkert): Remove indirection once SDK 1.22 is in stable branch
-        dynamic temp =
-            new PropertySetEventImpl<dynamic>(this, name, args[0], time);
-        event = temp;
-      } else {
-        event =
-            new MethodEventImpl<T>(this, name, args, namedArgs, value, time);
-      }
-      recording.add(event);
-      return value;
-    }
-
+    // Invoke the configured delegate method, wrapping Future and Stream
+    // results so that we record their values as they become available.
+    // TODO(tvolkert): record exceptions.
     dynamic value = Function.apply(method, args, namedArgs);
     if (value is Stream) {
-      List<dynamic> list = <dynamic>[];
-      value = _recordStreamToList(value, list);
-      recordEvent(list);
+      value = new StreamReference<dynamic>(value);
     } else if (value is Future) {
-      value = value.then(recordEvent);
+      value = new FutureReference<dynamic>(value);
+    }
+
+    // Record the invocation event associated with this invocation.
+    InvocationEvent<dynamic> event;
+    if (invocation.isGetter) {
+      event = new LivePropertyGetEvent<dynamic>(this, name, value, time);
+    } else if (invocation.isSetter) {
+      // TODO(tvolkert): Remove indirection once SDK 1.22 is in stable branch
+      dynamic temp =
+          new LivePropertySetEvent<dynamic>(this, name, args[0], time);
+      event = temp;
     } else {
-      recordEvent(value);
+      event = new LiveMethodEvent<dynamic>(
+          this, name, args, namedArgs, value, time);
     }
+    recording.add(event);
 
-    return value;
-  }
-
-  /// Returns a stream that produces the same data as [stream] but will record
-  /// the data in the specified [list] as it is produced by the stream.
-  Stream<T> _recordStreamToList<T>(Stream<T> stream, List<T> list) async* {
-    await for (T element in stream) {
-      yield element;
-      list.add(element);
+    // Unwrap any result references before returning to the caller.
+    dynamic result = value;
+    while (result is ResultReference) {
+      result = result.value;
     }
+    return result;
   }
 }
 

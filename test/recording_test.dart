@@ -2,20 +2,200 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:async';
+import 'dart:convert';
+
 import 'package:file/file.dart';
 import 'package:file/memory.dart';
 import 'package:file/record_replay.dart';
 import 'package:file/testing.dart';
+import 'package:file/src/backends/record_replay/mutable_recording.dart';
+import 'package:file/src/backends/record_replay/recording_proxy_mixin.dart';
 import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 
 import 'common_tests.dart';
 
 void main() {
+  group('SupportingClasses', () {
+    BasicClass delegate;
+    RecordingClass rc;
+    MutableRecording recording;
+
+    setUp(() {
+      delegate = new BasicClass();
+      rc = new RecordingClass(
+        delegate: delegate,
+        stopwatch: new FakeStopwatch(10),
+        destination: new MemoryFileSystem().directory('/tmp')..createSync(),
+      );
+      recording = rc.recording;
+    });
+
+    group('InvocationEvent', () {
+      test('recordsAllPropertyGetMetadata', () {
+        delegate.basicProperty = 'foo';
+        String value = rc.basicProperty;
+        expect(recording.events, hasLength(1));
+        expect(
+            recording.events[0],
+            getsProperty('basicProperty')
+                .on(rc)
+                .withResult(value)
+                .withTimestamp(10));
+      });
+
+      test('recordsAllPropertySetMetadata', () {
+        rc.basicProperty = 'foo';
+        expect(recording.events, hasLength(1));
+        expect(
+            recording.events[0],
+            setsProperty('basicProperty')
+                .on(rc)
+                .toValue('foo')
+                .withTimestamp(10));
+      });
+
+      test('recordsAllMethodInvocationMetadata', () {
+        String result = rc.basicMethod('foo', namedArg: 'bar');
+        expect(recording.events, hasLength(1));
+        expect(
+            recording.events[0],
+            invokesMethod('basicMethod')
+                .on(rc)
+                .withPositionalArguments(<String>['foo'])
+                .withNamedArgument('namedArg', 'bar')
+                .withResult(result)
+                .withTimestamp(10));
+      });
+
+      test('resultIncompleteUntilFutureCompletes', () async {
+        delegate.basicProperty = 'foo';
+        rc.futureProperty; // ignore: unawaited_futures
+        expect(recording.events, hasLength(1));
+        expect(
+            recording.events[0],
+            getsProperty('futureProperty')
+                .on(rc)
+                .withResult(isNull)
+                .withTimestamp(10));
+        await recording.events[0].done;
+        expect(
+            recording.events[0],
+            getsProperty('futureProperty')
+                .on(rc)
+                .withResult('future.foo')
+                .withTimestamp(10));
+      });
+
+      test('resultIncompleteUntilStreamCompletes', () async {
+        Stream<String> stream = rc.streamMethod('foo', namedArg: 'bar');
+        stream.listen((_) {});
+        expect(recording.events, hasLength(1));
+        expect(
+            recording.events[0],
+            invokesMethod('streamMethod')
+                .on(rc)
+                .withPositionalArguments(<String>['foo'])
+                .withNamedArgument('namedArg', 'bar')
+                .withResult(allOf(isList, isEmpty))
+                .withTimestamp(10));
+        await recording.events[0].done;
+        expect(
+            recording.events[0],
+            invokesMethod('streamMethod')
+                .on(rc)
+                .withPositionalArguments(<String>['foo'])
+                .withNamedArgument('namedArg', 'bar')
+                .withResult(<String>['stream', 'foo', 'bar'])
+                .withTimestamp(10));
+      });
+    });
+
+    group('MutableRecording', () {
+      group('flush', () {
+        List<Map<String, dynamic>> loadManifestFromFileSystem() {
+          List<FileSystemEntity> files = recording.destination.listSync();
+          expect(files.length, 1);
+          expect(files[0], isFile);
+          expect(files[0].basename, 'MANIFEST.txt');
+          File manifestFile = files[0];
+          return new JsonDecoder().convert(manifestFile.readAsStringSync());
+        }
+
+        test('writesManifestToFileSystemAsJson', () async {
+          rc.basicProperty = 'foo';
+          String value = rc.basicProperty;
+          rc.basicMethod(value, namedArg: 'bar');
+          await recording.flush();
+          List<Map<String, dynamic>> manifest = loadManifestFromFileSystem();
+          expect(manifest, hasLength(3));
+          expect(manifest[0], <String, dynamic>{
+            'type': 'set',
+            'property': 'basicProperty=',
+            'value': 'foo',
+            'object': 'RecordingClass',
+            'result': null,
+            'timestamp': 10,
+          });
+          expect(manifest[1], <String, dynamic>{
+            'type': 'get',
+            'property': 'basicProperty',
+            'object': 'RecordingClass',
+            'result': 'foo',
+            'timestamp': 11,
+          });
+          expect(manifest[2], <String, dynamic>{
+            'type': 'invoke',
+            'method': 'basicMethod',
+            'positionalArguments': <String>['foo'],
+            'namedArguments': <String, dynamic>{'namedArg': 'bar'},
+            'object': 'RecordingClass',
+            'result': 'foo.bar',
+            'timestamp': 12
+          });
+        });
+
+        test('doesntAwaitPendingResultsUnlessToldToDoSo', () async {
+          rc.futureMethod('foo', namedArg: 'bar'); // ignore: unawaited_futures
+          await recording.flush();
+          List<Map<String, dynamic>> manifest = loadManifestFromFileSystem();
+          expect(manifest[0], containsPair('result', null));
+        });
+
+        test('succeedsIfAwaitPendingResultsThatComplete', () async {
+          rc.futureMethod('foo', namedArg: 'bar'); // ignore: unawaited_futures
+          await recording.flush(
+              awaitPendingResults: const Duration(seconds: 30));
+          List<Map<String, dynamic>> manifest = loadManifestFromFileSystem();
+          expect(manifest[0], containsPair('result', 'future.foo.bar'));
+        });
+
+        test('succeedsIfAwaitPendingResultsThatTimeout', () async {
+          rc.veryLongFutureMethod(); // ignore: unawaited_futures
+          DateTime before = new DateTime.now();
+          await recording.flush(
+              awaitPendingResults: const Duration(milliseconds: 250));
+          DateTime after = new DateTime.now();
+          Duration delta = after.difference(before);
+          List<Map<String, dynamic>> manifest = loadManifestFromFileSystem();
+          expect(manifest[0], containsPair('result', isNull));
+          expect(delta.inMilliseconds, greaterThanOrEqualTo(250));
+        });
+
+        test('throwsIfAlreadyFlushing', () {
+          rc.basicProperty = 'foo';
+          recording.flush();
+          expect(recording.flush(), throwsA(isStateError));
+        });
+      });
+    });
+  });
+
   group('RecordingFileSystem', () {
     RecordingFileSystem fs;
     MemoryFileSystem delegate;
-    Recording recording;
+    LiveRecording recording;
 
     setUp(() {
       delegate = new MemoryFileSystem();
@@ -238,10 +418,34 @@ void main() {
               recording.events,
               contains(invokesMethod('create')
                   .on(isDirectory)
+                  .withNoNamedArguments()
                   .withResult(isDirectory)));
         });
 
-        test('createSync', () {});
+        test('createSync', () {
+          fs.directory('/foo').createSync();
+          expect(
+              recording.events,
+              contains(invokesMethod('createSync')
+                  .on(isDirectory)
+                  .withNoNamedArguments()
+                  .withResult(isNull)));
+        });
+
+        test('list', () async {
+          await delegate.directory('/foo').create();
+          await delegate.directory('/bar').create();
+          await delegate.file('/baz').create();
+          Stream<FileSystemEntity> stream = fs.directory('/').list();
+          await stream.drain();
+          expect(
+            recording.events,
+            contains(invokesMethod('list')
+                .on(isDirectory)
+                .withNoNamedArguments()
+                .withResult(hasLength(3))),
+          );
+        });
       });
 
       group('File', () {});
@@ -249,4 +453,99 @@ void main() {
       group('Link', () {});
     });
   });
+}
+
+// ignore: public_member_api_docs
+class BasicClass {
+  // ignore: public_member_api_docs
+  String basicProperty;
+
+  // ignore: public_member_api_docs
+  Future<String> get futureProperty async => 'future.$basicProperty';
+
+  // ignore: public_member_api_docs
+  String basicMethod(String positionalArg, {String namedArg}) =>
+      '$positionalArg.$namedArg';
+
+  // ignore: public_member_api_docs
+  Future<String> futureMethod(String positionalArg, {String namedArg}) async {
+    await new Future<Null>.delayed(const Duration(milliseconds: 500));
+    String basicValue = basicMethod(positionalArg, namedArg: namedArg);
+    return 'future.$basicValue';
+  }
+
+  // ignore: public_member_api_docs
+  Stream<String> streamMethod(String positionalArg, {String namedArg}) async* {
+    yield 'stream';
+    yield positionalArg;
+    yield namedArg;
+  }
+
+  // ignore: public_member_api_docs
+  Future<String> veryLongFutureMethod() async {
+    await new Future<Null>.delayed(const Duration(seconds: 1));
+    return 'future';
+  }
+
+  // ignore: public_member_api_docs
+  Stream<String> infiniteStreamMethod() async* {
+    yield 'stream';
+    int i = 0;
+    while (i >= 0) {
+      yield '${i++}';
+      await new Future<Null>.delayed(const Duration(seconds: 1));
+    }
+  }
+}
+
+// ignore: public_member_api_docs
+class RecordingClass extends Object
+    with RecordingProxyMixin
+    implements BasicClass {
+  // ignore: public_member_api_docs
+  final BasicClass delegate;
+
+  // ignore: public_member_api_docs
+  RecordingClass({
+    this.delegate,
+    this.stopwatch,
+    Directory destination,
+  })
+      : recording = new MutableRecording(destination) {
+    methods.addAll(<Symbol, Function>{
+      #basicMethod: delegate.basicMethod,
+      #futureMethod: delegate.futureMethod,
+      #streamMethod: delegate.streamMethod,
+      #veryLongFutureMethod: delegate.veryLongFutureMethod,
+      #infiniteStreamMethod: delegate.infiniteStreamMethod,
+    });
+
+    properties.addAll(<Symbol, Function>{
+      #basicProperty: () => delegate.basicProperty,
+      const Symbol('basicProperty='): (String value) {
+        delegate.basicProperty = value;
+      },
+      #futureProperty: () => delegate.futureProperty,
+    });
+  }
+
+  @override
+  final MutableRecording recording;
+
+  @override
+  final Stopwatch stopwatch;
+}
+
+// ignore: public_member_api_docs
+class FakeStopwatch implements Stopwatch {
+  int _value;
+
+  // ignore: public_member_api_docs
+  FakeStopwatch(this._value);
+
+  @override
+  int get elapsedMilliseconds => _value++;
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }

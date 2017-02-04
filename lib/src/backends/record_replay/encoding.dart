@@ -16,19 +16,10 @@ import 'recording_file_system_entity.dart';
 import 'recording_io_sink.dart';
 import 'recording_link.dart';
 import 'recording_random_access_file.dart';
+import 'result_reference.dart';
 
 /// Encodes an object into a JSON-ready representation.
 typedef dynamic _Encoder(dynamic object);
-
-/// This class is a work-around for the "is" operator not accepting a variable
-/// value as its right operand (https://github.com/dart-lang/sdk/issues/27680).
-class _TypeMatcher<T> {
-  /// Creates a type matcher for the given type parameter.
-  const _TypeMatcher();
-
-  /// Returns `true` if the given object is of type `T`.
-  bool check(dynamic object) => object is T;
-}
 
 /// Known encoders. Types not covered here will be encoded using
 /// [_encodeDefault].
@@ -36,31 +27,32 @@ class _TypeMatcher<T> {
 /// When encoding an object, we will walk this map in iteration order looking
 /// for a matching encoder. Thus, when there are two encoders that match an
 //  object, the first one will win.
-const Map<_TypeMatcher<dynamic>, _Encoder> _kEncoders =
-    const <_TypeMatcher<dynamic>, _Encoder>{
-  const _TypeMatcher<num>(): _encodeRaw,
-  const _TypeMatcher<bool>(): _encodeRaw,
-  const _TypeMatcher<String>(): _encodeRaw,
-  const _TypeMatcher<Null>(): _encodeRaw,
-  const _TypeMatcher<List<dynamic>>(): _encodeRaw,
-  const _TypeMatcher<Map<dynamic, dynamic>>(): _encodeMap,
-  const _TypeMatcher<Iterable<dynamic>>(): _encodeIterable,
-  const _TypeMatcher<Symbol>(): getSymbolName,
-  const _TypeMatcher<DateTime>(): _encodeDateTime,
-  const _TypeMatcher<Uri>(): _encodeUri,
-  const _TypeMatcher<p.Context>(): _encodePathContext,
-  const _TypeMatcher<EventImpl<dynamic>>(): _encodeEvent,
-  const _TypeMatcher<FileSystem>(): _encodeFileSystem,
-  const _TypeMatcher<RecordingDirectory>(): _encodeFileSystemEntity,
-  const _TypeMatcher<RecordingFile>(): _encodeFileSystemEntity,
-  const _TypeMatcher<RecordingLink>(): _encodeFileSystemEntity,
-  const _TypeMatcher<RecordingIOSink>(): _encodeIOSink,
-  const _TypeMatcher<RecordingRandomAccessFile>(): _encodeRandomAccessFile,
-  const _TypeMatcher<Encoding>(): _encodeEncoding,
-  const _TypeMatcher<FileMode>(): _encodeFileMode,
-  const _TypeMatcher<FileStat>(): _encodeFileStat,
-  const _TypeMatcher<FileSystemEntityType>(): _encodeFileSystemEntityType,
-  const _TypeMatcher<FileSystemEvent>(): _encodeFileSystemEvent,
+const Map<TypeMatcher<dynamic>, _Encoder> _kEncoders =
+    const <TypeMatcher<dynamic>, _Encoder>{
+  const TypeMatcher<num>(): _encodeRaw,
+  const TypeMatcher<bool>(): _encodeRaw,
+  const TypeMatcher<String>(): _encodeRaw,
+  const TypeMatcher<Null>(): _encodeRaw,
+  const TypeMatcher<List<dynamic>>(): _encodeRaw,
+  const TypeMatcher<Map<dynamic, dynamic>>(): _encodeMap,
+  const TypeMatcher<Iterable<dynamic>>(): _encodeIterable,
+  const TypeMatcher<Symbol>(): getSymbolName,
+  const TypeMatcher<DateTime>(): _encodeDateTime,
+  const TypeMatcher<Uri>(): _encodeUri,
+  const TypeMatcher<p.Context>(): _encodePathContext,
+  const TypeMatcher<ResultReference<dynamic>>(): _encodeResultReference,
+  const TypeMatcher<LiveInvocationEvent<dynamic>>(): _encodeEvent,
+  const TypeMatcher<FileSystem>(): _encodeFileSystem,
+  const TypeMatcher<RecordingDirectory>(): _encodeFileSystemEntity,
+  const TypeMatcher<RecordingFile>(): _encodeFileSystemEntity,
+  const TypeMatcher<RecordingLink>(): _encodeFileSystemEntity,
+  const TypeMatcher<RecordingIOSink>(): _encodeIOSink,
+  const TypeMatcher<RecordingRandomAccessFile>(): _encodeRandomAccessFile,
+  const TypeMatcher<Encoding>(): _encodeEncoding,
+  const TypeMatcher<FileMode>(): _encodeFileMode,
+  const TypeMatcher<FileStat>(): _encodeFileStat,
+  const TypeMatcher<FileSystemEntityType>(): _encodeFileSystemEntityType,
+  const TypeMatcher<FileSystemEvent>(): _encodeFileSystemEvent,
 };
 
 /// Encodes [object] into a JSON-ready representation.
@@ -72,8 +64,8 @@ const Map<_TypeMatcher<dynamic>, _Encoder> _kEncoders =
 ///   - [JsonEncoder.withIndent]
 dynamic encode(dynamic object) {
   _Encoder encoder = _encodeDefault;
-  for (_TypeMatcher<dynamic> matcher in _kEncoders.keys) {
-    if (matcher.check(object)) {
+  for (TypeMatcher<dynamic> matcher in _kEncoders.keys) {
+    if (matcher.matches(object)) {
       encoder = _kEncoders[matcher];
       break;
     }
@@ -114,7 +106,11 @@ Map<String, String> _encodePathContext(p.Context context) => <String, String>{
       'cwd': context.current,
     };
 
-Map<String, dynamic> _encodeEvent(EventImpl<dynamic> event) => event.encode();
+dynamic _encodeResultReference(ResultReference<dynamic> reference) =>
+    reference.serializedValue;
+
+Map<String, dynamic> _encodeEvent(LiveInvocationEvent<dynamic> event) =>
+    event.serialize();
 
 String _encodeFileSystem(FileSystem fs) => kFileSystemEncodedValue;
 
