@@ -89,8 +89,9 @@ class FutureReference<T> extends ResultReference<Future<T>> {
   @override
   T get recordedValue => _value;
 
+  // TODO(tvolkert): remove `.then()` once Dart 1.22 is in stable
   @override
-  Future<Null> get complete => value;
+  Future<Null> get complete => value.then<Null>((_) {});
 }
 
 /// Wraps a stream result.

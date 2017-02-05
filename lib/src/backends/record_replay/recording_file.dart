@@ -166,9 +166,10 @@ class _ByteArrayStreamReference extends StreamReference<List<int>> {
   @override
   dynamic get serializedValue => '!${file.basename}';
 
+  // TODO(tvolkert): remove `.then()` once Dart 1.22 is in stable
   @override
   Future<Null> get complete =>
-      Future.wait(<Future<dynamic>>[super.complete, _sink.done]);
+      Future.wait(<Future<dynamic>>[super.complete, _sink.done]).then((_) {});
 }
 
 class _ByteArrayFutureReference extends FutureReference<List<int>> {

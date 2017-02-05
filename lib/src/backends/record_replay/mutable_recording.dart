@@ -42,7 +42,7 @@ class MutableRecording implements LiveRecording {
         Iterable<Future<Null>> futures =
             _events.map((LiveInvocationEvent<dynamic> event) => event.done);
         await Future
-            .wait<String>(futures)
+            .wait<Null>(futures)
             .timeout(awaitPendingResults, onTimeout: () {});
       }
       Directory dir = destination;
