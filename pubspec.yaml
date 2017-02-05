@@ -8,6 +8,7 @@ description: A pluggable, mockable file system abstraction for Dart.
 homepage: https://github.com/matanlurey/file
 
 dependencies:
+  intl: ^0.14.0
   meta: ^1.0.4
   path: ^1.4.0
 
