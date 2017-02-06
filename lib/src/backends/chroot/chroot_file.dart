@@ -40,7 +40,9 @@ class _ChrootFile extends _ChrootFileSystemEntity<File, io.File>
         case FileSystemEntityType.NOT_FOUND:
           // Validation passed; delete the link to keep the delegate file
           // system's validation from getting in the way.
-          setUp = () async => await fileSystem.link(newPath).delete();
+          setUp = () async {
+            await fileSystem.link(newPath).delete();
+          };
           break;
         case FileSystemEntityType.DIRECTORY:
           throw new FileSystemException('Is a directory', newPath);
@@ -87,7 +89,9 @@ class _ChrootFile extends _ChrootFileSystemEntity<File, io.File>
         case FileSystemEntityType.NOT_FOUND:
           // Validation passed; delete the link to keep the delegate file
           // system's validation from getting in the way.
-          setUp = () => fileSystem.link(newPath).deleteSync();
+          setUp = () {
+            fileSystem.link(newPath).deleteSync();
+          };
           break;
         case FileSystemEntityType.DIRECTORY:
           throw new FileSystemException('Is a directory', newPath);
