@@ -5,6 +5,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:meta/meta.dart';
 import 'package:file/file.dart';
 import 'package:file/src/io.dart' as io;
 
@@ -139,6 +140,52 @@ class RecordingFile extends RecordingFileSystemEntity<File, io.File>
           .then(wrap);
 }
 
+abstract class _ExternalReference<T> extends ResultReference<T> {
+  final File file;
+  final T _value;
+
+  _ExternalReference(MutableRecording recording, String name, this._value)
+      : file = recording.newFile(name);
+
+  @protected
+  void writeDataToFile(T value);
+
+  @override
+  T get value {
+    writeDataToFile(_value);
+    return _value;
+  }
+
+  @override
+  T get recordedValue => _value;
+
+  @override
+  dynamic get serializedValue => '!${file.basename}';
+}
+
+abstract class _ExternalFutureReference<T> extends FutureReference<T> {
+  final File file;
+
+  _ExternalFutureReference(
+      MutableRecording recording, String name, Future<T> future)
+      : file = recording.newFile(name),
+        super(future);
+
+  @protected
+  Future<Null> writeDataToFile(T value);
+
+  @override
+  Future<T> get value {
+    return super.value.then((T value) async {
+      await writeDataToFile(value);
+      return value;
+    });
+  }
+
+  @override
+  dynamic get serializedValue => '!${file.basename}';
+}
+
 class _ByteArrayStreamReference extends StreamReference<List<int>> {
   final File file;
   IOSink _sink;
@@ -172,122 +219,65 @@ class _ByteArrayStreamReference extends StreamReference<List<int>> {
       Future.wait(<Future<dynamic>>[super.complete, _sink.done]).then((_) {});
 }
 
-class _ByteArrayFutureReference extends FutureReference<List<int>> {
-  final File file;
-
+class _ByteArrayFutureReference extends _ExternalFutureReference<List<int>> {
   _ByteArrayFutureReference(
       MutableRecording recording, String name, Future<List<int>> future)
-      : file = recording.newFile(name),
-        super(future);
+      : super(recording, name, future);
 
   @override
-  Future<List<int>> get value {
-    return super.value.then((List<int> bytes) async {
-      await file.writeAsBytes(bytes, flush: true);
-      return bytes;
-    });
+  Future<Null> writeDataToFile(List<int> bytes) async {
+    await file.writeAsBytes(bytes, flush: true);
   }
-
-  @override
-  dynamic get serializedValue => '!${file.basename}';
 }
 
-class _ByteArrayReference extends ResultReference<List<int>> {
-  final File file;
-  final List<int> bytes;
-
-  _ByteArrayReference(MutableRecording recording, String name, this.bytes)
-      : file = recording.newFile(name);
+class _ByteArrayReference extends _ExternalReference<List<int>> {
+  _ByteArrayReference(MutableRecording recording, String name, List<int> bytes)
+      : super(recording, name, bytes);
 
   @override
-  List<int> get value {
+  void writeDataToFile(List<int> bytes) {
     file.writeAsBytesSync(bytes, flush: true);
-    return bytes;
   }
-
-  @override
-  List<int> get recordedValue => bytes;
-
-  @override
-  dynamic get serializedValue => '!${file.basename}';
 }
 
-class _FileContentFutureReference extends FutureReference<String> {
-  final File file;
-
+class _FileContentFutureReference extends _ExternalFutureReference<String> {
   _FileContentFutureReference(
       MutableRecording recording, String name, Future<String> future)
-      : file = recording.newFile(name),
-        super(future);
+      : super(recording, name, future);
 
   @override
-  Future<String> get value {
-    return super.value.then((String content) async {
-      await file.writeAsString(content, flush: true);
-      return content;
-    });
+  Future<Null> writeDataToFile(String content) async {
+    await file.writeAsString(content, flush: true);
   }
-
-  @override
-  dynamic get serializedValue => '!${file.basename}';
 }
 
-class _FileContentReference extends ResultReference<String> {
-  final File file;
-  final String content;
-
-  _FileContentReference(MutableRecording recording, String name, this.content)
-      : file = recording.newFile(name);
+class _FileContentReference extends _ExternalReference<String> {
+  _FileContentReference(MutableRecording recording, String name, String content)
+      : super(recording, name, content);
 
   @override
-  String get value {
+  void writeDataToFile(String content) {
     file.writeAsStringSync(content, flush: true);
-    return content;
   }
-
-  @override
-  String get recordedValue => content;
-
-  @override
-  dynamic get serializedValue => '!${file.basename}';
 }
 
-class _LinesFutureReference extends FutureReference<List<String>> {
-  final File file;
-
+class _LinesFutureReference extends _ExternalFutureReference<List<String>> {
   _LinesFutureReference(
       MutableRecording recording, String name, Future<List<String>> future)
-      : file = recording.newFile(name),
-        super(future);
+      : super(recording, name, future);
 
   @override
-  Future<List<String>> get value {
-    return super.value.then((List<String> lines) async {
-      await file.writeAsString(lines.join('\n'), flush: true);
-      return lines;
-    });
+  Future<Null> writeDataToFile(List<String> lines) async {
+    await file.writeAsString(lines.join('\n'), flush: true);
   }
-
-  @override
-  dynamic get serializedValue => '!${file.basename}';
 }
 
-class _LinesReference extends ResultReference<List<String>> {
-  final File file;
-  final List<String> lines;
-
-  _LinesReference(MutableRecording recording, String name, this.lines)
-      : file = recording.newFile(name);
+class _LinesReference extends _ExternalReference<List<String>> {
+  _LinesReference(MutableRecording recording, String name, List<String> lines)
+      : super(recording, name, lines);
 
   @override
-  List<String> get value {
+  void writeDataToFile(List<String> lines) {
     file.writeAsStringSync(lines.join('\n'), flush: true);
-    return lines;
   }
-
-  @override
-  List<String> get recordedValue => lines;
-
-  @override
-  dynamic get serializedValue => '!${file.basename}';
 }
