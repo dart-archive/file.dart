@@ -181,10 +181,12 @@ class _ByteArrayFutureReference extends FutureReference<List<int>> {
         super(future);
 
   @override
-  Future<List<int>> get value => super.value.then((List<int> bytes) async {
-        await file.writeAsBytes(bytes, flush: true);
-        return bytes;
-      });
+  Future<List<int>> get value {
+    return super.value.then((List<int> bytes) async {
+      await file.writeAsBytes(bytes, flush: true);
+      return bytes;
+    });
+  }
 
   @override
   dynamic get serializedValue => '!${file.basename}';
@@ -219,10 +221,12 @@ class _FileContentFutureReference extends FutureReference<String> {
         super(future);
 
   @override
-  Future<String> get value => super.value.then((String content) async {
-        await file.writeAsString(content, flush: true);
-        return content;
-      });
+  Future<String> get value {
+    return super.value.then((String content) async {
+      await file.writeAsString(content, flush: true);
+      return content;
+    });
+  }
 
   @override
   dynamic get serializedValue => '!${file.basename}';
@@ -257,11 +261,12 @@ class _LinesFutureReference extends FutureReference<List<String>> {
         super(future);
 
   @override
-  Future<List<String>> get value =>
-      super.value.then((List<String> lines) async {
-        await file.writeAsString(lines.join('\n'), flush: true);
-        return lines;
-      });
+  Future<List<String>> get value {
+    return super.value.then((List<String> lines) async {
+      await file.writeAsString(lines.join('\n'), flush: true);
+      return lines;
+    });
+  }
 
   @override
   dynamic get serializedValue => '!${file.basename}';
