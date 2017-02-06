@@ -57,6 +57,10 @@ void expectFileSystemException(dynamic message, void callback()) {
   expect(callback, throwsFileSystemException(message));
 }
 
+/// Matcher that successfully matches against a [FileSystemEntity] that
+/// exists ([FileSystemEntity.existsSync] returns true).
+const Matcher exists = const _Exists();
+
 class _FileSystemException extends Matcher {
   final Matcher _matcher;
 
@@ -107,5 +111,27 @@ class _HasPath extends Matcher {
     _matcher.describeMismatch(item.path, pathDesc, matchState, verbose);
     desc.add(pathDesc.toString());
     return desc;
+  }
+}
+
+class _Exists extends Matcher {
+  const _Exists();
+
+  @override
+  bool matches(dynamic item, Map<dynamic, dynamic> matchState) =>
+      item is FileSystemEntity && item.existsSync();
+
+  @override
+  Description describe(Description description) =>
+      description.add('a file system entity that exists');
+
+  @override
+  Description describeMismatch(
+    dynamic item,
+    Description description,
+    Map<dynamic, dynamic> matchState,
+    bool verbose,
+  ) {
+    return description.add('does not exist');
   }
 }

@@ -4,6 +4,8 @@
 
 import 'dart:async';
 
+import 'package:meta/meta.dart';
+
 import 'encoding.dart';
 import 'events.dart';
 import 'recording_proxy_mixin.dart';
@@ -87,8 +89,9 @@ class FutureReference<T> extends ResultReference<Future<T>> {
   @override
   T get recordedValue => _value;
 
+  // TODO(tvolkert): remove `.then()` once Dart 1.22 is in stable
   @override
-  Future<Null> get complete => value;
+  Future<Null> get complete => value.then<Null>((_) {});
 }
 
 /// Wraps a stream result.
@@ -128,6 +131,7 @@ class StreamReference<T> extends ResultReference<Stream<T>> {
     return _stream.listen(
       (T element) {
         _data.add(element);
+        onData(element);
         _controller.add(element);
       },
       onError: (dynamic error, StackTrace stackTrace) {
@@ -135,11 +139,26 @@ class StreamReference<T> extends ResultReference<Stream<T>> {
         _controller.addError(error, stackTrace);
       },
       onDone: () {
+        onDone();
         _completer.complete();
         _controller.close();
       },
     );
   }
+
+  /// Called when an event is received from the underlying delegate stream.
+  ///
+  /// Subclasses may override this method to be notified when events are
+  /// fired from the underlying stream.
+  @protected
+  void onData(T event) {}
+
+  /// Called when the underlying delegate stream fires a "done" event.
+  ///
+  /// Subclasses may override this method to be notified when the underlying
+  /// stream is done.
+  @protected
+  void onDone() {}
 
   @override
   Stream<T> get value => _controller.stream;

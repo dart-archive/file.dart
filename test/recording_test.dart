@@ -9,6 +9,7 @@ import 'package:file/file.dart';
 import 'package:file/memory.dart';
 import 'package:file/record_replay.dart';
 import 'package:file/testing.dart';
+import 'package:file/src/backends/record_replay/common.dart';
 import 'package:file/src/backends/record_replay/mutable_recording.dart';
 import 'package:file/src/backends/record_replay/recording_proxy_mixin.dart';
 import 'package:path/path.dart' as p;
@@ -18,15 +19,15 @@ import 'common_tests.dart';
 
 void main() {
   group('SupportingClasses', () {
-    BasicClass delegate;
-    RecordingClass rc;
+    _BasicClass delegate;
+    _RecordingClass rc;
     MutableRecording recording;
 
     setUp(() {
-      delegate = new BasicClass();
-      rc = new RecordingClass(
+      delegate = new _BasicClass();
+      rc = new _RecordingClass(
         delegate: delegate,
-        stopwatch: new FakeStopwatch(10),
+        stopwatch: new _FakeStopwatch(10),
         destination: new MemoryFileSystem().directory('/tmp')..createSync(),
       );
       recording = rc.recording;
@@ -114,34 +115,25 @@ void main() {
 
     group('MutableRecording', () {
       group('flush', () {
-        List<Map<String, dynamic>> loadManifestFromFileSystem() {
-          List<FileSystemEntity> files = recording.destination.listSync();
-          expect(files.length, 1);
-          expect(files[0], isFile);
-          expect(files[0].basename, 'MANIFEST.txt');
-          File manifestFile = files[0];
-          return new JsonDecoder().convert(manifestFile.readAsStringSync());
-        }
-
         test('writesManifestToFileSystemAsJson', () async {
           rc.basicProperty = 'foo';
           String value = rc.basicProperty;
           rc.basicMethod(value, namedArg: 'bar');
           await recording.flush();
-          List<Map<String, dynamic>> manifest = loadManifestFromFileSystem();
+          List<Map<String, dynamic>> manifest = _loadManifest(recording);
           expect(manifest, hasLength(3));
           expect(manifest[0], <String, dynamic>{
             'type': 'set',
             'property': 'basicProperty=',
             'value': 'foo',
-            'object': 'RecordingClass',
+            'object': '_RecordingClass',
             'result': null,
             'timestamp': 10,
           });
           expect(manifest[1], <String, dynamic>{
             'type': 'get',
             'property': 'basicProperty',
-            'object': 'RecordingClass',
+            'object': '_RecordingClass',
             'result': 'foo',
             'timestamp': 11,
           });
@@ -150,7 +142,7 @@ void main() {
             'method': 'basicMethod',
             'positionalArguments': <String>['foo'],
             'namedArguments': <String, dynamic>{'namedArg': 'bar'},
-            'object': 'RecordingClass',
+            'object': '_RecordingClass',
             'result': 'foo.bar',
             'timestamp': 12
           });
@@ -159,7 +151,7 @@ void main() {
         test('doesntAwaitPendingResultsUnlessToldToDoSo', () async {
           rc.futureMethod('foo', namedArg: 'bar'); // ignore: unawaited_futures
           await recording.flush();
-          List<Map<String, dynamic>> manifest = loadManifestFromFileSystem();
+          List<Map<String, dynamic>> manifest = _loadManifest(recording);
           expect(manifest[0], containsPair('result', null));
         });
 
@@ -167,7 +159,7 @@ void main() {
           rc.futureMethod('foo', namedArg: 'bar'); // ignore: unawaited_futures
           await recording.flush(
               awaitPendingResults: const Duration(seconds: 30));
-          List<Map<String, dynamic>> manifest = loadManifestFromFileSystem();
+          List<Map<String, dynamic>> manifest = _loadManifest(recording);
           expect(manifest[0], containsPair('result', 'future.foo.bar'));
         });
 
@@ -178,7 +170,7 @@ void main() {
               awaitPendingResults: const Duration(milliseconds: 250));
           DateTime after = new DateTime.now();
           Duration delta = after.difference(before);
-          List<Map<String, dynamic>> manifest = loadManifestFromFileSystem();
+          List<Map<String, dynamic>> manifest = _loadManifest(recording);
           expect(manifest[0], containsPair('result', isNull));
           expect(delta.inMilliseconds, greaterThanOrEqualTo(250));
         });
@@ -448,46 +440,302 @@ void main() {
         });
       });
 
-      group('File', () {});
+      group('File', () {
+        // TODO(tvolkert): Fill in these test stubs
+        test('create', () {});
+
+        test('createSync', () {});
+
+        test('rename', () {});
+
+        test('renameSync', () {});
+
+        test('copy', () {});
+
+        test('copySync', () {});
+
+        test('length', () {});
+
+        test('lengthSync', () {});
+
+        test('absolute', () {});
+
+        test('lastModified', () {});
+
+        test('lastModifiedSync', () {});
+
+        test('open', () {});
+
+        test('openSync', () {});
+
+        test('openRead', () async {
+          String content = 'Hello\nWorld';
+          await delegate.file('/foo').writeAsString(content, flush: true);
+          Stream<List<int>> stream = fs.file('/foo').openRead();
+          await stream.drain();
+          expect(
+              recording.events,
+              contains(invokesMethod('openRead')
+                  .on(isFile)
+                  .withPositionalArguments(isEmpty)
+                  .withNoNamedArguments()
+                  .withResult(isList)));
+          await recording.flush();
+          List<Map<String, dynamic>> manifest = _loadManifest(recording);
+          expect(manifest, hasLength(2));
+          expect(
+              manifest[1],
+              allOf(
+                containsPair('type', 'invoke'),
+                containsPair('method', 'openRead'),
+                containsPair('object', matches(r'^RecordingFile@[0-9]+$')),
+                containsPair('positionalArguments', isEmpty),
+                containsPair('namedArguments', isEmpty),
+                containsPair('result', matches(r'^![0-9]+.openRead$')),
+              ));
+          File file = _getRecordingFile(recording, manifest[1]['result']);
+          expect(file, exists);
+          expect(await file.readAsString(), content);
+        });
+
+        test('openWrite', () {});
+
+        test('readAsBytes', () async {
+          String content = 'Hello\nWorld';
+          await delegate.file('/foo').writeAsString(content, flush: true);
+          await fs.file('/foo').readAsBytes();
+          expect(
+              recording.events,
+              contains(invokesMethod('readAsBytes')
+                  .on(isFile)
+                  .withNoNamedArguments()
+                  .withResult(allOf(isList, hasLength(content.length)))));
+          await recording.flush();
+          List<Map<String, dynamic>> manifest = _loadManifest(recording);
+          expect(manifest, hasLength(2));
+          expect(
+              manifest[1],
+              allOf(
+                containsPair('type', 'invoke'),
+                containsPair('method', 'readAsBytes'),
+                containsPair('object', matches(r'^RecordingFile@[0-9]+$')),
+                containsPair('positionalArguments', isEmpty),
+                containsPair('namedArguments', isEmpty),
+                containsPair('result', matches(r'^![0-9]+.readAsBytes$')),
+              ));
+          File file = _getRecordingFile(recording, manifest[1]['result']);
+          expect(file, exists);
+          expect(await file.readAsString(), content);
+        });
+
+        test('readAsBytesSync', () async {
+          String content = 'Hello\nWorld';
+          await delegate.file('/foo').writeAsString(content, flush: true);
+          fs.file('/foo').readAsBytesSync();
+          expect(
+              recording.events,
+              contains(invokesMethod('readAsBytesSync')
+                  .on(isFile)
+                  .withNoNamedArguments()
+                  .withResult(allOf(isList, hasLength(content.length)))));
+          await recording.flush();
+          List<Map<String, dynamic>> manifest = _loadManifest(recording);
+          expect(manifest, hasLength(2));
+          expect(
+              manifest[1],
+              allOf(
+                containsPair('type', 'invoke'),
+                containsPair('method', 'readAsBytesSync'),
+                containsPair('object', matches(r'^RecordingFile@[0-9]+$')),
+                containsPair('positionalArguments', isEmpty),
+                containsPair('namedArguments', isEmpty),
+                containsPair('result', matches(r'^![0-9]+.readAsBytesSync$')),
+              ));
+          File file = _getRecordingFile(recording, manifest[1]['result']);
+          expect(file, exists);
+          expect(await file.readAsString(), content);
+        });
+
+        test('readAsString', () async {
+          String content = 'Hello\nWorld';
+          await delegate
+              .file('/foo')
+              .writeAsString(content, encoding: LATIN1, flush: true);
+          await fs.file('/foo').readAsString(encoding: LATIN1);
+          expect(
+              recording.events,
+              contains(invokesMethod('readAsString')
+                  .on(isFile)
+                  .withNamedArgument('encoding', LATIN1)
+                  .withResult(content)));
+          await recording.flush();
+          List<Map<String, dynamic>> manifest = _loadManifest(recording);
+          expect(manifest, hasLength(2));
+          expect(
+              manifest[1],
+              allOf(
+                containsPair('type', 'invoke'),
+                containsPair('method', 'readAsString'),
+                containsPair('object', matches(r'^RecordingFile@[0-9]+$')),
+                containsPair('positionalArguments', isEmpty),
+                containsPair('result', matches(r'^![0-9]+.readAsString$')),
+                containsPair(
+                    'namedArguments',
+                    allOf(
+                      hasLength(1),
+                      containsPair('encoding', 'iso-8859-1'),
+                    )),
+              ));
+          File file = _getRecordingFile(recording, manifest[1]['result']);
+          expect(file, exists);
+          expect(await file.readAsString(), content);
+        });
+
+        test('readAsStringSync', () async {
+          String content = 'Hello\nWorld';
+          await delegate
+              .file('/foo')
+              .writeAsString(content, encoding: LATIN1, flush: true);
+          fs.file('/foo').readAsStringSync(encoding: LATIN1);
+          expect(
+              recording.events,
+              contains(invokesMethod('readAsStringSync')
+                  .on(isFile)
+                  .withNamedArgument('encoding', LATIN1)
+                  .withResult(content)));
+          await recording.flush();
+          List<Map<String, dynamic>> manifest = _loadManifest(recording);
+          expect(manifest, hasLength(2));
+          expect(
+              manifest[1],
+              allOf(
+                containsPair('type', 'invoke'),
+                containsPair('method', 'readAsStringSync'),
+                containsPair('object', matches(r'^RecordingFile@[0-9]+$')),
+                containsPair('positionalArguments', isEmpty),
+                containsPair('result', matches(r'^![0-9]+.readAsStringSync$')),
+                containsPair(
+                    'namedArguments',
+                    allOf(
+                      hasLength(1),
+                      containsPair('encoding', 'iso-8859-1'),
+                    )),
+              ));
+          File file = _getRecordingFile(recording, manifest[1]['result']);
+          expect(file, exists);
+          expect(await file.readAsString(), content);
+        });
+
+        test('readAsLines', () async {
+          String content = 'Hello\nWorld';
+          await delegate.file('/foo').writeAsString(content, flush: true);
+          await fs.file('/foo').readAsLines();
+          expect(
+              recording.events,
+              contains(invokesMethod('readAsLines')
+                  .on(isFile)
+                  .withNoNamedArguments()
+                  .withResult(<String>['Hello', 'World'])));
+          await recording.flush();
+          List<Map<String, dynamic>> manifest = _loadManifest(recording);
+          expect(manifest, hasLength(2));
+          expect(
+              manifest[1],
+              allOf(
+                containsPair('type', 'invoke'),
+                containsPair('method', 'readAsLines'),
+                containsPair('object', matches(r'^RecordingFile@[0-9]+$')),
+                containsPair('positionalArguments', isEmpty),
+                containsPair('result', matches(r'^![0-9]+.readAsLines$')),
+                containsPair('namedArguments', isEmpty),
+              ));
+          File file = _getRecordingFile(recording, manifest[1]['result']);
+          expect(file, exists);
+          expect(await file.readAsString(), content);
+        });
+
+        test('readAsLinesSync', () async {
+          String content = 'Hello\nWorld';
+          await delegate.file('/foo').writeAsString(content, flush: true);
+          fs.file('/foo').readAsLinesSync();
+          expect(
+              recording.events,
+              contains(invokesMethod('readAsLinesSync')
+                  .on(isFile)
+                  .withNoNamedArguments()
+                  .withResult(<String>['Hello', 'World'])));
+          await recording.flush();
+          List<Map<String, dynamic>> manifest = _loadManifest(recording);
+          expect(manifest, hasLength(2));
+          expect(
+              manifest[1],
+              allOf(
+                containsPair('type', 'invoke'),
+                containsPair('method', 'readAsLinesSync'),
+                containsPair('object', matches(r'^RecordingFile@[0-9]+$')),
+                containsPair('positionalArguments', isEmpty),
+                containsPair('result', matches(r'^![0-9]+.readAsLinesSync$')),
+                containsPair('namedArguments', isEmpty),
+              ));
+          File file = _getRecordingFile(recording, manifest[1]['result']);
+          expect(file, exists);
+          expect(await file.readAsString(), content);
+        });
+
+        test('writeAsBytes', () {});
+
+        test('writeAsBytesSync', () {});
+
+        test('writeAsString', () {});
+
+        test('writeAsStringSync', () {});
+      });
 
       group('Link', () {});
     });
   });
 }
 
-// ignore: public_member_api_docs
-class BasicClass {
-  // ignore: public_member_api_docs
+List<Map<String, dynamic>> _loadManifest(LiveRecording recording) {
+  List<FileSystemEntity> files = recording.destination.listSync();
+  File manifestFile = files.singleWhere(
+      (FileSystemEntity entity) => entity.basename == kManifestName);
+  return new JsonDecoder().convert(manifestFile.readAsStringSync());
+}
+
+File _getRecordingFile(LiveRecording recording, String manifestReference) {
+  expect(manifestReference, startsWith('!'));
+  String basename = manifestReference.substring(1);
+  String dirname = recording.destination.path;
+  String path = recording.destination.fileSystem.path.join(dirname, basename);
+  return recording.destination.fileSystem.file(path);
+}
+
+class _BasicClass {
   String basicProperty;
 
-  // ignore: public_member_api_docs
   Future<String> get futureProperty async => 'future.$basicProperty';
 
-  // ignore: public_member_api_docs
   String basicMethod(String positionalArg, {String namedArg}) =>
       '$positionalArg.$namedArg';
 
-  // ignore: public_member_api_docs
   Future<String> futureMethod(String positionalArg, {String namedArg}) async {
     await new Future<Null>.delayed(const Duration(milliseconds: 500));
     String basicValue = basicMethod(positionalArg, namedArg: namedArg);
     return 'future.$basicValue';
   }
 
-  // ignore: public_member_api_docs
   Stream<String> streamMethod(String positionalArg, {String namedArg}) async* {
     yield 'stream';
     yield positionalArg;
     yield namedArg;
   }
 
-  // ignore: public_member_api_docs
   Future<String> veryLongFutureMethod() async {
     await new Future<Null>.delayed(const Duration(seconds: 1));
     return 'future';
   }
 
-  // ignore: public_member_api_docs
   Stream<String> infiniteStreamMethod() async* {
     yield 'stream';
     int i = 0;
@@ -498,15 +746,12 @@ class BasicClass {
   }
 }
 
-// ignore: public_member_api_docs
-class RecordingClass extends Object
+class _RecordingClass extends Object
     with RecordingProxyMixin
-    implements BasicClass {
-  // ignore: public_member_api_docs
-  final BasicClass delegate;
+    implements _BasicClass {
+  final _BasicClass delegate;
 
-  // ignore: public_member_api_docs
-  RecordingClass({
+  _RecordingClass({
     this.delegate,
     this.stopwatch,
     Directory destination,
@@ -536,12 +781,10 @@ class RecordingClass extends Object
   final Stopwatch stopwatch;
 }
 
-// ignore: public_member_api_docs
-class FakeStopwatch implements Stopwatch {
+class _FakeStopwatch implements Stopwatch {
   int _value;
 
-  // ignore: public_member_api_docs
-  FakeStopwatch(this._value);
+  _FakeStopwatch(this._value);
 
   @override
   int get elapsedMilliseconds => _value++;

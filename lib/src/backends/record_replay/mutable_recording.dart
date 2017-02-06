@@ -6,6 +6,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:file/file.dart';
+import 'package:intl/intl.dart';
 
 import 'common.dart';
 import 'encoding.dart';
@@ -41,7 +42,7 @@ class MutableRecording implements LiveRecording {
         Iterable<Future<Null>> futures =
             _events.map((LiveInvocationEvent<dynamic> event) => event.done);
         await Future
-            .wait<String>(futures)
+            .wait<Null>(futures)
             .timeout(awaitPendingResults, onTimeout: () {});
       }
       Directory dir = destination;
@@ -51,6 +52,20 @@ class MutableRecording implements LiveRecording {
     } finally {
       _flushing = false;
     }
+  }
+
+  /// Returns a new file for use with this recording.
+  ///
+  /// The file name will combine the specified [name] with [newUid] to ensure
+  /// that its name is unique among all recording files.
+  ///
+  /// It is up to the caller to create the file - it will not exist in the
+  /// file system when it is returned from this method.
+  File newFile(String name) {
+    String basename = '${new NumberFormat('000').format(newUid())}.$name';
+    String dirname = destination.path;
+    String path = destination.fileSystem.path.join(dirname, basename);
+    return destination.fileSystem.file(path);
   }
 
   /// Adds the specified [event] to this recording.
