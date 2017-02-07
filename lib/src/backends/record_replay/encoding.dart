@@ -2,6 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:file/file.dart';
@@ -18,6 +19,8 @@ import 'recording_random_access_file.dart';
 import 'result_reference.dart';
 
 /// Encodes an object into a JSON-ready representation.
+///
+/// It is legal for an encoder to return a future value.
 typedef dynamic _Encoder(dynamic object);
 
 /// Known encoders. Types not covered here will be encoded using
@@ -32,9 +35,8 @@ const Map<TypeMatcher<dynamic>, _Encoder> _kEncoders =
   const TypeMatcher<bool>(): _encodeRaw,
   const TypeMatcher<String>(): _encodeRaw,
   const TypeMatcher<Null>(): _encodeRaw,
-  const TypeMatcher<List<dynamic>>(): _encodeRaw,
-  const TypeMatcher<Map<dynamic, dynamic>>(): _encodeMap,
-  const TypeMatcher<Iterable<dynamic>>(): _encodeIterable,
+  const TypeMatcher<Iterable<dynamic>>(): encodeIterable,
+  const TypeMatcher<Map<dynamic, dynamic>>(): encodeMap,
   const TypeMatcher<Symbol>(): getSymbolName,
   const TypeMatcher<DateTime>(): _encodeDateTime,
   const TypeMatcher<Uri>(): _encodeUri,
@@ -54,14 +56,12 @@ const Map<TypeMatcher<dynamic>, _Encoder> _kEncoders =
   const TypeMatcher<FileSystemEvent>(): _encodeFileSystemEvent,
 };
 
-/// Encodes [object] into a JSON-ready representation.
+/// Encodes an arbitrary [object] into a JSON-ready representation (a number,
+/// boolean, string, null, list, or map).
 ///
-/// This function is intended to be used as the `toEncodable` argument to the
-/// `JsonEncoder` constructors.
-///
-/// See also:
-///   - [JsonEncoder.withIndent]
-dynamic encode(dynamic object) {
+/// Returns a future that completes with a value suitable for conversion into
+/// JSON using [JsonEncoder] without the need for a `toEncodable` argument.
+Future<dynamic> encode(dynamic object) async {
   _Encoder encoder = _encodeDefault;
   for (TypeMatcher<dynamic> matcher in _kEncoders.keys) {
     if (matcher.matches(object)) {
@@ -69,7 +69,7 @@ dynamic encode(dynamic object) {
       break;
     }
   }
-  return encoder(object);
+  return await encoder(object);
 }
 
 /// Default encoder (used for types not covered in [_kEncoders]).
@@ -78,20 +78,28 @@ String _encodeDefault(dynamic object) => object.runtimeType.toString();
 /// Pass-through encoder.
 dynamic _encodeRaw(dynamic object) => object;
 
-List<T> _encodeIterable<T>(Iterable<T> iterable) => iterable.toList();
-
-/// Encodes the map keys, and passes the values through.
+/// Encodes the specified [iterable] into a JSON-ready list of encoded items.
 ///
-/// As [JsonEncoder] encodes an object graph, it will repeatedly call
-/// `toEncodable` to encode unknown types, so any values in a map that need
-/// special encoding will already be handled by `JsonEncoder`. However, the
-/// encoder won't try to encode map *keys* by default, which is why we encode
-/// them here.
-Map<String, T> _encodeMap<T>(Map<dynamic, T> map) {
-  Map<String, T> encoded = <String, T>{};
+/// Returns a future that completes with a list suitable for conversion into
+/// JSON using [JsonEncoder] without the need for a `toEncodable` argument.
+Future<List<dynamic>> encodeIterable(Iterable<dynamic> iterable) async {
+  List<dynamic> encoded = <dynamic>[];
+  for (dynamic element in iterable) {
+    encoded.add(await encode(element));
+  }
+  return encoded;
+}
+
+/// Encodes the specified [map] into a JSON-ready map of encoded key/value
+/// pairs.
+///
+/// Returns a future that completes with a map suitable for conversion into
+/// JSON using [JsonEncoder] without the need for a `toEncodable` argument.
+Future<Map<String, dynamic>> encodeMap(Map<dynamic, dynamic> map) async {
+  Map<String, dynamic> encoded = <String, dynamic>{};
   for (dynamic key in map.keys) {
-    String encodedKey = encode(key);
-    encoded[encodedKey] = map[key];
+    String encodedKey = await encode(key);
+    encoded[encodedKey] = await encode(map[key]);
   }
   return encoded;
 }
@@ -100,15 +108,17 @@ int _encodeDateTime(DateTime dateTime) => dateTime.millisecondsSinceEpoch;
 
 String _encodeUri(Uri uri) => uri.toString();
 
-Map<String, String> _encodePathContext(p.Context context) => <String, String>{
-      'style': context.style.name,
-      'cwd': context.current,
-    };
+Map<String, String> _encodePathContext(p.Context context) {
+  return <String, String>{
+    'style': context.style.name,
+    'cwd': context.current,
+  };
+}
 
-dynamic _encodeResultReference(ResultReference<dynamic> reference) =>
+Future<dynamic> _encodeResultReference(ResultReference<dynamic> reference) =>
     reference.serializedValue;
 
-Map<String, dynamic> _encodeEvent(LiveInvocationEvent<dynamic> event) =>
+Future<Map<String, dynamic>> _encodeEvent(LiveInvocationEvent<dynamic> event) =>
     event.serialize();
 
 String _encodeFileSystem(FileSystem fs) => kFileSystemEncodedValue;
@@ -148,10 +158,10 @@ String _encodeFileMode(FileMode fileMode) {
 }
 
 Map<String, dynamic> _encodeFileStat(FileStat stat) => <String, dynamic>{
-      'changed': stat.changed,
-      'modified': stat.modified,
-      'accessed': stat.accessed,
-      'type': stat.type,
+      'changed': _encodeDateTime(stat.changed),
+      'modified': _encodeDateTime(stat.modified),
+      'accessed': _encodeDateTime(stat.accessed),
+      'type': _encodeFileSystemEntityType(stat.type),
       'mode': stat.mode,
       'size': stat.size,
       'modeString': stat.modeString(),
