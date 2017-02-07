@@ -18,10 +18,8 @@ import 'recording_proxy_mixin.dart';
 
 /// [FileSystemEntity] implementation that records all invocation activity to
 /// its file system's recording.
-abstract class RecordingFileSystemEntity<T extends FileSystemEntity,
-        D extends io.FileSystemEntity> extends Object
-    with RecordingProxyMixin
-    implements FileSystemEntity {
+abstract class RecordingFileSystemEntity<T extends FileSystemEntity>
+    extends Object with RecordingProxyMixin implements FileSystemEntity {
   /// Creates a new `RecordingFileSystemEntity`.
   RecordingFileSystemEntity(this.fileSystem, this.delegate) {
     methods.addAll(<Symbol, Function>{
@@ -44,6 +42,8 @@ abstract class RecordingFileSystemEntity<T extends FileSystemEntity,
       #isAbsolute: () => delegate.isAbsolute,
       #absolute: _getAbsolute,
       #parent: _getParent,
+      #basename: () => delegate.basename,
+      #dirname: () => delegate.dirname,
     });
   }
 
@@ -62,7 +62,7 @@ abstract class RecordingFileSystemEntity<T extends FileSystemEntity,
   /// The entity to which this entity delegates its functionality while
   /// recording.
   @protected
-  final D delegate;
+  final T delegate;
 
   /// Returns an entity with the same file system and same type as this
   /// entity but backed by the specified delegate.
@@ -74,7 +74,7 @@ abstract class RecordingFileSystemEntity<T extends FileSystemEntity,
   /// returns `null`.
   @protected
   @mustCallSuper
-  T wrap(D delegate) => delegate == this.delegate ? this as T : null;
+  T wrap(T delegate) => delegate == this.delegate ? this as T : null;
 
   /// Returns a directory with the same file system as this entity but backed
   /// by the specified delegate directory.
@@ -94,15 +94,15 @@ abstract class RecordingFileSystemEntity<T extends FileSystemEntity,
 
   Future<T> _rename(String newPath) => delegate
       .rename(newPath)
-      .then((io.FileSystemEntity entity) => wrap(entity as D));
+      .then((io.FileSystemEntity entity) => wrap(entity as T));
 
-  T _renameSync(String newPath) => wrap(delegate.renameSync(newPath) as D);
+  T _renameSync(String newPath) => wrap(delegate.renameSync(newPath) as T);
 
   Future<T> _delete({bool recursive: false}) => delegate
       .delete(recursive: recursive)
-      .then((io.FileSystemEntity entity) => wrap(entity as D));
+      .then((io.FileSystemEntity entity) => wrap(entity as T));
 
-  T _getAbsolute() => wrap(delegate.absolute as D);
+  T _getAbsolute() => wrap(delegate.absolute as T);
 
   Directory _getParent() => wrapDirectory(delegate.parent);
 }
