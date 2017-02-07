@@ -10,6 +10,8 @@ import 'package:file/memory.dart';
 import 'package:file/record_replay.dart';
 import 'package:file/testing.dart';
 import 'package:file/src/backends/record_replay/common.dart';
+import 'package:file/src/backends/record_replay/encoding.dart';
+import 'package:file/src/backends/record_replay/events.dart';
 import 'package:file/src/backends/record_replay/mutable_recording.dart';
 import 'package:file/src/backends/record_replay/recording_proxy_mixin.dart';
 import 'package:path/path.dart' as p;
@@ -179,6 +181,67 @@ void main() {
           rc.basicProperty = 'foo';
           recording.flush();
           expect(recording.flush(), throwsA(isStateError));
+        });
+      });
+    });
+
+    group('Encode', () {
+      test('performsDeepEncoding', () async {
+        rc.basicProperty = 'foo';
+        rc.basicProperty;
+        rc.basicMethod('bar', namedArg: 'baz');
+        await rc.futureProperty;
+        await rc.futureMethod('qux', namedArg: 'quz');
+        await rc.streamMethod('quux', namedArg: 'quuz').drain();
+        List<Map<String, dynamic>> manifest = await encode(recording.events);
+        expect(manifest[0], <String, dynamic>{
+          'type': 'set',
+          'property': 'basicProperty=',
+          'value': 'foo',
+          'object': '_RecordingClass',
+          'result': isNull,
+          'timestamp': 10,
+        });
+        expect(manifest[1], <String, dynamic>{
+          'type': 'get',
+          'property': 'basicProperty',
+          'object': '_RecordingClass',
+          'result': 'foo',
+          'timestamp': 11,
+        });
+        expect(manifest[2], <String, dynamic>{
+          'type': 'invoke',
+          'method': 'basicMethod',
+          'positionalArguments': <String>['bar'],
+          'namedArguments': <String, String>{'namedArg': 'baz'},
+          'object': '_RecordingClass',
+          'result': 'bar.baz',
+          'timestamp': 12,
+        });
+        expect(manifest[3], <String, dynamic>{
+          'type': 'get',
+          'property': 'futureProperty',
+          'object': '_RecordingClass',
+          'result': 'future.foo',
+          'timestamp': 13,
+        });
+        expect(manifest[4], <String, dynamic>{
+          'type': 'invoke',
+          'method': 'futureMethod',
+          'positionalArguments': <String>['qux'],
+          'namedArguments': <String, String>{'namedArg': 'quz'},
+          'object': '_RecordingClass',
+          'result': 'future.qux.quz',
+          'timestamp': 14,
+        });
+        expect(manifest[5], <String, dynamic>{
+          'type': 'invoke',
+          'method': 'streamMethod',
+          'positionalArguments': <String>['quux'],
+          'namedArguments': <String, String>{'namedArg': 'quuz'},
+          'object': '_RecordingClass',
+          'result': <String>['stream', 'quux', 'quuz'],
+          'timestamp': 15,
         });
       });
     });

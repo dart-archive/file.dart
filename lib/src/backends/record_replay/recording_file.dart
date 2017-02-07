@@ -209,7 +209,7 @@ class _BlobReference<T> extends ResultReference<T> {
   T get recordedValue => _value;
 
   @override
-  dynamic get serializedValue => '!${_file.basename}';
+  Future<String> get serializedValue async => '!${_file.basename}';
 }
 
 /// A [FutureReference] that serializes its value data to a separate file.
@@ -235,7 +235,7 @@ class _BlobFutureReference<T> extends FutureReference<T> {
   }
 
   @override
-  dynamic get serializedValue => '!${_file.basename}';
+  Future<String> get serializedValue async => '!${_file.basename}';
 }
 
 /// A [StreamReference] that serializes its value data to a separate file.
@@ -243,6 +243,7 @@ class _BlobStreamReference<T> extends StreamReference<T> {
   final File _file;
   final _BlobDataStreamWriter<T> _writer;
   IOSink _sink;
+  Future<dynamic> _pendingFlush;
 
   _BlobStreamReference({
     @required File file,
@@ -251,16 +252,20 @@ class _BlobStreamReference<T> extends StreamReference<T> {
   })
       : _file = file,
         _writer = writer,
-        super(stream) {
-    _file.createSync();
-  }
+        _sink = file.openWrite(),
+        super(stream);
 
   @override
   void onData(T event) {
-    if (_sink == null) {
-      _sink = _file.openWrite();
+    if (_pendingFlush == null) {
+      _writer(_sink, event);
+    } else {
+      // It's illegal to write to an IOSink while a flush is pending.
+      // https://github.com/dart-lang/sdk/issues/28635
+      _pendingFlush.whenComplete(() {
+        _writer(_sink, event);
+      });
     }
-    _writer(_sink, event);
   }
 
   @override
@@ -271,7 +276,20 @@ class _BlobStreamReference<T> extends StreamReference<T> {
   }
 
   @override
-  dynamic get serializedValue => '!${_file.basename}';
+  Future<String> get serializedValue async {
+    if (_pendingFlush != null) {
+      await _pendingFlush;
+    } else {
+      _pendingFlush = _sink.flush();
+      try {
+        await _pendingFlush;
+      } finally {
+        _pendingFlush = null;
+      }
+    }
+
+    return '!${_file.basename}';
+  }
 
   // TODO(tvolkert): remove `.then()` once Dart 1.22 is in stable
   @override

@@ -46,7 +46,8 @@ class MutableRecording implements LiveRecording {
             .timeout(awaitPendingResults, onTimeout: () {});
       }
       Directory dir = destination;
-      String json = new JsonEncoder.withIndent('  ', encode).convert(_events);
+      List<dynamic> encodedEvents = await encode(_events);
+      String json = new JsonEncoder.withIndent('  ').convert(encodedEvents);
       String filename = dir.fileSystem.path.join(dir.path, kManifestName);
       await dir.fileSystem.file(filename).writeAsString(json, flush: true);
     } finally {

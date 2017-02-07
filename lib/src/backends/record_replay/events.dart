@@ -4,6 +4,8 @@
 
 import 'dart:async';
 
+import 'common.dart';
+import 'encoding.dart';
 import 'recording.dart';
 import 'result_reference.dart';
 
@@ -101,11 +103,13 @@ abstract class LiveInvocationEvent<T> implements InvocationEvent<T> {
   }
 
   /// Returns this event as a JSON-serializable object.
-  Map<String, dynamic> serialize() => <String, dynamic>{
-        'object': object,
-        'result': _result,
-        'timestamp': timestamp,
-      };
+  Future<Map<String, dynamic>> serialize() async {
+    return <String, dynamic>{
+      'object': await encode(object),
+      'result': await encode(_result),
+      'timestamp': timestamp,
+    };
+  }
 
   @override
   String toString() => serialize().toString();
@@ -122,10 +126,12 @@ class LivePropertyGetEvent<T> extends LiveInvocationEvent<T>
   final Symbol property;
 
   @override
-  Map<String, dynamic> serialize() => <String, dynamic>{
-        'type': 'get',
-        'property': property,
-      }..addAll(super.serialize());
+  Future<Map<String, dynamic>> serialize() async {
+    return <String, dynamic>{
+      'type': 'get',
+      'property': getSymbolName(property),
+    }..addAll(await super.serialize());
+  }
 }
 
 /// A [PropertySetEvent] that's in the process of being recorded.
@@ -142,11 +148,13 @@ class LivePropertySetEvent<T> extends LiveInvocationEvent<Null>
   final T value;
 
   @override
-  Map<String, dynamic> serialize() => <String, dynamic>{
-        'type': 'set',
-        'property': property,
-        'value': value,
-      }..addAll(super.serialize());
+  Future<Map<String, dynamic>> serialize() async {
+    return <String, dynamic>{
+      'type': 'set',
+      'property': getSymbolName(property),
+      'value': await encode(value),
+    }..addAll(await super.serialize());
+  }
 }
 
 /// A [MethodEvent] that's in the process of being recorded.
@@ -177,10 +185,12 @@ class LiveMethodEvent<T> extends LiveInvocationEvent<T>
   final Map<Symbol, dynamic> namedArguments;
 
   @override
-  Map<String, dynamic> serialize() => <String, dynamic>{
-        'type': 'invoke',
-        'method': method,
-        'positionalArguments': positionalArguments,
-        'namedArguments': namedArguments,
-      }..addAll(super.serialize());
+  Future<Map<String, dynamic>> serialize() async {
+    return <String, dynamic>{
+      'type': 'invoke',
+      'method': getSymbolName(method),
+      'positionalArguments': await encodeIterable(positionalArguments),
+      'namedArguments': await encodeMap(namedArguments),
+    }..addAll(await super.serialize());
+  }
 }

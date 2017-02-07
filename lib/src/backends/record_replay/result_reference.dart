@@ -49,7 +49,7 @@ abstract class ResultReference<T> {
   /// actually a byte array that was read from a file). In this case, the
   /// method can return a `ResultReference` to the list, and it will have a
   /// hook into the serialization process.
-  dynamic get serializedValue => encode(recordedValue);
+  Future<dynamic> get serializedValue => encode(recordedValue);
 
   /// A [Future] that completes when [value] has completed.
   ///
