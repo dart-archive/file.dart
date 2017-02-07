@@ -184,7 +184,7 @@ class RecordingFile extends RecordingFileSystemEntity<File> implements File {
           .then(wrap);
 }
 
-/// A `ResultReference` that serializes the value data to a separate file.
+/// A [ResultReference] that serializes its value data to a separate file.
 class _BlobReference<T> extends ResultReference<T> {
   final File _file;
   final T _value;
@@ -212,6 +212,7 @@ class _BlobReference<T> extends ResultReference<T> {
   dynamic get serializedValue => '!${_file.basename}';
 }
 
+/// A [FutureReference] that serializes its value data to a separate file.
 class _BlobFutureReference<T> extends FutureReference<T> {
   final File _file;
   final _BlobDataAsyncWriter<T> _writer;
@@ -237,6 +238,7 @@ class _BlobFutureReference<T> extends FutureReference<T> {
   dynamic get serializedValue => '!${_file.basename}';
 }
 
+/// A [StreamReference] that serializes its value data to a separate file.
 class _BlobStreamReference<T> extends StreamReference<T> {
   final File _file;
   final _BlobDataStreamWriter<T> _writer;
