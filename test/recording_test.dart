@@ -491,7 +491,7 @@ void main() {
                 containsPair('object', matches(r'^RecordingFile@[0-9]+$')),
                 containsPair('positionalArguments', isEmpty),
                 containsPair('namedArguments', isEmpty),
-                containsPair('result', matches(r'^![0-9]+.openRead$')),
+                containsPair('result', matches(r'^![0-9]+.foo$')),
               ));
           File file = _getRecordingFile(recording, manifest[1]['result']);
           expect(file, exists);
@@ -521,7 +521,7 @@ void main() {
                 containsPair('object', matches(r'^RecordingFile@[0-9]+$')),
                 containsPair('positionalArguments', isEmpty),
                 containsPair('namedArguments', isEmpty),
-                containsPair('result', matches(r'^![0-9]+.readAsBytes$')),
+                containsPair('result', matches(r'^![0-9]+.foo$')),
               ));
           File file = _getRecordingFile(recording, manifest[1]['result']);
           expect(file, exists);
@@ -549,7 +549,7 @@ void main() {
                 containsPair('object', matches(r'^RecordingFile@[0-9]+$')),
                 containsPair('positionalArguments', isEmpty),
                 containsPair('namedArguments', isEmpty),
-                containsPair('result', matches(r'^![0-9]+.readAsBytesSync$')),
+                containsPair('result', matches(r'^![0-9]+.foo$')),
               ));
           File file = _getRecordingFile(recording, manifest[1]['result']);
           expect(file, exists);
@@ -578,7 +578,7 @@ void main() {
                 containsPair('method', 'readAsString'),
                 containsPair('object', matches(r'^RecordingFile@[0-9]+$')),
                 containsPair('positionalArguments', isEmpty),
-                containsPair('result', matches(r'^![0-9]+.readAsString$')),
+                containsPair('result', matches(r'^![0-9]+.foo$')),
                 containsPair(
                     'namedArguments',
                     allOf(
@@ -613,7 +613,7 @@ void main() {
                 containsPair('method', 'readAsStringSync'),
                 containsPair('object', matches(r'^RecordingFile@[0-9]+$')),
                 containsPair('positionalArguments', isEmpty),
-                containsPair('result', matches(r'^![0-9]+.readAsStringSync$')),
+                containsPair('result', matches(r'^![0-9]+.foo$')),
                 containsPair(
                     'namedArguments',
                     allOf(
@@ -646,7 +646,7 @@ void main() {
                 containsPair('method', 'readAsLines'),
                 containsPair('object', matches(r'^RecordingFile@[0-9]+$')),
                 containsPair('positionalArguments', isEmpty),
-                containsPair('result', matches(r'^![0-9]+.readAsLines$')),
+                containsPair('result', matches(r'^![0-9]+.foo$')),
                 containsPair('namedArguments', isEmpty),
               ));
           File file = _getRecordingFile(recording, manifest[1]['result']);
@@ -674,7 +674,7 @@ void main() {
                 containsPair('method', 'readAsLinesSync'),
                 containsPair('object', matches(r'^RecordingFile@[0-9]+$')),
                 containsPair('positionalArguments', isEmpty),
-                containsPair('result', matches(r'^![0-9]+.readAsLinesSync$')),
+                containsPair('result', matches(r'^![0-9]+.foo$')),
                 containsPair('namedArguments', isEmpty),
               ));
           File file = _getRecordingFile(recording, manifest[1]['result']);

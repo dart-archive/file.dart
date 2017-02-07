@@ -5,7 +5,6 @@
 import 'dart:convert';
 
 import 'package:file/file.dart';
-import 'package:file/src/io.dart' as io;
 import 'package:path/path.dart' as p;
 
 import 'common.dart';
@@ -118,7 +117,7 @@ String _encodeFileSystem(FileSystem fs) => kFileSystemEncodedValue;
 /// During replay, this allows us to tie the return value of of one event to
 /// the object of another.
 String _encodeFileSystemEntity(
-    RecordingFileSystemEntity<FileSystemEntity, io.FileSystemEntity> entity) {
+    RecordingFileSystemEntity<FileSystemEntity> entity) {
   return '${entity.runtimeType}@${entity.uid}';
 }
 

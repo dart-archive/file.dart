@@ -12,8 +12,7 @@ import 'recording_file_system_entity.dart';
 
 /// [Directory] implementation that records all invocation activity to its file
 /// system's recording.
-class RecordingDirectory
-    extends RecordingFileSystemEntity<Directory, io.Directory>
+class RecordingDirectory extends RecordingFileSystemEntity<Directory>
     implements Directory {
   /// Creates a new `RecordingDirectory`.
   RecordingDirectory(RecordingFileSystem fileSystem, io.Directory delegate)
@@ -29,7 +28,7 @@ class RecordingDirectory
   }
 
   @override
-  Directory wrap(io.Directory delegate) =>
+  Directory wrap(Directory delegate) =>
       super.wrap(delegate) ?? wrapDirectory(delegate);
 
   Future<Directory> _create({bool recursive: false}) =>
