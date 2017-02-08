@@ -49,7 +49,7 @@ abstract class ResultReference<T> {
   /// actually a byte array that was read from a file). In this case, the
   /// method can return a `ResultReference` to the list, and it will have a
   /// hook into the serialization process.
-  Future<dynamic> get serializedValue => encode(recordedValue);
+  dynamic get serializedValue => encode(recordedValue);
 
   /// A [Future] that completes when [value] has completed.
   ///
@@ -139,7 +139,6 @@ class StreamReference<T> extends ResultReference<Stream<T>> {
         _controller.addError(error, stackTrace);
       },
       onDone: () {
-        onDone();
         _completer.complete();
         _controller.close();
       },
@@ -152,13 +151,6 @@ class StreamReference<T> extends ResultReference<Stream<T>> {
   /// fired from the underlying stream.
   @protected
   void onData(T event) {}
-
-  /// Called when the underlying delegate stream fires a "done" event.
-  ///
-  /// Subclasses may override this method to be notified when the underlying
-  /// stream is done.
-  @protected
-  void onDone() {}
 
   @override
   Stream<T> get value => _controller.stream;

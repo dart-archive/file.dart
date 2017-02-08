@@ -20,6 +20,7 @@ import 'result_reference.dart';
 ///
 /// See also:
 ///   - [_BlobReference]
+///   - [_BlobStreamReference]
 typedef void _BlobDataSyncWriter<T>(File file, T data);
 
 /// Callback responsible for asynchronously writing result [data] to the
@@ -28,13 +29,6 @@ typedef void _BlobDataSyncWriter<T>(File file, T data);
 /// See also:
 ///   - [_BlobFutureReference]
 typedef Future<Null> _BlobDataAsyncWriter<T>(File file, T data);
-
-/// Callback responsible writing streaming result [data] to the specified
-/// [sink].
-///
-/// See also:
-///   - [_BlobStreamReference]
-typedef void _BlobDataStreamWriter<T>(IOSink sink, T data);
 
 /// [File] implementation that records all invocation activity to its file
 /// system's recording.
@@ -93,8 +87,8 @@ class RecordingFile extends RecordingFileSystemEntity<File> implements File {
     return new _BlobStreamReference<List<int>>(
       file: _newRecordingFile(),
       stream: delegate.openRead(start, end),
-      writer: (IOSink sink, List<int> bytes) {
-        sink.add(bytes);
+      writer: (File file, List<int> bytes) {
+        file.writeAsBytesSync(bytes, mode: FileMode.APPEND, flush: true);
       },
     );
   }
@@ -209,7 +203,7 @@ class _BlobReference<T> extends ResultReference<T> {
   T get recordedValue => _value;
 
   @override
-  Future<String> get serializedValue async => '!${_file.basename}';
+  String get serializedValue => '!${_file.basename}';
 }
 
 /// A [FutureReference] that serializes its value data to a separate file.
@@ -235,64 +229,28 @@ class _BlobFutureReference<T> extends FutureReference<T> {
   }
 
   @override
-  Future<String> get serializedValue async => '!${_file.basename}';
+  String get serializedValue => '!${_file.basename}';
 }
 
 /// A [StreamReference] that serializes its value data to a separate file.
 class _BlobStreamReference<T> extends StreamReference<T> {
   final File _file;
-  final _BlobDataStreamWriter<T> _writer;
-  IOSink _sink;
-  Future<dynamic> _pendingFlush;
+  final _BlobDataSyncWriter<T> _writer;
 
   _BlobStreamReference({
     @required File file,
     @required Stream<T> stream,
-    @required _BlobDataStreamWriter<T> writer,
+    @required _BlobDataSyncWriter<T> writer,
   })
       : _file = file,
         _writer = writer,
-        _sink = file.openWrite(),
         super(stream);
 
   @override
   void onData(T event) {
-    if (_pendingFlush == null) {
-      _writer(_sink, event);
-    } else {
-      // It's illegal to write to an IOSink while a flush is pending.
-      // https://github.com/dart-lang/sdk/issues/28635
-      _pendingFlush.whenComplete(() {
-        _writer(_sink, event);
-      });
-    }
+    _writer(_file, event);
   }
 
   @override
-  void onDone() {
-    if (_sink != null) {
-      _sink.close();
-    }
-  }
-
-  @override
-  Future<String> get serializedValue async {
-    if (_pendingFlush != null) {
-      await _pendingFlush;
-    } else {
-      _pendingFlush = _sink.flush();
-      try {
-        await _pendingFlush;
-      } finally {
-        _pendingFlush = null;
-      }
-    }
-
-    return '!${_file.basename}';
-  }
-
-  // TODO(tvolkert): remove `.then()` once Dart 1.22 is in stable
-  @override
-  Future<Null> get complete =>
-      Future.wait(<Future<dynamic>>[super.complete, _sink.done]).then((_) {});
+  String get serializedValue => '!${_file.basename}';
 }
