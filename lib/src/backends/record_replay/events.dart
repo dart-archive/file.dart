@@ -103,11 +103,11 @@ abstract class LiveInvocationEvent<T> implements InvocationEvent<T> {
   }
 
   /// Returns this event as a JSON-serializable object.
-  Future<Map<String, dynamic>> serialize() async {
+  Map<String, dynamic> serialize() {
     return <String, dynamic>{
-      'object': await encode(object),
-      'result': await encode(_result),
-      'timestamp': timestamp,
+      kManifestObjectKey: encode(object),
+      kManifestResultKey: encode(_result),
+      kManifestTimestampKey: timestamp,
     };
   }
 
@@ -126,11 +126,11 @@ class LivePropertyGetEvent<T> extends LiveInvocationEvent<T>
   final Symbol property;
 
   @override
-  Future<Map<String, dynamic>> serialize() async {
+  Map<String, dynamic> serialize() {
     return <String, dynamic>{
-      'type': 'get',
-      'property': getSymbolName(property),
-    }..addAll(await super.serialize());
+      kManifestTypeKey: kGetType,
+      kManifestPropertyKey: getSymbolName(property),
+    }..addAll(super.serialize());
   }
 }
 
@@ -148,12 +148,12 @@ class LivePropertySetEvent<T> extends LiveInvocationEvent<Null>
   final T value;
 
   @override
-  Future<Map<String, dynamic>> serialize() async {
+  Map<String, dynamic> serialize() {
     return <String, dynamic>{
-      'type': 'set',
-      'property': getSymbolName(property),
-      'value': await encode(value),
-    }..addAll(await super.serialize());
+      kManifestTypeKey: kSetType,
+      kManifestPropertyKey: getSymbolName(property),
+      kManifestValueKey: encode(value),
+    }..addAll(super.serialize());
   }
 }
 
@@ -185,12 +185,12 @@ class LiveMethodEvent<T> extends LiveInvocationEvent<T>
   final Map<Symbol, dynamic> namedArguments;
 
   @override
-  Future<Map<String, dynamic>> serialize() async {
+  Map<String, dynamic> serialize() {
     return <String, dynamic>{
-      'type': 'invoke',
-      'method': getSymbolName(method),
-      'positionalArguments': await encodeIterable(positionalArguments),
-      'namedArguments': await encodeMap(namedArguments),
-    }..addAll(await super.serialize());
+      kManifestTypeKey: kInvokeType,
+      kManifestMethodKey: getSymbolName(method),
+      kManifestPositionalArgumentsKey: encode(positionalArguments),
+      kManifestNamedArgumentsKey: encode(namedArguments),
+    }..addAll(super.serialize());
   }
 }
