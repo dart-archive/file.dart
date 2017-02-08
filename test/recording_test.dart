@@ -295,6 +295,7 @@ void main() {
         expect(deeplyEqual(<int, int>{1: 2}, <int, int>{}), isFalse);
         expect(deeplyEqual(<int, int>{}, <int, int>{1: 2}), isFalse);
         expect(deeplyEqual(<String, int>{}, <int, int>{}), isFalse);
+        expect(deeplyEqual(<String, int>{}, <dynamic, dynamic>{}), isFalse);
         expect(deeplyEqual(<String, int>{}, null), isFalse);
       });
 

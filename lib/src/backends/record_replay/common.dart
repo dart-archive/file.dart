@@ -90,15 +90,16 @@ class TypeMatcher<T> {
 
 /// Tells whether two objects are equal using deep equality checking.
 ///
-/// Two lists are deeply equal if they have the same type, the same length, and
-/// every element in list A is pairwise deeply equal with the corresponding
-/// element in list B.
+/// Two lists are deeply equal if they have the same runtime type, the same
+/// length, and every element in list A is pairwise deeply equal with the
+/// corresponding element in list B.
 ///
-/// Two maps are deeply equal if they have the same type, the same length, the
-/// same set of keys, and the value for every key in map A is deeply equal to
-/// the corresponding value in map B.
+/// Two maps are deeply equal if they have the same runtime type, the same
+/// length, the same set of keys, and the value for every key in map A is
+/// deeply equal to the corresponding value in map B.
 ///
-/// All other types of objects are deeply equal if they are logically equal.
+/// All other types of objects are deeply equal if they have the same runtime
+/// type and are logically equal (according to `operator==`).
 bool deeplyEqual(dynamic object1, dynamic object2) {
   if (object1.runtimeType != object2.runtimeType) {
     return false;
