@@ -27,7 +27,7 @@ class _ChrootFile extends _ChrootFileSystemEntity<File, io.File>
 
   @override
   Future<File> rename(String newPath) async {
-    _SetupCallback setUp = () {};
+    _SetupCallback setUp = () async {};
 
     if (await fileSystem.type(newPath, followLinks: false) ==
         FileSystemEntityType.LINK) {
