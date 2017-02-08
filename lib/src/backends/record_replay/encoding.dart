@@ -15,6 +15,7 @@ import 'recording_file_system_entity.dart';
 import 'recording_io_sink.dart';
 import 'recording_link.dart';
 import 'recording_random_access_file.dart';
+import 'replay_proxy_mixin.dart';
 import 'result_reference.dart';
 
 /// Encodes an object into a JSON-ready representation.
@@ -48,6 +49,7 @@ const Map<TypeMatcher<dynamic>, _Encoder> _kEncoders =
   const TypeMatcher<RecordingLink>(): _encodeFileSystemEntity,
   const TypeMatcher<RecordingIOSink>(): _encodeIOSink,
   const TypeMatcher<RecordingRandomAccessFile>(): _encodeRandomAccessFile,
+  const TypeMatcher<ReplayProxyMixin>(): _encodeReplayEntity,
   const TypeMatcher<Encoding>(): _encodeEncoding,
   const TypeMatcher<FileMode>(): _encodeFileMode,
   const TypeMatcher<FileStat>(): _encodeFileStat,
@@ -131,6 +133,8 @@ String _encodeIOSink(RecordingIOSink sink) {
 String _encodeRandomAccessFile(RecordingRandomAccessFile raf) {
   return '${raf.runtimeType}@${raf.uid}';
 }
+
+String _encodeReplayEntity(ReplayProxyMixin entity) => entity.identifier;
 
 String _encodeEncoding(Encoding encoding) => encoding.name;
 

@@ -3,7 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'package:file/record_replay.dart';
-import 'package:file/src/backends/record_replay/common.dart';
+import 'package:file/src/backends/record_replay/common.dart' hide TypeMatcher;
 import 'package:test/test.dart';
 
 const Map<Type, String> _kTypeDescriptions = const <Type, String>{
@@ -47,6 +47,15 @@ PropertyGet getsProperty([dynamic name]) => new PropertyGet._(name);
 /// The returned [PropertySet] matcher can be used to further limit the
 /// scope of the match (e.g. by property value, target object, etc).
 PropertySet setsProperty([dynamic name]) => new PropertySet._(name);
+
+/// A matcher that successfully matches against an instance of
+/// [NoMatchingInvocationError].
+const Matcher isNoMatchingInvocationError = const _NoMatchingInvocationError();
+
+/// A matcher that successfully matches against a future or function
+/// that throws a [NoMatchingInvocationError].
+const Matcher throwsNoMatchingInvocationError =
+    const Throws(isNoMatchingInvocationError);
 
 /// Base class for matchers that match against generic [InvocationEvent]
 /// instances.
@@ -573,4 +582,12 @@ class _SetValue extends Matcher {
     description.add('to value: ');
     return _matcher.describe(description);
   }
+}
+
+class _NoMatchingInvocationError extends TypeMatcher {
+  const _NoMatchingInvocationError() : super("NoMatchingInvocationError");
+
+  @override
+  bool matches(dynamic item, Map<dynamic, dynamic> matchState) =>
+      item is NoMatchingInvocationError;
 }
