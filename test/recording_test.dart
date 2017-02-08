@@ -20,7 +20,7 @@ import 'package:test/test.dart';
 import 'common_tests.dart';
 
 void main() {
-  group('SupportingClasses', () {
+  group('SupportingCode', () {
     _BasicClass delegate;
     _RecordingClass rc;
     MutableRecording recording;
@@ -185,7 +185,7 @@ void main() {
       });
     });
 
-    group('Encode', () {
+    group('encode', () {
       test('performsDeepEncoding', () async {
         rc.basicProperty = 'foo';
         rc.basicProperty;
@@ -243,6 +243,67 @@ void main() {
           'result': <String>['stream', 'quux', 'quuz'],
           'timestamp': 15,
         });
+      });
+    });
+
+    group('deeplyEqual', () {
+      Map<String, dynamic> newMap({
+        String stringValue: 'foo',
+        bool boolValue: true,
+        String lastListValue: 'c',
+        int lastMapValue: 2,
+      }) {
+        return <String, dynamic>{
+          'string': stringValue,
+          'bool': boolValue,
+          'list': <String>['a', 'b', lastListValue],
+          'map': <Symbol, int>{
+            #foo: 1,
+            #bar: lastMapValue,
+          },
+        };
+      }
+
+      test('primitives', () {
+        expect(deeplyEqual(1, 1), isTrue);
+        expect(deeplyEqual(1, 2), isFalse);
+        expect(deeplyEqual('1', '1'), isTrue);
+        expect(deeplyEqual('1', '2'), isFalse);
+        expect(deeplyEqual(true, true), isTrue);
+        expect(deeplyEqual(true, false), isFalse);
+        expect(deeplyEqual(null, null), isTrue);
+        expect(deeplyEqual(1, '1'), isFalse);
+      });
+
+      test('listOfPrimitives', () {
+        expect(deeplyEqual(<int>[], <int>[]), isTrue);
+        expect(deeplyEqual(<int>[1, 2, 3], <int>[1, 2, 3]), isTrue);
+        expect(deeplyEqual(<int>[1, 2, 3], <int>[1, 3, 2]), isFalse);
+        expect(deeplyEqual(<int>[1, 2, 3], <int>[1, 2]), isFalse);
+        expect(deeplyEqual(<int>[1, 2, 3], <int>[1, 2, 3, 4]), isFalse);
+        expect(deeplyEqual(<String>['a', 'b'], <String>['a', 'b']), isTrue);
+        expect(deeplyEqual(<String>['a', 'b'], <String>['b', 'a']), isFalse);
+        expect(deeplyEqual(<String>['a', 'b'], <String>['a']), isFalse);
+        expect(deeplyEqual(<int>[], <dynamic>[]), isFalse);
+        expect(deeplyEqual(<int>[], null), isFalse);
+      });
+
+      test('mapOfPrimitives', () {
+        expect(deeplyEqual(<String, int>{}, <String, int>{}), isTrue);
+        expect(deeplyEqual(<int, int>{1: 2}, <int, int>{1: 2}), isTrue);
+        expect(deeplyEqual(<int, int>{1: 2}, <int, int>{1: 3}), isFalse);
+        expect(deeplyEqual(<int, int>{1: 2}, <int, int>{}), isFalse);
+        expect(deeplyEqual(<int, int>{}, <int, int>{1: 2}), isFalse);
+        expect(deeplyEqual(<String, int>{}, <int, int>{}), isFalse);
+        expect(deeplyEqual(<String, int>{}, null), isFalse);
+      });
+
+      test('listOfMaps', () {
+        expect(deeplyEqual(newMap(), newMap()), isTrue);
+        expect(deeplyEqual(newMap(), newMap(stringValue: 'bar')), isFalse);
+        expect(deeplyEqual(newMap(), newMap(boolValue: false)), isFalse);
+        expect(deeplyEqual(newMap(), newMap(lastListValue: 'd')), isFalse);
+        expect(deeplyEqual(newMap(), newMap(lastMapValue: 3)), isFalse);
       });
     });
   });
