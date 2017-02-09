@@ -67,7 +67,7 @@ abstract class ReplayFileSystem extends FileSystem {
 /// Non-exported implementation class for `ReplayFileSystem`.
 class ReplayFileSystemImpl extends FileSystem
     with ReplayProxyMixin
-    implements ReplayFileSystem {
+    implements ReplayFileSystem, ReplayAware {
   /// Creates a new `ReplayFileSystemImpl`.
   ReplayFileSystemImpl(this.manifest) {
     methods.addAll(<Symbol, Resurrector>{

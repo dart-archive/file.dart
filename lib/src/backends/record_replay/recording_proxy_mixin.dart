@@ -6,6 +6,7 @@ import 'dart:async';
 
 import 'package:meta/meta.dart';
 
+import 'common.dart';
 import 'events.dart';
 import 'mutable_recording.dart';
 import 'proxy.dart';
@@ -60,7 +61,7 @@ import 'result_reference.dart';
 /// Methods that return [Stream]s will be recorded immediately, but their
 /// return values will be recorded as a [List] that will grow as the stream
 /// produces data.
-abstract class RecordingProxyMixin implements ProxyObject {
+abstract class RecordingProxyMixin implements ProxyObject, ReplayAware {
   /// Maps method names to delegate functions.
   ///
   /// Invocations of methods listed in this map will be recorded after

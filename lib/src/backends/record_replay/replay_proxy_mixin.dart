@@ -57,7 +57,7 @@ int _nextOrdinal = 0;
 ///         });
 ///       }
 ///     }
-abstract class ReplayProxyMixin implements ProxyObject {
+abstract class ReplayProxyMixin implements ProxyObject, ReplayAware {
   /// Maps method names to [Resurrector] functions.
   ///
   /// Invocations of methods listed in this map will be replayed by looking for
@@ -78,16 +78,6 @@ abstract class ReplayProxyMixin implements ProxyObject {
   /// sign (e.g. `propertyName=`).
   @protected
   final Map<Symbol, Resurrector> properties = <Symbol, Resurrector>{};
-
-  /// The unique identifier of this replay object.
-  ///
-  /// When replay-aware objects are serialized in a recording, they are done so
-  /// using only a unique String identifier. When the objects are resurrected
-  /// for the purpose of replay, their identifiers are used to match incoming
-  /// invocations against recorded invocations in the [manifest] (only
-  /// invocations whose target object matches the identifier are considered
-  /// possible matches).
-  String get identifier;
 
   /// The manifest of recorded invocation events.
   ///

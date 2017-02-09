@@ -88,6 +88,21 @@ class TypeMatcher<T> {
   bool matches(dynamic object) => object is T;
 }
 
+/// Marks a class that, when serialized, will be referred to merely by an
+/// opaque identifier.
+///
+/// Unlike other objects, objects that are replay-aware don't need to serialize
+/// meaningful metadata about their state for the sake of resurrection. Rather,
+/// they derive all the information they need to operate from the recording.
+/// As such, they are serialized using only an opaque unique identifier. When
+/// they are resurrected during replay, their identifier allows them to find
+/// invocations in the recording for which they are the target.
+abstract class ReplayAware {
+  /// The identifier of this object, guaranteed to be unique within a single
+  /// recording.
+  String get identifier;
+}
+
 /// Tells whether two objects are equal using deep equality checking.
 ///
 /// Two lists are deeply equal if they have the same runtime type, the same
