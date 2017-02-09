@@ -900,6 +900,9 @@ class _RecordingClass extends Object
   }
 
   @override
+  String get identifier => '$runtimeType';
+
+  @override
   final MutableRecording recording;
 
   @override

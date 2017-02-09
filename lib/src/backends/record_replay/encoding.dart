@@ -9,13 +9,6 @@ import 'package:path/path.dart' as p;
 
 import 'common.dart';
 import 'events.dart';
-import 'recording_directory.dart';
-import 'recording_file.dart';
-import 'recording_file_system_entity.dart';
-import 'recording_io_sink.dart';
-import 'recording_link.dart';
-import 'recording_random_access_file.dart';
-import 'replay_proxy_mixin.dart';
 import 'result_reference.dart';
 
 /// Encodes an object into a JSON-ready representation.
@@ -43,13 +36,7 @@ const Map<TypeMatcher<dynamic>, _Encoder> _kEncoders =
   const TypeMatcher<p.Context>(): _encodePathContext,
   const TypeMatcher<ResultReference<dynamic>>(): _encodeResultReference,
   const TypeMatcher<LiveInvocationEvent<dynamic>>(): _encodeEvent,
-  const TypeMatcher<FileSystem>(): _encodeFileSystem,
-  const TypeMatcher<RecordingDirectory>(): _encodeFileSystemEntity,
-  const TypeMatcher<RecordingFile>(): _encodeFileSystemEntity,
-  const TypeMatcher<RecordingLink>(): _encodeFileSystemEntity,
-  const TypeMatcher<RecordingIOSink>(): _encodeIOSink,
-  const TypeMatcher<RecordingRandomAccessFile>(): _encodeRandomAccessFile,
-  const TypeMatcher<ReplayProxyMixin>(): _encodeReplayEntity,
+  const TypeMatcher<ReplayAware>(): _encodeReplayAwareEntity,
   const TypeMatcher<Encoding>(): _encodeEncoding,
   const TypeMatcher<FileMode>(): _encodeFileMode,
   const TypeMatcher<FileStat>(): _encodeFileStat,
@@ -116,25 +103,7 @@ dynamic _encodeResultReference(ResultReference<dynamic> reference) =>
 Map<String, dynamic> _encodeEvent(LiveInvocationEvent<dynamic> event) =>
     event.serialize();
 
-String _encodeFileSystem(FileSystem fs) => kFileSystemEncodedValue;
-
-/// Encodes a file system entity by using its `uid` as a reference identifier.
-/// During replay, this allows us to tie the return value of of one event to
-/// the object of another.
-String _encodeFileSystemEntity(
-    RecordingFileSystemEntity<FileSystemEntity> entity) {
-  return '${entity.runtimeType}@${entity.uid}';
-}
-
-String _encodeIOSink(RecordingIOSink sink) {
-  return '${sink.runtimeType}@${sink.uid}';
-}
-
-String _encodeRandomAccessFile(RecordingRandomAccessFile raf) {
-  return '${raf.runtimeType}@${raf.uid}';
-}
-
-String _encodeReplayEntity(ReplayProxyMixin entity) => entity.identifier;
+String _encodeReplayAwareEntity(ReplayAware entity) => entity.identifier;
 
 String _encodeEncoding(Encoding encoding) => encoding.name;
 

@@ -51,6 +51,9 @@ abstract class RecordingFileSystemEntity<T extends FileSystemEntity>
   final int uid = newUid();
 
   @override
+  String get identifier => '$runtimeType@$uid';
+
+  @override
   final RecordingFileSystemImpl fileSystem;
 
   @override

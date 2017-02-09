@@ -66,6 +66,9 @@ class RecordingRandomAccessFile extends Object
   final int uid = newUid();
 
   @override
+  String get identifier => '$runtimeType@$uid';
+
+  @override
   MutableRecording get recording => fileSystem.recording;
 
   @override

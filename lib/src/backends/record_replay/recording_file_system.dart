@@ -5,6 +5,7 @@
 import 'package:file/file.dart';
 import 'package:meta/meta.dart';
 
+import 'common.dart';
 import 'mutable_recording.dart';
 import 'recording.dart';
 import 'recording_directory.dart';
@@ -108,6 +109,9 @@ class RecordingFileSystemImpl extends FileSystem
       #isWatchSupported: () => delegate.isWatchSupported,
     });
   }
+
+  @override
+  String get identifier => kFileSystemEncodedValue;
 
   /// The file system to which invocations will be forwarded upon recording.
   @override
