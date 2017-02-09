@@ -10,7 +10,7 @@ import 'resurrectors.dart';
 
 /// [FileSystemEntity] implementation that replays all invocation activity
 /// from a prior recording.
-abstract class ReplayFileSystemEntity<T extends FileSystemEntity> extends Object
+abstract class ReplayFileSystemEntity extends Object
     with ReplayProxyMixin
     implements FileSystemEntity {
   /// Creates a new `ReplayFileSystemEntity`.

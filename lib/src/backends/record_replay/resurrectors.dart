@@ -8,7 +8,11 @@ import 'package:file/file.dart';
 import 'package:meta/meta.dart';
 import 'package:path/path.dart' as path;
 
+import 'replay_directory.dart';
+import 'replay_file.dart';
 import 'replay_file_stat.dart';
+import 'replay_file_system.dart';
+import 'replay_link.dart';
 
 /// Resurrects an invocation result (return value) from the specified
 /// serialized [data].
@@ -20,6 +24,30 @@ typedef Object Resurrector(dynamic data);
 Resurrector resurrectFuture(Resurrector delegate) {
   return (dynamic serializedResult) async {
     return delegate(serializedResult);
+  };
+}
+
+/// Returns a [Resurrector] that will resurrect a [ReplayDirectory] that is
+/// tied to the specified [fileSystem].
+Resurrector resurrectDirectory(ReplayFileSystemImpl fileSystem) {
+  return (String identifier) {
+    return new ReplayDirectory(fileSystem, identifier);
+  };
+}
+
+/// Returns a [Resurrector] that will resurrect a [ReplayFile] that is tied to
+/// the specified [fileSystem].
+Resurrector resurrectFile(ReplayFileSystemImpl fileSystem) {
+  return (String identifier) {
+    return new ReplayFile(fileSystem, identifier);
+  };
+}
+
+/// Returns a [Resurrector] that will resurrect a [ReplayLink] that is tied to
+/// the specified [fileSystem].
+Resurrector resurrectLink(ReplayFileSystemImpl fileSystem) {
+  return (String identifier) {
+    return new ReplayLink(fileSystem, identifier);
   };
 }
 

@@ -24,7 +24,7 @@ class NoMatchingInvocationError extends Error {
       buf.write('(');
       int i = 0;
       for (dynamic arg in invocation.positionalArguments) {
-        buf.write(Error.safeToString(arg));
+        buf.write(Error.safeToString(encode(arg)));
         if (i++ > 0) {
           buf.write(', ');
         }
@@ -37,6 +37,8 @@ class NoMatchingInvocationError extends Error {
           ..write(encode(value));
       });
       buf.write(')');
+    } else if (invocation.isSetter) {
+      buf.write(Error.safeToString(encode(invocation.positionalArguments[0])));
     }
     return buf.toString();
   }

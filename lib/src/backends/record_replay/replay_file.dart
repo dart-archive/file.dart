@@ -10,7 +10,7 @@ import 'resurrectors.dart';
 
 /// [File] implementation that replays all invocation activity from a prior
 /// recording.
-class ReplayFile extends ReplayFileSystemEntity<File> implements File {
+class ReplayFile extends ReplayFileSystemEntity implements File {
   /// Creates a new `ReplayFile`.
   ReplayFile(ReplayFileSystemImpl fileSystem, String identifier)
       : super(fileSystem, identifier) {

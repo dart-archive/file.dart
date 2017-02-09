@@ -13,10 +13,14 @@ abstract class ProxyObject {}
 /// method's getter. In these cases, the caller will receive a [MethodProxy]
 /// that allows delayed invocation of the method.
 class MethodProxy extends Object implements Function {
-  /// The object on which the method was originally invoked.
+  /// The object on which the method was retrieved.
+  ///
+  /// This will be the target object when this proxy is invoked.
   final ProxyObject _proxyObject;
 
-  /// The name of the method that was originally invoked.
+  /// The name of the method that was retrieved.
+  ///
+  /// This method will be invoked when this proxy is invoked.
   final Symbol _methodName;
 
   /// Creates a new [MethodProxy] that, when invoked, will invoke the method
@@ -29,8 +33,8 @@ class MethodProxy extends Object implements Function {
   dynamic noSuchMethod(Invocation invocation) {
     if (invocation.isMethod && invocation.memberName == #call) {
       // The method is being invoked. Capture the arguments, and invoke the
-      // method on the object. We have to synthesize an invocation, since our
-      // current `invocation` object represents the invocation of `call()`.
+      // method on the proxy object. We have to synthesize an invocation, since
+      // our current `invocation` object represents the invocation of `call()`.
       return _proxyObject.noSuchMethod(new _MethodInvocationProxy(
         _methodName,
         invocation.positionalArguments,

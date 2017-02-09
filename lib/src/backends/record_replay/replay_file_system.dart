@@ -10,9 +10,6 @@ import 'package:meta/meta.dart';
 import 'common.dart';
 import 'errors.dart';
 import 'recording_file_system.dart';
-import 'replay_directory.dart';
-import 'replay_file.dart';
-import 'replay_link.dart';
 import 'replay_proxy_mixin.dart';
 import 'resurrectors.dart';
 
@@ -23,7 +20,7 @@ import 'resurrectors.dart';
 /// setters) that occur on it, based on an opaque recording that was generated
 /// in [RecordingFileSystem]. All activity in the [File], [Directory], [Link],
 /// [IOSink], and [RandomAccessFile] instances returned from this API will also
-/// be played form the same recording.
+/// be replayed form the same recording.
 ///
 /// Once an invocation has been replayed once, it is marked as such and will
 /// not be eligible for further replay. If an eligible invocation cannot be
@@ -71,14 +68,12 @@ abstract class ReplayFileSystem extends FileSystem {
 class ReplayFileSystemImpl extends FileSystem
     with ReplayProxyMixin
     implements ReplayFileSystem {
-  final Map<String, Object> _objects = <String, Object>{};
-
   /// Creates a new `ReplayFileSystemImpl`.
   ReplayFileSystemImpl(this.manifest) {
     methods.addAll(<Symbol, Resurrector>{
-      #directory: _resurrectDirectory,
-      #file: _resurrectFile,
-      #link: _resurrectLink,
+      #directory: resurrectDirectory(this),
+      #file: resurrectFile(this),
+      #link: resurrectLink(this),
       #stat: resurrectFuture(resurrectFileStat),
       #statSync: resurrectFileStat,
       #identical: resurrectFuture(resurrectPassthrough),
@@ -89,8 +84,8 @@ class ReplayFileSystemImpl extends FileSystem
 
     properties.addAll(<Symbol, Resurrector>{
       #path: resurrectPathContext,
-      #systemTempDirectory: _resurrectDirectory,
-      #currentDirectory: _resurrectDirectory,
+      #systemTempDirectory: resurrectDirectory(this),
+      #currentDirectory: resurrectDirectory(this),
       const Symbol('currentDirectory='): resurrectPassthrough,
       #isWatchSupported: resurrectPassthrough,
     });
@@ -101,22 +96,4 @@ class ReplayFileSystemImpl extends FileSystem
 
   @override
   final List<Map<String, dynamic>> manifest;
-
-  Object _resurrectDirectory(String identifier) {
-    return _objects.putIfAbsent(identifier, () {
-      return new ReplayDirectory(this, identifier);
-    });
-  }
-
-  Object _resurrectFile(String identifier) {
-    return _objects.putIfAbsent(identifier, () {
-      return new ReplayFile(this, identifier);
-    });
-  }
-
-  Object _resurrectLink(String identifier) {
-    return _objects.putIfAbsent(identifier, () {
-      return new ReplayLink(this, identifier);
-    });
-  }
 }

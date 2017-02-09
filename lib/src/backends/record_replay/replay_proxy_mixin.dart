@@ -12,6 +12,10 @@ import 'resurrectors.dart';
 
 typedef bool _InvocationMatcher(Map<String, dynamic> entry);
 
+/// Used to record the order in which invocations were replayed.
+///
+/// Tests can later check expectations about the order in which invocations
+/// were replayed vis-a-vis the order in which they were recorded.
 int _nextOrdinal = 0;
 
 /// Mixin that enables replaying of property accesses, property mutations, and
@@ -39,12 +43,12 @@ int _nextOrdinal = 0;
 ///     }
 ///
 ///     class ReplayFoo extends Object with ReplayProxyMixin implements Foo {
-///       final String identifier;
 ///       final List<Map<String, dynamic>> manifest;
+///       final String identifier;
 ///
 ///       ReplayFoo(this.manifest, this.identifier) {
 ///         methods.addAll(<Symbol, Resurrector>{
-///           #sampleMethod: resurrectComplexobject,
+///           #sampleMethod: resurrectComplexObject,
 ///         });
 ///
 ///         properties.addAll(<Symbol, Resurrector>{
@@ -76,13 +80,19 @@ abstract class ReplayProxyMixin implements ProxyObject {
 
   /// The unique identifier of this replay object.
   ///
-  /// When replay objects are returned as a result of a call, they are returned
-  /// only as an opaque identifier. When those objects are then used as the
-  /// invocation target, the same identifier is used in the serialized
-  /// recording.
+  /// When replay-aware objects are serialized in a recorded, they are done so
+  /// using only a unique String identifier. When the objects are resurrected
+  /// for the purpose of replay, their identifier is used to find possible
+  /// invocations in the [manifest] (only invocations whose target object
+  /// matches the identifier are considered).
   String get identifier;
 
   /// The manifest of recorded invocation events.
+  ///
+  /// When invocations are received on this object, we will attempt find a
+  /// matching invocation in this manifest to perform the replay. If no such
+  /// invocation is found (or if it has already been replayed), the caller will
+  /// receive a [NoMatchingInvocationError].
   ///
   /// This manifest exists as `MANIFEST.txt` in a recording directory.
   List<Map<String, dynamic>> get manifest;
@@ -109,7 +119,6 @@ abstract class ReplayProxyMixin implements ProxyObject {
     }
     entry[kManifestOrdinalKey] = _nextOrdinal++;
 
-    assert(resurrector != null);
     return resurrector(entry[kManifestResultKey]);
   }
 
