@@ -5,7 +5,6 @@
 import 'dart:async';
 
 import 'package:file/file.dart';
-import 'package:meta/meta.dart';
 import 'package:path/path.dart' as path;
 
 import 'replay_directory.dart';
@@ -16,7 +15,6 @@ import 'replay_link.dart';
 
 /// Resurrects an invocation result (return value) from the specified
 /// serialized [data].
-@protected
 typedef Object Resurrector(dynamic data);
 
 /// Returns a [Resurrector] that will wrap the return value of the specified
