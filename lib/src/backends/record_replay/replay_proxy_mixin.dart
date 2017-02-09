@@ -52,8 +52,8 @@ int _nextOrdinal = 0;
 ///         });
 ///
 ///         properties.addAll(<Symbol, Resurrector>{
-///           #sampleProperty: resurrectFoo,
-///           const Symbol('sampleProperty='): resurrectPassthrough,
+///           #sampleParent: resurrectFoo,
+///           const Symbol('sampleParent='): resurrectPassthrough,
 ///         });
 ///       }
 ///     }
@@ -62,7 +62,7 @@ abstract class ReplayProxyMixin implements ProxyObject {
   ///
   /// Invocations of methods listed in this map will be replayed by looking for
   /// matching invocations in the [manifest] and resurrecting the invocation
-  /// return value using the values in this map.
+  /// return value using the [Resurrector] found in this map.
   @protected
   final Map<Symbol, Resurrector> methods = <Symbol, Resurrector>{};
 
@@ -70,7 +70,8 @@ abstract class ReplayProxyMixin implements ProxyObject {
   ///
   /// Access and mutation of properties listed in this map will be replayed
   /// by looking for matching property accesses in the [manifest] and
-  /// resurrecting the invocation return value using the values in this map.
+  /// resurrecting the invocation return value using the [Resurrector] found
+  /// in this map.
   ///
   /// The keys for property getters are the simple property names, whereas the
   /// keys for property setters are the property names followed by an equals
@@ -80,11 +81,12 @@ abstract class ReplayProxyMixin implements ProxyObject {
 
   /// The unique identifier of this replay object.
   ///
-  /// When replay-aware objects are serialized in a recorded, they are done so
+  /// When replay-aware objects are serialized in a recording, they are done so
   /// using only a unique String identifier. When the objects are resurrected
-  /// for the purpose of replay, their identifier is used to find possible
-  /// invocations in the [manifest] (only invocations whose target object
-  /// matches the identifier are considered).
+  /// for the purpose of replay, their identifiers are used to match incoming
+  /// invocations against recorded invocations in the [manifest] (only
+  /// invocations whose target object matches the identifier are considered
+  /// possible matches).
   String get identifier;
 
   /// The manifest of recorded invocation events.
@@ -122,6 +124,8 @@ abstract class ReplayProxyMixin implements ProxyObject {
     return resurrector(entry[kManifestResultKey]);
   }
 
+  /// Finds the next available invocation event in the [manifest] that matches
+  /// the specified [invocation].
   Map<String, dynamic> _nextEvent(Invocation invocation) {
     _InvocationMatcher matches = _getMatcher(invocation);
     return manifest.firstWhere((Map<String, dynamic> entry) {

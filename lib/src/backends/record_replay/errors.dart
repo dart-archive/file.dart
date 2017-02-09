@@ -11,8 +11,8 @@ class NoMatchingInvocationError extends Error {
   /// The invocation that was unable to be replayed.
   final Invocation invocation;
 
-  /// Creates a new `InvocationError` caused by the failure to replay the
-  /// specified [invocation].
+  /// Creates a new `NoMatchingInvocationError` caused by the failure to replay
+  /// the specified [invocation].
   NoMatchingInvocationError(this.invocation);
 
   @override
@@ -30,8 +30,10 @@ class NoMatchingInvocationError extends Error {
         }
       }
       invocation.namedArguments.forEach((Symbol name, dynamic value) {
+        if (i++ > 0) {
+          buf.write(', ');
+        }
         buf
-          ..write(', ')
           ..write(getSymbolName(name))
           ..write(': ')
           ..write(encode(value));

@@ -20,7 +20,7 @@ import 'resurrectors.dart';
 /// setters) that occur on it, based on an opaque recording that was generated
 /// in [RecordingFileSystem]. All activity in the [File], [Directory], [Link],
 /// [IOSink], and [RandomAccessFile] instances returned from this API will also
-/// be replayed form the same recording.
+/// be replayed from the same recording.
 ///
 /// Once an invocation has been replayed once, it is marked as such and will
 /// not be eligible for further replay. If an eligible invocation cannot be

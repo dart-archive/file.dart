@@ -15,16 +15,14 @@ abstract class ProxyObject {}
 class MethodProxy extends Object implements Function {
   /// The object on which the method was retrieved.
   ///
-  /// This will be the target object when this proxy is invoked.
+  /// This will be the target object when this method proxy is invoked.
   final ProxyObject _proxyObject;
 
-  /// The name of the method that was retrieved.
-  ///
-  /// This method will be invoked when this proxy is invoked.
+  /// The name of the method in question.
   final Symbol _methodName;
 
   /// Creates a new [MethodProxy] that, when invoked, will invoke the method
-  /// identified by [methodName] on the specified target proxy [object].
+  /// identified by [methodName] on the specified target [object].
   MethodProxy(ProxyObject object, Symbol methodName)
       : _proxyObject = object,
         _methodName = methodName;
