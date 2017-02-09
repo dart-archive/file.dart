@@ -8,6 +8,7 @@ import 'package:meta/meta.dart';
 
 import 'events.dart';
 import 'mutable_recording.dart';
+import 'proxy.dart';
 import 'result_reference.dart';
 
 /// Mixin that enables recording of property accesses, property mutations, and
@@ -34,7 +35,7 @@ import 'result_reference.dart';
 ///       int sampleProperty;
 ///     }
 ///
-///     class RecordingFoo extends Object with _RecordingProxyMixin implements Foo {
+///     class RecordingFoo extends Object with RecordingProxyMixin implements Foo {
 ///       final Foo delegate;
 ///
 ///       RecordingFoo(this.delegate) {
@@ -59,7 +60,7 @@ import 'result_reference.dart';
 /// Methods that return [Stream]s will be recorded immediately, but their
 /// return values will be recorded as a [List] that will grow as the stream
 /// produces data.
-abstract class RecordingProxyMixin {
+abstract class RecordingProxyMixin implements ProxyObject {
   /// Maps method names to delegate functions.
   ///
   /// Invocations of methods listed in this map will be recorded after
@@ -107,7 +108,7 @@ abstract class RecordingProxyMixin {
       // a getter on a method, in which case we return a method proxy that,
       // when invoked, will perform the desired recording.
       return invocation.isGetter && methods[name] != null
-          ? new _MethodProxy(this, name)
+          ? new MethodProxy(this, name)
           : super.noSuchMethod(invocation);
     }
 
@@ -143,56 +144,4 @@ abstract class RecordingProxyMixin {
     }
     return result;
   }
-}
-
-/// A function reference that, when invoked, will record the invocation.
-class _MethodProxy extends Object implements Function {
-  /// The object on which the method was originally invoked.
-  final RecordingProxyMixin object;
-
-  /// The name of the method that was originally invoked.
-  final Symbol methodName;
-
-  _MethodProxy(this.object, this.methodName);
-
-  @override
-  dynamic noSuchMethod(Invocation invocation) {
-    if (invocation.isMethod && invocation.memberName == #call) {
-      // The method is being invoked. Capture the arguments, and invoke the
-      // method on the object. We have to synthesize an invocation, since our
-      // current `invocation` object represents the invocation of `call()`.
-      return object.noSuchMethod(new _MethodInvocationProxy(
-        methodName,
-        invocation.positionalArguments,
-        invocation.namedArguments,
-      ));
-    }
-    return super.noSuchMethod(invocation);
-  }
-}
-
-class _MethodInvocationProxy extends Invocation {
-  _MethodInvocationProxy(
-    this.memberName,
-    this.positionalArguments,
-    this.namedArguments,
-  );
-
-  @override
-  final Symbol memberName;
-
-  @override
-  final List<dynamic> positionalArguments;
-
-  @override
-  final Map<Symbol, dynamic> namedArguments;
-
-  @override
-  final bool isMethod = true;
-
-  @override
-  final bool isGetter = false;
-
-  @override
-  final bool isSetter = false;
 }

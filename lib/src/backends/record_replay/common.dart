@@ -51,9 +51,9 @@ const String kManifestPositionalArgumentsKey = 'positionalArguments';
 /// named arguments that were passed to the method.
 const String kManifestNamedArgumentsKey = 'namedArguments';
 
-/// The key in a serialized [InvocationEvent] map that is used to store whether
-/// the invocation has been replayed already.
-const String kManifestReplayedKey = 'replayed';
+/// The key in a serialized [InvocationEvent] map that is used to store the
+/// order in which the invocation has been replayed (if it has been replayed).
+const String kManifestOrdinalKey = 'ordinal';
 
 /// The serialized [kManifestTypeKey] for property retrievals.
 const String kGetType = 'get';
