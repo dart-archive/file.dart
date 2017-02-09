@@ -33,10 +33,7 @@ class NoMatchingInvocationError extends Error {
         if (i++ > 0) {
           buf.write(', ');
         }
-        buf
-          ..write(getSymbolName(name))
-          ..write(': ')
-          ..write(encode(value));
+        buf.write('${getSymbolName(name)}: ${encode(value)}');
       });
       buf.write(')');
     } else if (invocation.isSetter) {

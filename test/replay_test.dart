@@ -187,12 +187,4 @@ void main() {
 }
 
 /// Successfully matches against an instance of [Future].
-const Matcher isFuture = const _IsFuture();
-
-class _IsFuture extends TypeMatcher {
-  const _IsFuture() : super('Future');
-
-  @override
-  bool matches(dynamic item, Map<dynamic, dynamic> matchState) =>
-      item is Future<dynamic>;
-}
+const Matcher isFuture = const isInstanceOf<Future<dynamic>>();

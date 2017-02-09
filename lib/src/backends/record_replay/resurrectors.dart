@@ -20,9 +20,7 @@ typedef Object Resurrector(dynamic data);
 /// Returns a [Resurrector] that will wrap the return value of the specified
 /// [delegate] in a [Future].
 Resurrector resurrectFuture(Resurrector delegate) {
-  return (dynamic serializedResult) async {
-    return delegate(serializedResult);
-  };
+  return (dynamic serializedResult) async => delegate(serializedResult);
 }
 
 /// Returns a [Resurrector] that will resurrect a [ReplayDirectory] that is
@@ -62,7 +60,7 @@ DateTime resurrectDateTime(int milliseconds) {
 /// Resurrects a [FileSystemEntityType] from the specified string
 /// representation.
 FileSystemEntityType resurrectFileSystemEntityType(String type) {
-  return <String, FileSystemEntityType>{
+  return const <String, FileSystemEntityType>{
     'FILE': FileSystemEntityType.FILE,
     'DIRECTORY': FileSystemEntityType.DIRECTORY,
     'LINK': FileSystemEntityType.LINK,
