@@ -54,18 +54,37 @@ int _nextOrdinal = 0;
 ///       }
 ///     }
 abstract class ReplayProxyMixin implements ProxyObject {
-  /// TODO(tvolkert): document
+  /// Maps method names to [Resurrector] functions.
+  ///
+  /// Invocations of methods listed in this map will be replayed by looking for
+  /// matching invocations in the [manifest] and resurrecting the invocation
+  /// return value using the values in this map.
   @protected
   final Map<Symbol, Resurrector> methods = <Symbol, Resurrector>{};
 
-  /// TODO(tvolkert): document
+  /// Maps property getter and setter names to [Resurrector] functions.
+  ///
+  /// Access and mutation of properties listed in this map will be replayed
+  /// by looking for matching property accesses in the [manifest] and
+  /// resurrecting the invocation return value using the values in this map.
+  ///
+  /// The keys for property getters are the simple property names, whereas the
+  /// keys for property setters are the property names followed by an equals
+  /// sign (e.g. `propertyName=`).
   @protected
   final Map<Symbol, Resurrector> properties = <Symbol, Resurrector>{};
 
-  /// TODO(tvolkert): document
+  /// The unique identifier of this replay object.
+  ///
+  /// When replay objects are returned as a result of a call, they are returned
+  /// only as an opaque identifier. When those objects are then used as the
+  /// invocation target, the same identifier is used in the serialized
+  /// recording.
   String get identifier;
 
-  /// TODO(tvolkert): document
+  /// The manifest of recorded invocation events.
+  ///
+  /// This manifest exists as `MANIFEST.txt` in a recording directory.
   List<Map<String, dynamic>> get manifest;
 
   @override
