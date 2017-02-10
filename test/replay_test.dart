@@ -11,6 +11,8 @@ import 'package:file/testing.dart';
 import 'package:path/path.dart' as path;
 import 'package:test/test.dart';
 
+import 'common_tests.dart';
+
 void main() {
   group('Replay', () {
     RecordingFileSystem recordingFileSystem;
@@ -32,6 +34,21 @@ void main() {
       await recording.flush();
       return new ReplayFileSystem(recording: recording.destination);
     }
+
+    runCommonTests(
+      () => recordingFileSystem,
+      replay: replay,
+      skip: <String>[
+        // ReplayFileSystem does not yet replay exceptions
+        '.*(disallows|throws).*',
+
+        // TODO(tvolkert): Enable when ReplayFileSystem is complete.
+        'FileSystem',
+        'Directory',
+        'File',
+        'Link',
+      ],
+    );
 
     group('ReplayFileSystem', () {
       test('directory', () async {
