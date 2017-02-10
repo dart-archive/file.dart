@@ -4,7 +4,7 @@
 
 import 'package:file/file.dart';
 
-import 'resurrectors.dart';
+import 'codecs.dart';
 
 /// [FileStat] implementation that derives its properties from a recorded
 /// invocation event.
@@ -16,16 +16,16 @@ class ReplayFileStat implements FileStat {
   ReplayFileStat(Map<String, dynamic> data) : _data = data;
 
   @override
-  DateTime get changed => resurrectDateTime(_data['changed']);
+  DateTime get changed => kDateTimeReviver.convert(_data['changed']);
 
   @override
-  DateTime get modified => resurrectDateTime(_data['modified']);
+  DateTime get modified => kDateTimeReviver.convert(_data['modified']);
 
   @override
-  DateTime get accessed => resurrectDateTime(_data['accessed']);
+  DateTime get accessed => kDateTimeReviver.convert(_data['accessed']);
 
   @override
-  FileSystemEntityType get type => resurrectFileSystemEntityType(_data['type']);
+  FileSystemEntityType get type => kEntityTypeReviver.convert(_data['type']);
 
   @override
   int get mode => _data['mode'];

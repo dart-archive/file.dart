@@ -2,8 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'codecs.dart';
 import 'common.dart';
-import 'encoding.dart';
 
 /// Error thrown during replay when there is no matching invocation in the
 /// recording.

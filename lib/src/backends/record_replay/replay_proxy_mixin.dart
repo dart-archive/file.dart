@@ -2,13 +2,14 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:convert';
+
 import 'package:meta/meta.dart';
 
+import 'codecs.dart';
 import 'common.dart';
-import 'encoding.dart';
 import 'errors.dart';
 import 'proxy.dart';
-import 'resurrectors.dart';
 
 typedef bool _InvocationMatcher(Map<String, dynamic> entry);
 
@@ -47,37 +48,39 @@ int _nextOrdinal = 0;
 ///       final String identifier;
 ///
 ///       ReplayFoo(this.manifest, this.identifier) {
-///         methods.addAll(<Symbol, Resurrector>{
-///           #sampleMethod: resurrectComplexObject,
+///         methods.addAll(<Symbol, Converter<dynamic, dynamic>>{
+///           #sampleMethod: complexObjectReviver,
 ///         });
 ///
-///         properties.addAll(<Symbol, Resurrector>{
-///           #sampleParent: resurrectFoo,
-///           const Symbol('sampleParent='): resurrectPassthrough,
+///         properties.addAll(<Symbol, Converter<dynamic, dynamic>>{
+///           #sampleParent: fooReviver,
+///           const Symbol('sampleParent='): passthroughReviver,
 ///         });
 ///       }
 ///     }
 abstract class ReplayProxyMixin implements ProxyObject, ReplayAware {
-  /// Maps method names to [Resurrector] functions.
+  /// Maps method names to [Converter]s that will revive result values.
   ///
   /// Invocations of methods listed in this map will be replayed by looking for
-  /// matching invocations in the [manifest] and resurrecting the invocation
-  /// return value using the [Resurrector] found in this map.
+  /// matching invocations in the [manifest] and reviving the invocation return
+  /// value using the [Converter] found in this map.
   @protected
-  final Map<Symbol, Resurrector> methods = <Symbol, Resurrector>{};
+  final Map<Symbol, Converter<dynamic, dynamic>> methods =
+      <Symbol, Converter<dynamic, dynamic>>{};
 
-  /// Maps property getter and setter names to [Resurrector] functions.
+  /// Maps property getter and setter names to [Converter]s that will revive
+  /// result values.
   ///
   /// Access and mutation of properties listed in this map will be replayed
-  /// by looking for matching property accesses in the [manifest] and
-  /// resurrecting the invocation return value using the [Resurrector] found
-  /// in this map.
+  /// by looking for matching property accesses in the [manifest] and reviving
+  /// the invocation return value using the [Converter] found in this map.
   ///
   /// The keys for property getters are the simple property names, whereas the
   /// keys for property setters are the property names followed by an equals
   /// sign (e.g. `propertyName=`).
   @protected
-  final Map<Symbol, Resurrector> properties = <Symbol, Resurrector>{};
+  final Map<Symbol, Converter<dynamic, dynamic>> properties =
+      <Symbol, Converter<dynamic, dynamic>>{};
 
   /// The manifest of recorded invocation events.
   ///
@@ -92,11 +95,11 @@ abstract class ReplayProxyMixin implements ProxyObject, ReplayAware {
   @override
   dynamic noSuchMethod(Invocation invocation) {
     Symbol name = invocation.memberName;
-    Resurrector resurrector =
+    Converter<dynamic, dynamic> reviver =
         invocation.isAccessor ? properties[name] : methods[name];
 
-    if (resurrector == null) {
-      // No resurrector generally means that there truly is no such method on
+    if (reviver == null) {
+      // No reviver generally means that there truly is no such method on
       // this object. The exception is when the invocation represents a getter
       // on a method, in which case we return a method proxy that, when
       // invoked, will replay the desired invocation.
@@ -111,7 +114,7 @@ abstract class ReplayProxyMixin implements ProxyObject, ReplayAware {
     }
     entry[kManifestOrdinalKey] = _nextOrdinal++;
 
-    return resurrector(entry[kManifestResultKey]);
+    return reviver.convert(entry[kManifestResultKey]);
   }
 
   /// Finds the next available invocation event in the [manifest] that matches

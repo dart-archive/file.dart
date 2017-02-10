@@ -92,11 +92,11 @@ class TypeMatcher<T> {
 /// opaque identifier.
 ///
 /// Unlike other objects, objects that are replay-aware don't need to serialize
-/// meaningful metadata about their state for the sake of resurrection. Rather,
-/// they derive all the information they need to operate from the recording.
-/// As such, they are serialized using only an opaque unique identifier. When
-/// they are resurrected during replay, their identifier allows them to find
-/// invocations in the recording for which they are the target.
+/// meaningful metadata about their state for the sake of revival. Rather, they
+/// derive all the information they need to operate from the recording. As such,
+/// they are serialized using only an opaque unique identifier. When they are
+/// revived during replay, their identifier allows them to find invocations in
+/// the recording for which they are the target.
 abstract class ReplayAware {
   /// The identifier of this object, guaranteed to be unique within a single
   /// recording.

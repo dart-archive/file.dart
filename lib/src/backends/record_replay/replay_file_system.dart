@@ -7,11 +7,11 @@ import 'dart:convert';
 import 'package:file/file.dart';
 import 'package:meta/meta.dart';
 
+import 'codecs.dart';
 import 'common.dart';
 import 'errors.dart';
 import 'recording_file_system.dart';
 import 'replay_proxy_mixin.dart';
-import 'resurrectors.dart';
 
 /// A file system that replays invocations from a prior recording for use
 /// in tests.
@@ -70,24 +70,24 @@ class ReplayFileSystemImpl extends FileSystem
     implements ReplayFileSystem, ReplayAware {
   /// Creates a new `ReplayFileSystemImpl`.
   ReplayFileSystemImpl(this.manifest) {
-    methods.addAll(<Symbol, Resurrector>{
-      #directory: resurrectDirectory(this),
-      #file: resurrectFile(this),
-      #link: resurrectLink(this),
-      #stat: resurrectFuture(resurrectFileStat),
-      #statSync: resurrectFileStat,
-      #identical: resurrectFuture(resurrectPassthrough),
-      #identicalSync: resurrectPassthrough,
-      #type: resurrectFuture(resurrectFileSystemEntityType),
-      #typeSync: resurrectFileSystemEntityType,
+    methods.addAll(<Symbol, Converter<dynamic, dynamic>>{
+      #directory: directoryReviver(this),
+      #file: fileReviver(this),
+      #link: linkReviver(this),
+      #stat: kFileStatReviver.fuse(kFutureReviver),
+      #statSync: kFileStatReviver,
+      #identical: kPassthrough.fuse(kFutureReviver),
+      #identicalSync: kPassthrough,
+      #type: kEntityTypeReviver.fuse(kFutureReviver),
+      #typeSync: kEntityTypeReviver,
     });
 
-    properties.addAll(<Symbol, Resurrector>{
-      #path: resurrectPathContext,
-      #systemTempDirectory: resurrectDirectory(this),
-      #currentDirectory: resurrectDirectory(this),
-      const Symbol('currentDirectory='): resurrectPassthrough,
-      #isWatchSupported: resurrectPassthrough,
+    properties.addAll(<Symbol, Converter<dynamic, dynamic>>{
+      #path: kPathContextReviver,
+      #systemTempDirectory: directoryReviver(this),
+      #currentDirectory: directoryReviver(this),
+      const Symbol('currentDirectory='): kPassthrough,
+      #isWatchSupported: kPassthrough,
     });
   }
 
