@@ -10,11 +10,19 @@ import 'dart:io' as io;
 import 'package:file/file.dart';
 import 'package:file/testing.dart';
 import 'package:test/test.dart';
-import 'package:test/test.dart' as testpkg show group, test;
+import 'package:test/test.dart' as testpkg show group, test, setUp;
 
 /// Callback used in [runCommonTests] to produce the root folder in which all
 /// file system entities will be created.
 typedef String RootPathGenerator();
+
+/// Callback used in [runCommonTests] to create the file system under test.
+/// It must return either a [FileSystem] or a [Future] that completes with a
+/// [FileSystem].
+typedef dynamic FileSystemGenerator();
+
+/// A function to run before tests (passed to [setUp]).
+typedef dynamic SetUpCallback();
 
 /// Runs a suite of tests common to all file system implementations. All file
 /// system implementations should run *at least* these tests to ensure
@@ -29,14 +37,24 @@ typedef String RootPathGenerator();
 /// not yet fully complete). The format of each entry in the list is:
 /// `$group1Description > $group2Description > ... > $testDescription`.
 /// Entries may use regular expression syntax.
+///
+/// If [replay] is specified, each test (and its setup callbacks) will run
+/// twice - once as a "setup" pass with the file system returned by
+/// [createFileSystem], and again as the "test" pass with the file system
+/// returned by [replay]. This is intended for use with `ReplayFileSystem`,
+/// where in order for the file system to behave as expected, a recording of
+/// the invocation(s) must first be made.
 void runCommonTests(
-  FileSystem createFileSystem(), {
+  FileSystemGenerator createFileSystem, {
   RootPathGenerator root,
   List<String> skip: const <String>[],
+  FileSystemGenerator replay,
 }) {
   RootPathGenerator rootfn = root;
 
   group('common', () {
+    FileSystemGenerator createFs;
+    List<SetUpCallback> setUps;
     FileSystem fs;
     String root;
 
@@ -52,11 +70,36 @@ void runCommonTests(
       stack.removeLast();
     }
 
+    testpkg.setUp(() async {
+      createFs = createFileSystem;
+      setUps = <SetUpCallback>[];
+      fs = null;
+      root = null;
+    });
+
+    void setUp(callback()) {
+      testpkg.setUp(replay == null ? callback : () => setUps.add(callback));
+    }
+
     void group(String description, body()) =>
         skipIfNecessary(description, () => testpkg.group(description, body));
 
-    void test(String description, body()) =>
-        skipIfNecessary(description, () => testpkg.test(description, body));
+    void test(String description, body()) => skipIfNecessary(description, () {
+          if (replay == null) {
+            testpkg.test(description, body);
+          } else {
+            group('rerun', () {
+              testpkg.setUp(() async {
+                await Future.forEach(setUps, (SetUpCallback setUp) => setUp());
+                await body();
+                createFs = replay;
+                await Future.forEach(setUps, (SetUpCallback setUp) => setUp());
+              });
+
+              testpkg.test(description, body);
+            });
+          }
+        });
 
     /// Returns [path] prefixed by the [root] namespace.
     /// This is only intended for absolute paths.
@@ -68,10 +111,10 @@ void runCommonTests(
       return root == '/' ? path : (path == '/' ? root : '$root$path');
     }
 
-    setUp(() {
+    setUp(() async {
       root = rootfn != null ? rootfn() : '/';
       assert(root.startsWith('/') && (root == '/' || !root.endsWith('/')));
-      fs = createFileSystem();
+      fs = await createFs();
     });
 
     group('FileSystem', () {
@@ -588,7 +631,7 @@ void runCommonTests(
           expect(fs.link(ns('/baz')).targetSync(), ns('/foo'));
         });
 
-        test('succeedsIfDestinationIsLinkToNotFound', () {
+        test('throwsIfDestinationIsLinkToNotFound', () {
           Directory src = fs.directory(ns('/foo'))..createSync();
           fs.link(ns('/bar')).createSync(ns('/baz'));
           expectFileSystemException('Not a directory', () {
