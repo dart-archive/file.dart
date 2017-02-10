@@ -6,7 +6,7 @@ import 'dart:async';
 
 import 'package:meta/meta.dart';
 
-import 'encoding.dart';
+import 'codecs.dart';
 import 'events.dart';
 import 'recording_proxy_mixin.dart';
 
