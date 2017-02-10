@@ -60,7 +60,7 @@ abstract class ReplayFileSystem extends FileSystem {
     }
     List<Map<String, dynamic>> manifest =
         new JsonDecoder().convert(manifestFile.readAsStringSync());
-    return new ReplayFileSystemImpl(manifest);
+    return new ReplayFileSystemImpl(recording, manifest);
   }
 }
 
@@ -69,7 +69,7 @@ class ReplayFileSystemImpl extends FileSystem
     with ReplayProxyMixin
     implements ReplayFileSystem, ReplayAware {
   /// Creates a new `ReplayFileSystemImpl`.
-  ReplayFileSystemImpl(this.manifest) {
+  ReplayFileSystemImpl(this.recording, this.manifest) {
     methods.addAll(<Symbol, Converter<dynamic, dynamic>>{
       #directory: directoryReviver(this),
       #file: fileReviver(this),
@@ -90,6 +90,9 @@ class ReplayFileSystemImpl extends FileSystem
       #isWatchSupported: kPassthrough,
     });
   }
+
+  /// The location of the recording that's driving this file system
+  final Directory recording;
 
   @override
   String get identifier => kFileSystemEncodedValue;

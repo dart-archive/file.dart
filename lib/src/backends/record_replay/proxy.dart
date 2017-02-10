@@ -43,6 +43,7 @@ class MethodProxy extends Object implements Function {
   }
 }
 
+// TODO(tvolkert): remove (https://github.com/dart-lang/sdk/issues/28706)
 class _MethodInvocationProxy extends Invocation {
   _MethodInvocationProxy(
     this.memberName,

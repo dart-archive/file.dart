@@ -42,11 +42,16 @@ void main() {
         // ReplayFileSystem does not yet replay exceptions
         '.*(disallows|throws).*',
 
-        // TODO(tvolkert): Enable when ReplayFileSystem is complete.
-        'FileSystem',
-        'Directory',
-        'File',
-        'Link',
+        // TODO(tvolkert): re-enable when these are implemented
+        'File > copy',
+        'File > openRead',
+        'File > openWrite',
+        'File > readAsLines',
+        'File > readAsString',
+        'File > writeAsBytes',
+        'File > writeAsString',
+
+        'File > open', // Not yet implemented in MemoryFileSystem
       ],
     );
 
