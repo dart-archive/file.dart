@@ -2,6 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:file/file.dart';
@@ -16,20 +17,24 @@ class ReplayLink extends ReplayFileSystemEntity implements Link {
   /// Creates a new `ReplayLink`.
   ReplayLink(ReplayFileSystemImpl fileSystem, String identifier)
       : super(fileSystem, identifier) {
+    Converter<String, Link> reviveLink = new ReviveLink(fileSystem);
+    Converter<String, Future<Link>> reviveLinkAsFuture =
+        reviveLink.fuse(const ToFuture<Link>());
+
     methods.addAll(<Symbol, Converter<dynamic, dynamic>>{
-      #rename: linkReviver(fileSystem).fuse(kFutureReviver),
-      #renameSync: linkReviver(fileSystem),
-      #delete: linkReviver(fileSystem).fuse(kFutureReviver),
-      #create: linkReviver(fileSystem).fuse(kFutureReviver),
-      #createSync: kPassthrough,
-      #update: linkReviver(fileSystem).fuse(kFutureReviver),
-      #updateSync: kPassthrough,
-      #target: kPassthrough.fuse(kFutureReviver),
-      #targetSync: kPassthrough,
+      #rename: reviveLinkAsFuture,
+      #renameSync: reviveLink,
+      #delete: reviveLinkAsFuture,
+      #create: reviveLinkAsFuture,
+      #createSync: const Passthrough<Null>(),
+      #update: reviveLinkAsFuture,
+      #updateSync: const Passthrough<Null>(),
+      #target: const Passthrough<String>().fuse(const ToFuture<String>()),
+      #targetSync: const Passthrough<String>(),
     });
 
     properties.addAll(<Symbol, Converter<dynamic, dynamic>>{
-      #absolute: linkReviver(fileSystem),
+      #absolute: reviveLink,
     });
   }
 }

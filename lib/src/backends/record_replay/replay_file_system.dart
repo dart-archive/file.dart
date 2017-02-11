@@ -70,24 +70,28 @@ class ReplayFileSystemImpl extends FileSystem
     implements ReplayFileSystem, ReplayAware {
   /// Creates a new `ReplayFileSystemImpl`.
   ReplayFileSystemImpl(this.recording, this.manifest) {
+    Converter<String, Directory> reviveDirectory = new ReviveDirectory(this);
+    ToFuture<FileSystemEntityType> toFutureType =
+        const ToFuture<FileSystemEntityType>();
+
     methods.addAll(<Symbol, Converter<dynamic, dynamic>>{
-      #directory: directoryReviver(this),
-      #file: fileReviver(this),
-      #link: linkReviver(this),
-      #stat: kFileStatReviver.fuse(kFutureReviver),
-      #statSync: kFileStatReviver,
-      #identical: kPassthrough.fuse(kFutureReviver),
-      #identicalSync: kPassthrough,
-      #type: kEntityTypeReviver.fuse(kFutureReviver),
-      #typeSync: kEntityTypeReviver,
+      #directory: reviveDirectory,
+      #file: new ReviveFile(this),
+      #link: new ReviveLink(this),
+      #stat: FileStatCodec.deserialize.fuse(const ToFuture<FileStat>()),
+      #statSync: FileStatCodec.deserialize,
+      #identical: const Passthrough<bool>().fuse(const ToFuture<bool>()),
+      #identicalSync: const Passthrough<bool>(),
+      #type: EntityTypeCodec.deserialize.fuse(toFutureType),
+      #typeSync: EntityTypeCodec.deserialize,
     });
 
     properties.addAll(<Symbol, Converter<dynamic, dynamic>>{
-      #path: kPathContextReviver,
-      #systemTempDirectory: directoryReviver(this),
-      #currentDirectory: directoryReviver(this),
-      const Symbol('currentDirectory='): kPassthrough,
-      #isWatchSupported: kPassthrough,
+      #path: PathContextCodec.deserialize,
+      #systemTempDirectory: reviveDirectory,
+      #currentDirectory: reviveDirectory,
+      const Symbol('currentDirectory='): const Passthrough<Null>(),
+      #isWatchSupported: const Passthrough<bool>(),
     });
   }
 

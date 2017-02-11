@@ -42,14 +42,8 @@ void main() {
         // ReplayFileSystem does not yet replay exceptions
         '.*(disallows|throws).*',
 
-        // TODO(tvolkert): re-enable when these are implemented
-        'File > copy',
-        'File > openRead',
-        'File > openWrite',
-        'File > readAsLines',
-        'File > readAsString',
-        'File > writeAsBytes',
-        'File > writeAsString',
+        // TODO(tvolkert): Fix breakage, and re-enable
+        'File > openWrite > ioSink > addStream',
 
         'File > open', // Not yet implemented in MemoryFileSystem
       ],

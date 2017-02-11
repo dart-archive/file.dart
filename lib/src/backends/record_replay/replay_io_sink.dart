@@ -15,24 +15,24 @@ import 'replay_proxy_mixin.dart';
 class ReplayIOSink extends Object with ReplayProxyMixin implements IOSink {
   final ReplayFileSystemImpl _fileSystem;
 
-  /// Creates a new `ReplayIOSink`.
+  /// Creates a new [ReplayIOSink].
   ReplayIOSink(this._fileSystem, this.identifier) {
     methods.addAll(<Symbol, Converter<dynamic, dynamic>>{
-      #add: kPassthrough,
-      #write: kPassthrough,
-      #writeAll: kPassthrough,
-      #writeln: kPassthrough,
-      #writeCharCode: kPassthrough,
-      #addError: kPassthrough,
-      #addStream: kFutureReviver,
-      #flush: kFutureReviver,
-      #close: kFutureReviver,
+      #add: const Passthrough<Null>(),
+      #write: const Passthrough<Null>(),
+      #writeAll: const Passthrough<Null>(),
+      #writeln: const Passthrough<Null>(),
+      #writeCharCode: const Passthrough<Null>(),
+      #addError: const Passthrough<Null>(),
+      #addStream: const ToFuture<dynamic>(),
+      #flush: const ToFuture<dynamic>(),
+      #close: const ToFuture<dynamic>(),
     });
 
     properties.addAll(<Symbol, Converter<dynamic, dynamic>>{
-      #encoding: kEncodingReviver,
-      const Symbol('encoding='): kPassthrough,
-      #done: kPassthrough.fuse(kFutureReviver),
+      #encoding: EncodingCodec.deserialize,
+      const Symbol('encoding='): const Passthrough<Null>(),
+      #done: const Passthrough<dynamic>().fuse(const ToFuture<dynamic>()),
     });
   }
 

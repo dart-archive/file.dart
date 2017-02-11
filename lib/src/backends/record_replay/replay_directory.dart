@@ -2,6 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:file/file.dart';
@@ -16,24 +17,29 @@ class ReplayDirectory extends ReplayFileSystemEntity implements Directory {
   /// Creates a new `ReplayDirectory`.
   ReplayDirectory(ReplayFileSystemImpl fileSystem, String identifier)
       : super(fileSystem, identifier) {
-    Converter<dynamic, dynamic> convertThis = directoryReviver(fileSystem);
-    Converter<dynamic, dynamic> convertFutureThis =
-        convertThis.fuse(kFutureReviver);
+    Converter<String, Directory> reviveDirectory =
+        new ReviveDirectory(fileSystem);
+    Converter<String, Future<Directory>> reviveFutureDirectory =
+        reviveDirectory.fuse(const ToFuture<Directory>());
+    Converter<String, FileSystemEntity> reviveEntity =
+        new ReviveFileSystemEntity(fileSystem);
+    Converter<List<String>, List<FileSystemEntity>> reviveEntities =
+        new ConvertElements<String, FileSystemEntity>(reviveEntity);
 
     methods.addAll(<Symbol, Converter<dynamic, dynamic>>{
-      #rename: convertFutureThis,
-      #renameSync: convertThis,
-      #delete: convertFutureThis,
-      #create: convertFutureThis,
-      #createSync: kPassthrough,
-      #createTemp: convertFutureThis,
-      #createTempSync: convertThis,
-      #list: listReviver(entityReviver(fileSystem)).fuse(kStreamReviver),
-      #listSync: listReviver(entityReviver(fileSystem)),
+      #rename: reviveFutureDirectory,
+      #renameSync: reviveDirectory,
+      #delete: reviveFutureDirectory,
+      #create: reviveFutureDirectory,
+      #createSync: const Passthrough<Null>(),
+      #createTemp: reviveFutureDirectory,
+      #createTempSync: reviveDirectory,
+      #list: reviveEntities.fuse(const ToStream<FileSystemEntity>()),
+      #listSync: reviveEntities,
     });
 
     properties.addAll(<Symbol, Converter<dynamic, dynamic>>{
-      #absolute: convertThis,
+      #absolute: reviveDirectory,
     });
   }
 }

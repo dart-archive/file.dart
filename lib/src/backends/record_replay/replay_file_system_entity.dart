@@ -2,6 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:file/file.dart';
@@ -17,24 +18,30 @@ abstract class ReplayFileSystemEntity extends Object
     implements FileSystemEntity {
   /// Creates a new `ReplayFileSystemEntity`.
   ReplayFileSystemEntity(this.fileSystem, this.identifier) {
+    Converter<List<Map<String, Object>>, List<FileSystemEvent>> toEvents =
+        const ConvertElements<Map<String, Object>, FileSystemEvent>(
+            FileSystemEventCodec.deserialize);
+    Converter<List<Map<String, Object>>, Stream<FileSystemEvent>>
+        toEventStream = toEvents.fuse(const ToStream<FileSystemEvent>());
+
     methods.addAll(<Symbol, Converter<dynamic, dynamic>>{
-      #exists: kPassthrough.fuse(kFutureReviver),
-      #existsSync: kPassthrough,
-      #resolveSymbolicLinks: kPassthrough.fuse(kFutureReviver),
-      #resolveSymbolicLinksSync: kPassthrough,
-      #stat: kFileStatReviver.fuse(kFutureReviver),
-      #statSync: kFileStatReviver,
-      #deleteSync: kPassthrough,
-      #watch: listReviver(kFileSystemEventReviver).fuse(kStreamReviver),
+      #exists: const ToFuture<bool>(),
+      #existsSync: const Passthrough<bool>(),
+      #resolveSymbolicLinks: const ToFuture<String>(),
+      #resolveSymbolicLinksSync: const Passthrough<String>(),
+      #stat: FileStatCodec.deserialize.fuse(const ToFuture<FileStat>()),
+      #statSync: FileStatCodec.deserialize,
+      #deleteSync: const Passthrough<Null>(),
+      #watch: toEventStream,
     });
 
     properties.addAll(<Symbol, Converter<dynamic, dynamic>>{
-      #path: kPassthrough,
-      #uri: kUriReviver,
-      #isAbsolute: kPassthrough,
-      #parent: directoryReviver(fileSystem),
-      #basename: kPassthrough,
-      #dirname: kPassthrough,
+      #path: const Passthrough<String>(),
+      #uri: UriCodec.deserialize,
+      #isAbsolute: const Passthrough<bool>(),
+      #parent: new ReviveDirectory(fileSystem),
+      #basename: const Passthrough<String>(),
+      #dirname: const Passthrough<String>(),
     });
   }
 

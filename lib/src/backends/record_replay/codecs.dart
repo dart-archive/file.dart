@@ -20,75 +20,6 @@ import 'replay_link.dart';
 import 'replay_random_access_file.dart';
 import 'result_reference.dart';
 
-/// Converter that leaves object untouched.
-const Converter<dynamic, dynamic> kPassthrough = const _PassthroughConverter();
-
-/// Converter that will turn an object into a [Future] of that object.
-const Converter<dynamic, dynamic> kFutureReviver =
-    const _FutureReviver<dynamic>();
-
-/// Converter that will convert an [Iterable] into a [Stream].
-Converter<dynamic, dynamic> kStreamReviver = const _StreamReviver();
-
-/// Converter that will deserialize a [DateTime].
-const Converter<dynamic, dynamic> kDateTimeReviver = _DateTimeCodec.kDecoder;
-
-/// Converter that will deserialize a [FileStat].
-const Converter<dynamic, dynamic> kFileStatReviver = _FileStatCodec.kDecoder;
-
-/// Converter that will deserialize a [FileSystemEntityType].
-const Converter<dynamic, dynamic> kEntityTypeReviver =
-    _EntityTypeCodec.kDecoder;
-
-/// Converter that will deserialize a [path.Context].
-const Converter<dynamic, dynamic> kPathContextReviver =
-    _PathContextCodec.kDecoder;
-
-/// Converter that will deserialize a [Uri].
-const Converter<dynamic, dynamic> kUriReviver = _UriCodec.kDecoder;
-
-/// Converter that will deserialize a [Encoding].
-const Converter<dynamic, dynamic> kEncodingReviver = _EncodingCodec.kDecoder;
-
-/// Converter that will deserialize a [FileSystemEvent].
-const Converter<dynamic, dynamic> kFileSystemEventReviver =
-    _FileSystemEventCodec.kDecoder;
-
-/// Converter that will deserialize each element of a [List] by delegating to
-/// the specified [elementReviver].
-Converter<dynamic, dynamic> listReviver(
-        Converter<dynamic, dynamic> elementReviver) =>
-    new _ListReviver(elementReviver);
-
-/// Converter that will deserialize a blob file reference into the file's bytes.
-Converter<dynamic, dynamic> blobReviver(ReplayFileSystemImpl fileSystem) =>
-    new _BlobReviver(fileSystem);
-
-/// Converter that will deserialize a [ReplayDirectory].
-Converter<dynamic, dynamic> directoryReviver(ReplayFileSystemImpl fileSystem) =>
-    new _DirectoryReviver(fileSystem);
-
-/// Converter that will deserialize a [ReplayFile].
-Converter<dynamic, dynamic> fileReviver(ReplayFileSystemImpl fileSystem) =>
-    new _FileReviver(fileSystem);
-
-/// Converter that will deserialize a [ReplayLink].
-Converter<dynamic, dynamic> linkReviver(ReplayFileSystemImpl fileSystem) =>
-    new _LinkReviver(fileSystem);
-
-/// Converter that will deserialize an arbitrary [FileSystemEntity].
-Converter<dynamic, dynamic> entityReviver(ReplayFileSystemImpl fileSystem) =>
-    new _FileSystemEntityReviver(fileSystem);
-
-/// Converter that will deserialize a [ReplayRandomAccessFile].
-Converter<dynamic, dynamic> randomAccessFileReviver(
-        ReplayFileSystemImpl fileSystem) =>
-    new _RandomAccessFileReviver(fileSystem);
-
-/// Converter that will deserialize a [ReplayRandomAccessFile].
-Converter<dynamic, dynamic> ioSinkReviver(ReplayFileSystemImpl fileSystem) =>
-    new _IOSinkReviver(fileSystem);
-
 /// Encodes an arbitrary [object] into a JSON-ready representation (a number,
 /// boolean, string, null, list, or map).
 ///
@@ -118,24 +49,24 @@ class _GenericEncoder extends Converter<dynamic, dynamic> {
   /// object, the first one will win.
   static const Map<TypeMatcher<dynamic>, Converter<Object, Object>> _encoders =
       const <TypeMatcher<dynamic>, Converter<Object, Object>>{
-    const TypeMatcher<num>(): const _PassthroughConverter(),
-    const TypeMatcher<bool>(): const _PassthroughConverter(),
-    const TypeMatcher<String>(): const _PassthroughConverter(),
-    const TypeMatcher<Null>(): const _PassthroughConverter(),
+    const TypeMatcher<num>(): const Passthrough<num>(),
+    const TypeMatcher<bool>(): const Passthrough<bool>(),
+    const TypeMatcher<String>(): const Passthrough<String>(),
+    const TypeMatcher<Null>(): const Passthrough<Null>(),
     const TypeMatcher<Iterable<dynamic>>(): const _IterableEncoder(),
     const TypeMatcher<Map<dynamic, dynamic>>(): const _MapEncoder(),
     const TypeMatcher<Symbol>(): const _SymbolEncoder(),
-    const TypeMatcher<DateTime>(): _DateTimeCodec.kEncoder,
-    const TypeMatcher<Uri>(): _UriCodec.kEncoder,
-    const TypeMatcher<path.Context>(): _PathContextCodec.kEncoder,
+    const TypeMatcher<DateTime>(): DateTimeCodec.serialize,
+    const TypeMatcher<Uri>(): UriCodec.serialize,
+    const TypeMatcher<path.Context>(): PathContextCodec.serialize,
     const TypeMatcher<ResultReference<dynamic>>(): const _ResultEncoder(),
     const TypeMatcher<LiveInvocationEvent<dynamic>>(): const _EventEncoder(),
     const TypeMatcher<ReplayAware>(): const _ReplayAwareEncoder(),
-    const TypeMatcher<Encoding>(): _EncodingCodec.kEncoder,
+    const TypeMatcher<Encoding>(): EncodingCodec.serialize,
     const TypeMatcher<FileMode>(): const _FileModeEncoder(),
-    const TypeMatcher<FileStat>(): _FileStatCodec.kEncoder,
-    const TypeMatcher<FileSystemEntityType>(): _EntityTypeCodec.kEncoder,
-    const TypeMatcher<FileSystemEvent>(): _FileSystemEventCodec.kEncoder,
+    const TypeMatcher<FileStat>(): FileStatCodec.serialize,
+    const TypeMatcher<FileSystemEntityType>(): EntityTypeCodec.serialize,
+    const TypeMatcher<FileSystemEvent>(): FileSystemEventCodec.serialize,
   };
 
   /// Default encoder (used for types not covered in [_encoders]).
@@ -155,11 +86,13 @@ class _GenericEncoder extends Converter<dynamic, dynamic> {
   }
 }
 
-class _PassthroughConverter extends Converter<dynamic, dynamic> {
-  const _PassthroughConverter();
+/// Converter that leaves an object untouched.
+class Passthrough<T> extends Converter<T, T> {
+  /// Creates a new [Passthrough].
+  const Passthrough();
 
   @override
-  dynamic convert(dynamic input) => input;
+  T convert(T input) => input;
 }
 
 class _IterableEncoder extends Converter<Iterable<dynamic>, List<dynamic>> {
@@ -199,8 +132,10 @@ class _SymbolEncoder extends Converter<Symbol, String> {
   String convert(Symbol input) => getSymbolName(input);
 }
 
-class _DateTimeCodec extends Codec<DateTime, int> {
-  const _DateTimeCodec();
+/// A [DateTimeCodec] serializes and deserializes [DateTime] instances.
+class DateTimeCodec extends Codec<DateTime, int> {
+  /// Creates a new [DateTimeCodec].
+  const DateTimeCodec();
 
   static int _encode(DateTime input) => input?.millisecondsSinceEpoch;
 
@@ -210,41 +145,49 @@ class _DateTimeCodec extends Codec<DateTime, int> {
         : new DateTime.fromMillisecondsSinceEpoch(input);
   }
 
-  static const Converter<DateTime, int> kEncoder =
+  /// Converter that serializes [DateTime] instances.
+  static const Converter<DateTime, int> serialize =
       const _ForwardingConverter<DateTime, int>(_encode);
 
-  static const Converter<int, DateTime> kDecoder =
+  /// Converter that deserializes [DateTime] instances.
+  static const Converter<int, DateTime> deserialize =
       const _ForwardingConverter<int, DateTime>(_decode);
 
   @override
-  Converter<DateTime, int> get encoder => kEncoder;
+  Converter<DateTime, int> get encoder => serialize;
 
   @override
-  Converter<int, DateTime> get decoder => kDecoder;
+  Converter<int, DateTime> get decoder => deserialize;
 }
 
-class _UriCodec extends Codec<Uri, String> {
-  const _UriCodec();
+/// A [UriCodec] serializes and deserializes [Uri] instances.
+class UriCodec extends Codec<Uri, String> {
+  /// Creates a new [UriCodec].
+  const UriCodec();
 
   static String _encode(Uri input) => input.toString();
 
   static Uri _decode(String input) => Uri.parse(input);
 
-  static const Converter<Uri, String> kEncoder =
+  /// Converter that serializes [Uri] instances.
+  static const Converter<Uri, String> serialize =
       const _ForwardingConverter<Uri, String>(_encode);
 
-  static const Converter<String, Uri> kDecoder =
+  /// Converter that deserializes [Uri] instances.
+  static const Converter<String, Uri> deserialize =
       const _ForwardingConverter<String, Uri>(_decode);
 
   @override
-  Converter<Uri, String> get encoder => kEncoder;
+  Converter<Uri, String> get encoder => serialize;
 
   @override
-  Converter<String, Uri> get decoder => kDecoder;
+  Converter<String, Uri> get decoder => deserialize;
 }
 
-class _PathContextCodec extends Codec<path.Context, Map<String, String>> {
-  const _PathContextCodec();
+/// A [PathContextCodec] serializes and deserializes [path.Context] instances.
+class PathContextCodec extends Codec<path.Context, Map<String, String>> {
+  /// Creates a new [PathContextCodec].
+  const PathContextCodec();
 
   static Map<String, String> _encode(path.Context input) {
     return <String, String>{
@@ -264,17 +207,19 @@ class _PathContextCodec extends Codec<path.Context, Map<String, String>> {
     );
   }
 
-  static const Converter<path.Context, Map<String, String>> kEncoder =
+  /// Converter that serializes [path.Context] instances.
+  static const Converter<path.Context, Map<String, String>> serialize =
       const _ForwardingConverter<path.Context, Map<String, String>>(_encode);
 
-  static const Converter<Map<String, String>, path.Context> kDecoder =
+  /// Converter that deserializes [path.Context] instances.
+  static const Converter<Map<String, String>, path.Context> deserialize =
       const _ForwardingConverter<Map<String, String>, path.Context>(_decode);
 
   @override
-  Converter<path.Context, Map<String, String>> get encoder => kEncoder;
+  Converter<path.Context, Map<String, String>> get encoder => serialize;
 
   @override
-  Converter<Map<String, String>, path.Context> get decoder => kDecoder;
+  Converter<Map<String, String>, path.Context> get decoder => deserialize;
 }
 
 class _ResultEncoder extends Converter<ResultReference<dynamic>, Object> {
@@ -301,8 +246,10 @@ class _ReplayAwareEncoder extends Converter<ReplayAware, String> {
   String convert(ReplayAware input) => input.identifier;
 }
 
-class _EncodingCodec extends Codec<Encoding, String> {
-  const _EncodingCodec();
+/// An [EncodingCodec] serializes and deserializes [Encoding] instances.
+class EncodingCodec extends Codec<Encoding, String> {
+  /// Creates a new [EncodingCodec].
+  const EncodingCodec();
 
   static String _encode(Encoding input) => input.name;
 
@@ -315,17 +262,19 @@ class _EncodingCodec extends Codec<Encoding, String> {
     return null;
   }
 
-  static const Converter<Encoding, String> kEncoder =
+  /// Converter that serializes [Encoding] instances.
+  static const Converter<Encoding, String> serialize =
       const _ForwardingConverter<Encoding, String>(_encode);
 
-  static const Converter<String, Encoding> kDecoder =
+  /// Converter that deserializes [Encoding] instances.
+  static const Converter<String, Encoding> deserialize =
       const _ForwardingConverter<String, Encoding>(_decode);
 
   @override
-  Converter<Encoding, String> get encoder => kEncoder;
+  Converter<Encoding, String> get encoder => serialize;
 
   @override
-  Converter<String, Encoding> get decoder => kDecoder;
+  Converter<String, Encoding> get decoder => deserialize;
 }
 
 class _FileModeEncoder extends Converter<FileMode, String> {
@@ -349,15 +298,17 @@ class _FileModeEncoder extends Converter<FileMode, String> {
   }
 }
 
-class _FileStatCodec extends Codec<FileStat, Map<String, Object>> {
-  const _FileStatCodec();
+/// An [FileStatCodec] serializes and deserializes [FileStat] instances.
+class FileStatCodec extends Codec<FileStat, Map<String, Object>> {
+  /// Creates a new [FileStatCodec].
+  const FileStatCodec();
 
   static Map<String, Object> _encode(FileStat input) {
     return <String, dynamic>{
-      'changed': const _DateTimeCodec().encode(input.changed),
-      'modified': const _DateTimeCodec().encode(input.modified),
-      'accessed': const _DateTimeCodec().encode(input.accessed),
-      'type': const _EntityTypeCodec().encode(input.type),
+      'changed': const DateTimeCodec().encode(input.changed),
+      'modified': const DateTimeCodec().encode(input.modified),
+      'accessed': const DateTimeCodec().encode(input.accessed),
+      'type': const EntityTypeCodec().encode(input.type),
       'mode': input.mode,
       'size': input.size,
       'modeString': input.modeString(),
@@ -367,21 +318,26 @@ class _FileStatCodec extends Codec<FileStat, Map<String, Object>> {
   static FileStat _decode(Map<String, Object> input) =>
       new ReplayFileStat(input);
 
-  static const Converter<FileStat, Map<String, Object>> kEncoder =
+  /// Converter that serializes [FileStat] instances.
+  static const Converter<FileStat, Map<String, Object>> serialize =
       const _ForwardingConverter<FileStat, Map<String, Object>>(_encode);
 
-  static const Converter<Map<String, Object>, FileStat> kDecoder =
+  /// Converter that deserializes [FileStat] instances.
+  static const Converter<Map<String, Object>, FileStat> deserialize =
       const _ForwardingConverter<Map<String, Object>, FileStat>(_decode);
 
   @override
-  Converter<FileStat, Map<String, Object>> get encoder => kEncoder;
+  Converter<FileStat, Map<String, Object>> get encoder => serialize;
 
   @override
-  Converter<Map<String, Object>, FileStat> get decoder => kDecoder;
+  Converter<Map<String, Object>, FileStat> get decoder => deserialize;
 }
 
-class _EntityTypeCodec extends Codec<FileSystemEntityType, String> {
-  const _EntityTypeCodec();
+/// An [EntityTypeCodec] serializes and deserializes [FileSystemEntity]
+/// instances.
+class EntityTypeCodec extends Codec<FileSystemEntityType, String> {
+  /// Creates a new [EntityTypeCodec].
+  const EntityTypeCodec();
 
   static String _encode(FileSystemEntityType input) => input.toString();
 
@@ -394,22 +350,26 @@ class _EntityTypeCodec extends Codec<FileSystemEntityType, String> {
     }[input];
   }
 
-  static const Converter<FileSystemEntityType, String> kEncoder =
+  /// Converter that serializes [FileSystemEntityType] instances.
+  static const Converter<FileSystemEntityType, String> serialize =
       const _ForwardingConverter<FileSystemEntityType, String>(_encode);
 
-  static const Converter<String, FileSystemEntityType> kDecoder =
+  /// Converter that deserializes [FileSystemEntityType] instances.
+  static const Converter<String, FileSystemEntityType> deserialize =
       const _ForwardingConverter<String, FileSystemEntityType>(_decode);
 
   @override
-  Converter<FileSystemEntityType, String> get encoder => kEncoder;
+  Converter<FileSystemEntityType, String> get encoder => serialize;
 
   @override
-  Converter<String, FileSystemEntityType> get decoder => kDecoder;
+  Converter<String, FileSystemEntityType> get decoder => deserialize;
 }
 
-class _FileSystemEventCodec
-    extends Codec<FileSystemEvent, Map<String, Object>> {
-  const _FileSystemEventCodec();
+/// A [FileSystemEventCodec] serializes and deserializes [FileSystemEvent]
+/// instances.
+class FileSystemEventCodec extends Codec<FileSystemEvent, Map<String, Object>> {
+  /// Creates a new [FileSystemEventCodec].
+  const FileSystemEventCodec();
 
   static Map<String, Object> _encode(FileSystemEvent input) {
     return <String, Object>{
@@ -422,17 +382,19 @@ class _FileSystemEventCodec
   static FileSystemEvent _decode(Map<String, Object> input) =>
       new _FileSystemEvent(input);
 
-  static const Converter<FileSystemEvent, Map<String, Object>> kEncoder =
+  /// Converter that serializes [FileSystemEvent] instances.
+  static const Converter<FileSystemEvent, Map<String, Object>> serialize =
       const _ForwardingConverter<FileSystemEvent, Map<String, Object>>(_encode);
 
-  static const Converter<Map<String, Object>, FileSystemEvent> kDecoder =
+  /// Converter that deserializes [FileSystemEvent] instances.
+  static const Converter<Map<String, Object>, FileSystemEvent> deserialize =
       const _ForwardingConverter<Map<String, Object>, FileSystemEvent>(_decode);
 
   @override
-  Converter<FileSystemEvent, Map<String, Object>> get encoder => kEncoder;
+  Converter<FileSystemEvent, Map<String, Object>> get encoder => serialize;
 
   @override
-  Converter<Map<String, Object>, FileSystemEvent> get decoder => kDecoder;
+  Converter<Map<String, Object>, FileSystemEvent> get decoder => deserialize;
 }
 
 class _FileSystemEvent implements FileSystemEvent {
@@ -450,100 +412,143 @@ class _FileSystemEvent implements FileSystemEvent {
   bool get isDirectory => _data['isDirectory'];
 }
 
-class _FutureReviver<T> extends Converter<T, Future<T>> {
-  const _FutureReviver();
+/// Converts an object into a [Future] that completes with that object.
+class ToFuture<T> extends Converter<T, Future<T>> {
+  /// Creates a new [ToFuture].
+  const ToFuture();
 
   @override
   Future<T> convert(T input) async => input;
 }
 
-class _DirectoryReviver extends Converter<String, Directory> {
-  final ReplayFileSystemImpl fileSystem;
-  const _DirectoryReviver(this.fileSystem);
+/// Converts an object into a single-element [List] containing that object.
+class Listify<T> extends Converter<T, List<T>> {
+  /// Creates a new [Listify].
+  const Listify();
 
   @override
-  Directory convert(String input) => new ReplayDirectory(fileSystem, input);
+  List<T> convert(T input) => <T>[input];
 }
 
-class _FileReviver extends Converter<String, File> {
-  final ReplayFileSystemImpl fileSystem;
-  const _FileReviver(this.fileSystem);
+/// Revives a [Directory] entity reference into a [ReplayDirectory].
+class ReviveDirectory extends Converter<String, Directory> {
+  final ReplayFileSystemImpl _fileSystem;
+
+  /// Creates a new [ReviveDirectory].
+  const ReviveDirectory(this._fileSystem);
 
   @override
-  File convert(String input) => new ReplayFile(fileSystem, input);
+  Directory convert(String input) => new ReplayDirectory(_fileSystem, input);
 }
 
-class _LinkReviver extends Converter<String, Link> {
-  final ReplayFileSystemImpl fileSystem;
-  const _LinkReviver(this.fileSystem);
+/// Revives a [File] entity reference into a [ReplayFile].
+class ReviveFile extends Converter<String, File> {
+  final ReplayFileSystemImpl _fileSystem;
+
+  /// Creates a new [ReviveFile].
+  const ReviveFile(this._fileSystem);
 
   @override
-  Link convert(String input) => new ReplayLink(fileSystem, input);
+  File convert(String input) => new ReplayFile(_fileSystem, input);
 }
 
-class _FileSystemEntityReviver extends Converter<String, FileSystemEntity> {
-  final ReplayFileSystemImpl fileSystem;
-  const _FileSystemEntityReviver(this.fileSystem);
+/// Revives a [Link] entity reference into a [ReplayLink].
+class ReviveLink extends Converter<String, Link> {
+  final ReplayFileSystemImpl _fileSystem;
+
+  /// Creates a new [ReviveLink].
+  const ReviveLink(this._fileSystem);
+
+  @override
+  Link convert(String input) => new ReplayLink(_fileSystem, input);
+}
+
+/// Revives a [FileSystemEntity] entity reference into a [ReplayDirectory],
+/// [ReplayFile], or a [ReplayLink] depending on the identifier of the entity
+/// reference.
+class ReviveFileSystemEntity extends Converter<String, FileSystemEntity> {
+  final ReplayFileSystemImpl _fileSystem;
+
+  /// Creates a new [ReviveFileSystemEntity].
+  const ReviveFileSystemEntity(this._fileSystem);
 
   @override
   FileSystemEntity convert(String input) {
     if (input.contains('Directory')) {
-      return new ReplayDirectory(fileSystem, input);
+      return new ReplayDirectory(_fileSystem, input);
     } else if (input.contains('File')) {
-      return new ReplayFile(fileSystem, input);
+      return new ReplayFile(_fileSystem, input);
     } else {
-      return new ReplayLink(fileSystem, input);
+      return new ReplayLink(_fileSystem, input);
     }
   }
 }
 
-class _RandomAccessFileReviver extends Converter<String, RandomAccessFile> {
-  final ReplayFileSystemImpl fileSystem;
-  const _RandomAccessFileReviver(this.fileSystem);
+/// Revives a [RandomAccessFile] entity reference into a
+/// [ReplayRandomAccessFile].
+class ReviveRandomAccessFile extends Converter<String, RandomAccessFile> {
+  final ReplayFileSystemImpl _fileSystem;
+
+  /// Creates a new [ReviveRandomAccessFile] that will derive its behavior
+  /// from the specified file system's recording.
+  const ReviveRandomAccessFile(this._fileSystem);
 
   @override
   RandomAccessFile convert(String input) =>
-      new ReplayRandomAccessFile(fileSystem, input);
+      new ReplayRandomAccessFile(_fileSystem, input);
 }
 
-class _IOSinkReviver extends Converter<String, IOSink> {
-  final ReplayFileSystemImpl fileSystem;
-  const _IOSinkReviver(this.fileSystem);
+/// Revives an [IOSink] entity reference into a [ReplayIOSink].
+class ReviveIOSink extends Converter<String, IOSink> {
+  final ReplayFileSystemImpl _fileSystem;
+
+  /// Creates a new [ReviveIOSink] that will derive its behavior from the
+  /// specified file system's recording.
+  const ReviveIOSink(this._fileSystem);
 
   @override
-  IOSink convert(String input) => new ReplayIOSink(fileSystem, input);
+  IOSink convert(String input) => new ReplayIOSink(_fileSystem, input);
 }
 
-class _ListReviver extends Converter<Iterable<dynamic>, List<dynamic>> {
-  final Converter<dynamic, dynamic> elementReviver;
+/// Converts all elements of a [List], returning a new [List] of converted
+/// elements.
+class ConvertElements<S, T> extends Converter<List<S>, List<T>> {
+  final Converter<S, T> _delegate;
 
-  const _ListReviver(this.elementReviver);
+  /// Creates a new [ConvertElements] that will use the specified
+  /// [elementConverter] to convert the elements of an [Iterable].
+  const ConvertElements(Converter<S, T> elementConverter)
+      : _delegate = elementConverter;
 
   @override
-  List<dynamic> convert(Iterable<dynamic> input) =>
-      input.map(elementReviver.convert).toList();
+  List<T> convert(List<S> input) => input.map(_delegate.convert).toList();
 }
 
-class _StreamReviver extends Converter<List<dynamic>, Stream<dynamic>> {
-  const _StreamReviver();
+/// Converts a [List] of elements into a [Stream] of the same elements.
+class ToStream<T> extends Converter<List<T>, Stream<T>> {
+  /// Creates a new [ToStream].
+  const ToStream();
 
   @override
-  Stream<dynamic> convert(List<dynamic> input) {
-    return new Stream<dynamic>.fromIterable(input);
-  }
+  Stream<T> convert(List<T> input) => new Stream<T>.fromIterable(input);
 }
 
-class _BlobReviver extends Converter<String, List<int>> {
-  final ReplayFileSystemImpl fileSystem;
-  const _BlobReviver(this.fileSystem);
+/// Converts a blob reference (serialized as a [String] of the form
+/// `!<filename>`) into a byte list.
+class BlobToBytes extends Converter<String, List<int>> {
+  final ReplayFileSystemImpl _fileSystem;
+
+  /// Creates a new [BlobToBytes] that will use the specified file system's
+  /// recording to load the blob.
+  const BlobToBytes(this._fileSystem);
 
   @override
   List<int> convert(String input) {
     assert(input.startsWith('!'));
     String basename = input.substring(1);
-    String dirname = fileSystem.recording.path;
-    String path = fileSystem.recording.fileSystem.path.join(dirname, basename);
-    File file = fileSystem.recording.fileSystem.file(path);
+    String dirname = _fileSystem.recording.path;
+    String path = _fileSystem.recording.fileSystem.path.join(dirname, basename);
+    File file = _fileSystem.recording.fileSystem.file(path);
     return file.readAsBytesSync();
   }
 }
