@@ -6,6 +6,7 @@ import 'dart:convert';
 
 import 'package:file/file.dart';
 
+import 'codecs.dart';
 import 'replay_file_system.dart';
 import 'replay_file_system_entity.dart';
 
@@ -15,14 +16,24 @@ class ReplayDirectory extends ReplayFileSystemEntity implements Directory {
   /// Creates a new `ReplayDirectory`.
   ReplayDirectory(ReplayFileSystemImpl fileSystem, String identifier)
       : super(fileSystem, identifier) {
-    // TODO(tvolkert): fill in resurrectors
+    Converter<dynamic, dynamic> convertThis = directoryReviver(fileSystem);
+    Converter<dynamic, dynamic> convertFutureThis =
+        convertThis.fuse(kFutureReviver);
+
     methods.addAll(<Symbol, Converter<dynamic, dynamic>>{
-      #create: null,
-      #createSync: null,
-      #createTemp: null,
-      #createTempSync: null,
-      #list: null,
-      #listSync: null,
+      #rename: convertFutureThis,
+      #renameSync: convertThis,
+      #delete: convertFutureThis,
+      #create: convertFutureThis,
+      #createSync: kPassthrough,
+      #createTemp: convertFutureThis,
+      #createTempSync: convertThis,
+      #list: listReviver(entityReviver(fileSystem)).fuse(kStreamReviver),
+      #listSync: listReviver(entityReviver(fileSystem)),
+    });
+
+    properties.addAll(<Symbol, Converter<dynamic, dynamic>>{
+      #absolute: convertThis,
     });
   }
 }

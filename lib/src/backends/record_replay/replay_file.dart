@@ -6,6 +6,7 @@ import 'dart:convert';
 
 import 'package:file/file.dart';
 
+import 'codecs.dart';
 import 'replay_file_system.dart';
 import 'replay_file_system_entity.dart';
 
@@ -15,30 +16,40 @@ class ReplayFile extends ReplayFileSystemEntity implements File {
   /// Creates a new `ReplayFile`.
   ReplayFile(ReplayFileSystemImpl fileSystem, String identifier)
       : super(fileSystem, identifier) {
-    // TODO(tvolkert): fill in resurrectors
+    Converter<dynamic, dynamic> convertThis = fileReviver(fileSystem);
+    Converter<dynamic, dynamic> convertFutureThis =
+        convertThis.fuse(kFutureReviver);
+
     methods.addAll(<Symbol, Converter<dynamic, dynamic>>{
-      #create: null,
-      #createSync: null,
-      #copy: null,
-      #copySync: null,
-      #length: null,
-      #lengthSync: null,
-      #lastModified: null,
-      #lastModifiedSync: null,
-      #open: null,
-      #openSync: null,
-      #openRead: null,
-      #openWrite: null,
-      #readAsBytes: null,
-      #readAsBytesSync: null,
-      #readAsString: null,
-      #readAsStringSync: null,
-      #readAsLines: null,
-      #readAsLinesSync: null,
-      #writeAsBytes: null,
-      #writeAsBytesSync: null,
-      #writeAsString: null,
-      #writeAsStringSync: null,
+      #rename: convertFutureThis,
+      #renameSync: convertThis,
+      #delete: convertFutureThis,
+      #create: convertFutureThis,
+      #createSync: kPassthrough,
+      #copy: convertFutureThis,
+      #copySync: convertThis,
+      #length: kFutureReviver,
+      #lengthSync: kPassthrough,
+      #lastModified: kDateTimeReviver.fuse(kFutureReviver),
+      #lastModifiedSync: kDateTimeReviver,
+      #open: randomAccessFileReviver(fileSystem).fuse(kFutureReviver),
+      #openSync: randomAccessFileReviver(fileSystem),
+      #openRead: kStreamReviver,
+      #openWrite: ioSinkReviver(fileSystem),
+      #readAsBytes: blobReviver(fileSystem).fuse(kFutureReviver),
+      #readAsBytesSync: blobReviver(fileSystem),
+      #readAsString: kFutureReviver,
+      #readAsStringSync: kPassthrough,
+      #readAsLines: kFutureReviver,
+      #readAsLinesSync: kPassthrough,
+      #writeAsBytes: convertFutureThis,
+      #writeAsBytesSync: kPassthrough,
+      #writeAsString: convertFutureThis,
+      #writeAsStringSync: kPassthrough,
+    });
+
+    properties.addAll(<Symbol, Converter<dynamic, dynamic>>{
+      #absolute: convertThis,
     });
   }
 }

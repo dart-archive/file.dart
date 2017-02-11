@@ -17,30 +17,24 @@ abstract class ReplayFileSystemEntity extends Object
     implements FileSystemEntity {
   /// Creates a new `ReplayFileSystemEntity`.
   ReplayFileSystemEntity(this.fileSystem, this.identifier) {
-    // TODO(tvolkert): fill in resurrectors
     methods.addAll(<Symbol, Converter<dynamic, dynamic>>{
-      #exists: null,
-      #existsSync: null,
-      #rename: null,
-      #renameSync: null,
-      #resolveSymbolicLinks: null,
-      #resolveSymbolicLinksSync: null,
-      #stat: null,
-      #statSync: null,
-      #delete: null,
-      #deleteSync: null,
-      #watch: null,
+      #exists: kPassthrough.fuse(kFutureReviver),
+      #existsSync: kPassthrough,
+      #resolveSymbolicLinks: kPassthrough.fuse(kFutureReviver),
+      #resolveSymbolicLinksSync: kPassthrough,
+      #stat: kFileStatReviver.fuse(kFutureReviver),
+      #statSync: kFileStatReviver,
+      #deleteSync: kPassthrough,
+      #watch: listReviver(kFileSystemEventReviver).fuse(kStreamReviver),
     });
 
-    // TODO(tvolkert): fill in resurrectors
     properties.addAll(<Symbol, Converter<dynamic, dynamic>>{
       #path: kPassthrough,
-      #uri: null,
-      #isAbsolute: null,
-      #absolute: null,
-      #parent: null,
-      #basename: null,
-      #dirname: null,
+      #uri: kUriReviver,
+      #isAbsolute: kPassthrough,
+      #parent: directoryReviver(fileSystem),
+      #basename: kPassthrough,
+      #dirname: kPassthrough,
     });
   }
 

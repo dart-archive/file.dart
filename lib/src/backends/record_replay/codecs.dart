@@ -4,6 +4,7 @@
 
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io' show SYSTEM_ENCODING;
 
 import 'package:file/file.dart';
 import 'package:path/path.dart' as path;
@@ -14,7 +15,9 @@ import 'replay_directory.dart';
 import 'replay_file.dart';
 import 'replay_file_stat.dart';
 import 'replay_file_system.dart';
+import 'replay_io_sink.dart';
 import 'replay_link.dart';
+import 'replay_random_access_file.dart';
 import 'result_reference.dart';
 
 /// Converter that leaves object untouched.
@@ -22,7 +25,10 @@ const Converter<dynamic, dynamic> kPassthrough = const _PassthroughConverter();
 
 /// Converter that will turn an object into a [Future] of that object.
 const Converter<dynamic, dynamic> kFutureReviver =
-    const _FutureDecoder<dynamic>();
+    const _FutureReviver<dynamic>();
+
+/// Converter that will convert an [Iterable] into a [Stream].
+Converter<dynamic, dynamic> kStreamReviver = const _StreamReviver();
 
 /// Converter that will deserialize a [DateTime].
 const Converter<dynamic, dynamic> kDateTimeReviver = _DateTimeCodec.kDecoder;
@@ -38,17 +44,50 @@ const Converter<dynamic, dynamic> kEntityTypeReviver =
 const Converter<dynamic, dynamic> kPathContextReviver =
     _PathContextCodec.kDecoder;
 
+/// Converter that will deserialize a [Uri].
+const Converter<dynamic, dynamic> kUriReviver = _UriCodec.kDecoder;
+
+/// Converter that will deserialize a [Encoding].
+const Converter<dynamic, dynamic> kEncodingReviver = _EncodingCodec.kDecoder;
+
+/// Converter that will deserialize a [FileSystemEvent].
+const Converter<dynamic, dynamic> kFileSystemEventReviver =
+    _FileSystemEventCodec.kDecoder;
+
+/// Converter that will deserialize each element of a [List] by delegating to
+/// the specified [elementReviver].
+Converter<dynamic, dynamic> listReviver(
+        Converter<dynamic, dynamic> elementReviver) =>
+    new _ListReviver(elementReviver);
+
+/// Converter that will deserialize a blob file reference into the file's bytes.
+Converter<dynamic, dynamic> blobReviver(ReplayFileSystemImpl fileSystem) =>
+    new _BlobReviver(fileSystem);
+
 /// Converter that will deserialize a [ReplayDirectory].
 Converter<dynamic, dynamic> directoryReviver(ReplayFileSystemImpl fileSystem) =>
-    new _DirectoryDecoder(fileSystem);
+    new _DirectoryReviver(fileSystem);
 
 /// Converter that will deserialize a [ReplayFile].
 Converter<dynamic, dynamic> fileReviver(ReplayFileSystemImpl fileSystem) =>
-    new _FileDecoder(fileSystem);
+    new _FileReviver(fileSystem);
 
 /// Converter that will deserialize a [ReplayLink].
 Converter<dynamic, dynamic> linkReviver(ReplayFileSystemImpl fileSystem) =>
-    new _LinkDecoder(fileSystem);
+    new _LinkReviver(fileSystem);
+
+/// Converter that will deserialize an arbitrary [FileSystemEntity].
+Converter<dynamic, dynamic> entityReviver(ReplayFileSystemImpl fileSystem) =>
+    new _FileSystemEntityReviver(fileSystem);
+
+/// Converter that will deserialize a [ReplayRandomAccessFile].
+Converter<dynamic, dynamic> randomAccessFileReviver(
+        ReplayFileSystemImpl fileSystem) =>
+    new _RandomAccessFileReviver(fileSystem);
+
+/// Converter that will deserialize a [ReplayRandomAccessFile].
+Converter<dynamic, dynamic> ioSinkReviver(ReplayFileSystemImpl fileSystem) =>
+    new _IOSinkReviver(fileSystem);
 
 /// Encodes an arbitrary [object] into a JSON-ready representation (a number,
 /// boolean, string, null, list, or map).
@@ -87,16 +126,16 @@ class _GenericEncoder extends Converter<dynamic, dynamic> {
     const TypeMatcher<Map<dynamic, dynamic>>(): const _MapEncoder(),
     const TypeMatcher<Symbol>(): const _SymbolEncoder(),
     const TypeMatcher<DateTime>(): _DateTimeCodec.kEncoder,
-    const TypeMatcher<Uri>(): const _ToStringEncoder(),
+    const TypeMatcher<Uri>(): _UriCodec.kEncoder,
     const TypeMatcher<path.Context>(): _PathContextCodec.kEncoder,
     const TypeMatcher<ResultReference<dynamic>>(): const _ResultEncoder(),
     const TypeMatcher<LiveInvocationEvent<dynamic>>(): const _EventEncoder(),
     const TypeMatcher<ReplayAware>(): const _ReplayAwareEncoder(),
-    const TypeMatcher<Encoding>(): const _EncodingEncoder(),
+    const TypeMatcher<Encoding>(): _EncodingCodec.kEncoder,
     const TypeMatcher<FileMode>(): const _FileModeEncoder(),
     const TypeMatcher<FileStat>(): _FileStatCodec.kEncoder,
     const TypeMatcher<FileSystemEntityType>(): _EntityTypeCodec.kEncoder,
-    const TypeMatcher<FileSystemEvent>(): const _FileSystemEventEncoder(),
+    const TypeMatcher<FileSystemEvent>(): _FileSystemEventCodec.kEncoder,
   };
 
   /// Default encoder (used for types not covered in [_encoders]).
@@ -163,10 +202,13 @@ class _SymbolEncoder extends Converter<Symbol, String> {
 class _DateTimeCodec extends Codec<DateTime, int> {
   const _DateTimeCodec();
 
-  static int _encode(DateTime input) => input.millisecondsSinceEpoch;
+  static int _encode(DateTime input) => input?.millisecondsSinceEpoch;
 
-  static DateTime _decode(int input) =>
-      new DateTime.fromMillisecondsSinceEpoch(input);
+  static DateTime _decode(int input) {
+    return input == null
+        ? null
+        : new DateTime.fromMillisecondsSinceEpoch(input);
+  }
 
   static const Converter<DateTime, int> kEncoder =
       const _ForwardingConverter<DateTime, int>(_encode);
@@ -181,11 +223,24 @@ class _DateTimeCodec extends Codec<DateTime, int> {
   Converter<int, DateTime> get decoder => kDecoder;
 }
 
-class _ToStringEncoder extends Converter<Object, String> {
-  const _ToStringEncoder();
+class _UriCodec extends Codec<Uri, String> {
+  const _UriCodec();
+
+  static String _encode(Uri input) => input.toString();
+
+  static Uri _decode(String input) => Uri.parse(input);
+
+  static const Converter<Uri, String> kEncoder =
+      const _ForwardingConverter<Uri, String>(_encode);
+
+  static const Converter<String, Uri> kDecoder =
+      const _ForwardingConverter<String, Uri>(_decode);
 
   @override
-  String convert(Object input) => input.toString();
+  Converter<Uri, String> get encoder => kEncoder;
+
+  @override
+  Converter<String, Uri> get decoder => kDecoder;
 }
 
 class _PathContextCodec extends Codec<path.Context, Map<String, String>> {
@@ -246,11 +301,31 @@ class _ReplayAwareEncoder extends Converter<ReplayAware, String> {
   String convert(ReplayAware input) => input.identifier;
 }
 
-class _EncodingEncoder extends Converter<Encoding, String> {
-  const _EncodingEncoder();
+class _EncodingCodec extends Codec<Encoding, String> {
+  const _EncodingCodec();
+
+  static String _encode(Encoding input) => input.name;
+
+  static Encoding _decode(String input) {
+    if (input == 'system') {
+      return SYSTEM_ENCODING;
+    } else if (input != null) {
+      return Encoding.getByName(input);
+    }
+    return null;
+  }
+
+  static const Converter<Encoding, String> kEncoder =
+      const _ForwardingConverter<Encoding, String>(_encode);
+
+  static const Converter<String, Encoding> kDecoder =
+      const _ForwardingConverter<String, Encoding>(_decode);
 
   @override
-  String convert(Encoding input) => input.name;
+  Converter<Encoding, String> get encoder => kEncoder;
+
+  @override
+  Converter<String, Encoding> get decoder => kDecoder;
 }
 
 class _FileModeEncoder extends Converter<FileMode, String> {
@@ -332,46 +407,143 @@ class _EntityTypeCodec extends Codec<FileSystemEntityType, String> {
   Converter<String, FileSystemEntityType> get decoder => kDecoder;
 }
 
-class _FileSystemEventEncoder
-    extends Converter<FileSystemEvent, Map<String, Object>> {
-  const _FileSystemEventEncoder();
+class _FileSystemEventCodec
+    extends Codec<FileSystemEvent, Map<String, Object>> {
+  const _FileSystemEventCodec();
 
-  @override
-  Map<String, Object> convert(FileSystemEvent input) {
+  static Map<String, Object> _encode(FileSystemEvent input) {
     return <String, Object>{
       'type': input.type,
       'path': input.path,
+      'isDirectory': input.isDirectory,
     };
   }
+
+  static FileSystemEvent _decode(Map<String, Object> input) =>
+      new _FileSystemEvent(input);
+
+  static const Converter<FileSystemEvent, Map<String, Object>> kEncoder =
+      const _ForwardingConverter<FileSystemEvent, Map<String, Object>>(_encode);
+
+  static const Converter<Map<String, Object>, FileSystemEvent> kDecoder =
+      const _ForwardingConverter<Map<String, Object>, FileSystemEvent>(_decode);
+
+  @override
+  Converter<FileSystemEvent, Map<String, Object>> get encoder => kEncoder;
+
+  @override
+  Converter<Map<String, Object>, FileSystemEvent> get decoder => kDecoder;
 }
 
-class _FutureDecoder<T> extends Converter<T, Future<T>> {
-  const _FutureDecoder();
+class _FileSystemEvent implements FileSystemEvent {
+  final Map<String, Object> _data;
+
+  const _FileSystemEvent(this._data);
+
+  @override
+  int get type => _data['type'];
+
+  @override
+  String get path => _data['path'];
+
+  @override
+  bool get isDirectory => _data['isDirectory'];
+}
+
+class _FutureReviver<T> extends Converter<T, Future<T>> {
+  const _FutureReviver();
 
   @override
   Future<T> convert(T input) async => input;
 }
 
-class _DirectoryDecoder extends Converter<String, Directory> {
+class _DirectoryReviver extends Converter<String, Directory> {
   final ReplayFileSystemImpl fileSystem;
-  const _DirectoryDecoder(this.fileSystem);
+  const _DirectoryReviver(this.fileSystem);
 
   @override
   Directory convert(String input) => new ReplayDirectory(fileSystem, input);
 }
 
-class _FileDecoder extends Converter<String, File> {
+class _FileReviver extends Converter<String, File> {
   final ReplayFileSystemImpl fileSystem;
-  const _FileDecoder(this.fileSystem);
+  const _FileReviver(this.fileSystem);
 
   @override
   File convert(String input) => new ReplayFile(fileSystem, input);
 }
 
-class _LinkDecoder extends Converter<String, Link> {
+class _LinkReviver extends Converter<String, Link> {
   final ReplayFileSystemImpl fileSystem;
-  const _LinkDecoder(this.fileSystem);
+  const _LinkReviver(this.fileSystem);
 
   @override
   Link convert(String input) => new ReplayLink(fileSystem, input);
+}
+
+class _FileSystemEntityReviver extends Converter<String, FileSystemEntity> {
+  final ReplayFileSystemImpl fileSystem;
+  const _FileSystemEntityReviver(this.fileSystem);
+
+  @override
+  FileSystemEntity convert(String input) {
+    if (input.contains('Directory')) {
+      return new ReplayDirectory(fileSystem, input);
+    } else if (input.contains('File')) {
+      return new ReplayFile(fileSystem, input);
+    } else {
+      return new ReplayLink(fileSystem, input);
+    }
+  }
+}
+
+class _RandomAccessFileReviver extends Converter<String, RandomAccessFile> {
+  final ReplayFileSystemImpl fileSystem;
+  const _RandomAccessFileReviver(this.fileSystem);
+
+  @override
+  RandomAccessFile convert(String input) =>
+      new ReplayRandomAccessFile(fileSystem, input);
+}
+
+class _IOSinkReviver extends Converter<String, IOSink> {
+  final ReplayFileSystemImpl fileSystem;
+  const _IOSinkReviver(this.fileSystem);
+
+  @override
+  IOSink convert(String input) => new ReplayIOSink(fileSystem, input);
+}
+
+class _ListReviver extends Converter<Iterable<dynamic>, List<dynamic>> {
+  final Converter<dynamic, dynamic> elementReviver;
+
+  const _ListReviver(this.elementReviver);
+
+  @override
+  List<dynamic> convert(Iterable<dynamic> input) =>
+      input.map(elementReviver.convert).toList();
+}
+
+class _StreamReviver extends Converter<List<dynamic>, Stream<dynamic>> {
+  const _StreamReviver();
+
+  @override
+  Stream<dynamic> convert(List<dynamic> input) {
+    return new Stream<dynamic>.fromIterable(input);
+  }
+}
+
+class _BlobReviver extends Converter<String, List<int>> {
+  final ReplayFileSystemImpl fileSystem;
+  const _BlobReviver(this.fileSystem);
+
+  @override
+  List<int> convert(String input) {
+    assert(input.startsWith('!'));
+    String basename = input.substring(1);
+    String dirname = fileSystem.recording.path;
+    String path = fileSystem.recording.fileSystem.path.join(dirname, basename);
+    File file = fileSystem.recording.fileSystem.file(path);
+    return file.readAsBytesSync();
+  }
 }
