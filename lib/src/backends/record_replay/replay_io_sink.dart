@@ -2,6 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:file/file.dart';
@@ -41,4 +42,14 @@ class ReplayIOSink extends Object with ReplayProxyMixin implements IOSink {
 
   @override
   List<Map<String, dynamic>> get manifest => _fileSystem.manifest;
+
+  @override
+  dynamic onResult(Invocation invocation, dynamic result) {
+    if (invocation.memberName == #addStream) {
+      Stream<List<int>> stream = invocation.positionalArguments.first;
+      Future<dynamic> future = result;
+      return future.then((_) => stream.drain());
+    }
+    return result;
+  }
 }
