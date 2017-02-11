@@ -90,7 +90,19 @@ abstract class ReplayProxyMixin implements ProxyObject, ReplayAware {
   /// receive a [NoMatchingInvocationError].
   ///
   /// This manifest exists as `MANIFEST.txt` in a recording directory.
+  @protected
   List<Map<String, dynamic>> get manifest;
+
+  /// Protected method for subclasses to be notified when an invocation has
+  /// been successfully replayed, and the result is about to be returned to
+  /// the caller.
+  ///
+  /// Returns the value that is to be returned to the caller. The default
+  /// implementation returns [result] (replayed from the recording); subclasses
+  /// may override this method to alter the result that's returned to the
+  /// caller.
+  @protected
+  dynamic onResult(Invocation invocation, dynamic result) => result;
 
   @override
   dynamic noSuchMethod(Invocation invocation) {
@@ -114,7 +126,9 @@ abstract class ReplayProxyMixin implements ProxyObject, ReplayAware {
     }
     entry[kManifestOrdinalKey] = _nextOrdinal++;
 
-    return reviver.convert(entry[kManifestResultKey]);
+    dynamic result = reviver.convert(entry[kManifestResultKey]);
+    result = onResult(invocation, result);
+    return result;
   }
 
   /// Finds the next available invocation event in the [manifest] that matches

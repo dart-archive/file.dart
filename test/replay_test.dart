@@ -40,10 +40,7 @@ void main() {
       replay: replay,
       skip: <String>[
         // ReplayFileSystem does not yet replay exceptions
-        '.*(disallows|throws).*',
-
-        // TODO(tvolkert): Fix breakage, and re-enable
-        'File > openWrite > ioSink > addStream',
+        '.*(disallows|throws|blocks).*',
 
         'File > open', // Not yet implemented in MemoryFileSystem
       ],
