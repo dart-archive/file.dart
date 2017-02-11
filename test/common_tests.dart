@@ -10,7 +10,7 @@ import 'dart:io' as io;
 import 'package:file/file.dart';
 import 'package:file/testing.dart';
 import 'package:test/test.dart';
-import 'package:test/test.dart' as testpkg show group, test, setUp;
+import 'package:test/test.dart' as testpkg show group, setUp, tearDown, test;
 
 /// Callback used in [runCommonTests] to produce the root folder in which all
 /// file system entities will be created.
@@ -21,8 +21,9 @@ typedef String RootPathGenerator();
 /// [FileSystem].
 typedef dynamic FileSystemGenerator();
 
-/// A function to run before tests (passed to [setUp]).
-typedef dynamic SetUpCallback();
+/// A function to run before tests (passed to [setUp]) or after tests
+/// (passed to [tearDown]).
+typedef dynamic SetUpTearDown();
 
 /// Runs a suite of tests common to all file system implementations. All file
 /// system implementations should run *at least* these tests to ensure
@@ -54,7 +55,8 @@ void runCommonTests(
 
   group('common', () {
     FileSystemGenerator createFs;
-    List<SetUpCallback> setUps;
+    List<SetUpTearDown> setUps;
+    List<SetUpTearDown> tearDowns;
     FileSystem fs;
     String root;
 
@@ -72,13 +74,22 @@ void runCommonTests(
 
     testpkg.setUp(() async {
       createFs = createFileSystem;
-      setUps = <SetUpCallback>[];
+      setUps = <SetUpTearDown>[];
+      tearDowns = <SetUpTearDown>[];
       fs = null;
       root = null;
     });
 
     void setUp(callback()) {
       testpkg.setUp(replay == null ? callback : () => setUps.add(callback));
+    }
+
+    void tearDown(callback()) {
+      if (replay == null) {
+        testpkg.tearDown(callback);
+      } else {
+        testpkg.setUp(() => tearDowns.insert(0, callback));
+      }
     }
 
     void group(String description, body()) =>
@@ -90,13 +101,22 @@ void runCommonTests(
           } else {
             group('rerun', () {
               testpkg.setUp(() async {
-                await Future.forEach(setUps, (SetUpCallback setUp) => setUp());
+                await Future.forEach(setUps, (SetUpTearDown setUp) => setUp());
                 await body();
+                for (SetUpTearDown tearDown in tearDowns) {
+                  await tearDown();
+                }
                 createFs = replay;
-                await Future.forEach(setUps, (SetUpCallback setUp) => setUp());
+                await Future.forEach(setUps, (SetUpTearDown setUp) => setUp());
               });
 
               testpkg.test(description, body);
+
+              testpkg.tearDown(() async {
+                for (SetUpTearDown tearDown in tearDowns) {
+                  await tearDown();
+                }
+              });
             });
           }
         });

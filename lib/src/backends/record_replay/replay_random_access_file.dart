@@ -2,6 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:file/file.dart';
@@ -17,44 +18,45 @@ class ReplayRandomAccessFile extends Object
     implements RandomAccessFile {
   final ReplayFileSystemImpl _fileSystem;
 
-  /// Creates a new `ReplayIOSink`.
+  /// Creates a new [ReplayRandomAccessFile].
   ReplayRandomAccessFile(this._fileSystem, this.identifier) {
-    Converter<dynamic, dynamic> convertFutureThis =
-        randomAccessFileReviver(_fileSystem).fuse(kFutureReviver);
+    ToFuture<RandomAccessFile> toFuture = const ToFuture<RandomAccessFile>();
+    Converter<String, Future<RandomAccessFile>> reviveRandomAccessFileAsFuture =
+        new ReviveRandomAccessFile(_fileSystem).fuse(toFuture);
 
     methods.addAll(<Symbol, Converter<dynamic, dynamic>>{
-      #close: convertFutureThis,
-      #closeSync: kPassthrough,
-      #readByte: kFutureReviver,
-      #readByteSync: kPassthrough,
-      #read: kFutureReviver,
-      #readSync: kPassthrough,
-      #readInto: kFutureReviver,
-      #readIntoSync: kPassthrough,
-      #writeByte: convertFutureThis,
-      #writeByteSync: kPassthrough,
-      #writeFrom: convertFutureThis,
-      #writeFromSync: kPassthrough,
-      #writeString: convertFutureThis,
-      #writeStringSync: kPassthrough,
-      #position: kFutureReviver,
-      #positionSync: kPassthrough,
-      #setPosition: convertFutureThis,
-      #setPositionSync: kPassthrough,
-      #truncate: convertFutureThis,
-      #truncateSync: kPassthrough,
-      #length: kFutureReviver,
-      #lengthSync: kPassthrough,
-      #flush: convertFutureThis,
-      #flushSync: kPassthrough,
-      #lock: convertFutureThis,
-      #lockSync: kPassthrough,
-      #unlock: convertFutureThis,
-      #unlockSync: kPassthrough,
+      #close: reviveRandomAccessFileAsFuture,
+      #closeSync: const Passthrough<Null>(),
+      #readByte: const ToFuture<int>(),
+      #readByteSync: const Passthrough<int>(),
+      #read: const ToFuture<List<int>>(),
+      #readSync: const Passthrough<List<int>>(),
+      #readInto: const ToFuture<int>(),
+      #readIntoSync: const Passthrough<int>(),
+      #writeByte: reviveRandomAccessFileAsFuture,
+      #writeByteSync: const Passthrough<int>(),
+      #writeFrom: reviveRandomAccessFileAsFuture,
+      #writeFromSync: const Passthrough<Null>(),
+      #writeString: reviveRandomAccessFileAsFuture,
+      #writeStringSync: const Passthrough<Null>(),
+      #position: const ToFuture<int>(),
+      #positionSync: const Passthrough<int>(),
+      #setPosition: reviveRandomAccessFileAsFuture,
+      #setPositionSync: const Passthrough<Null>(),
+      #truncate: reviveRandomAccessFileAsFuture,
+      #truncateSync: const Passthrough<Null>(),
+      #length: const ToFuture<int>(),
+      #lengthSync: const Passthrough<int>(),
+      #flush: reviveRandomAccessFileAsFuture,
+      #flushSync: const Passthrough<Null>(),
+      #lock: reviveRandomAccessFileAsFuture,
+      #lockSync: const Passthrough<Null>(),
+      #unlock: reviveRandomAccessFileAsFuture,
+      #unlockSync: const Passthrough<Null>(),
     });
 
     properties.addAll(<Symbol, Converter<dynamic, dynamic>>{
-      #path: kPassthrough,
+      #path: const Passthrough<String>(),
     });
   }
 

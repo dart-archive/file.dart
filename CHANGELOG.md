@@ -1,4 +1,4 @@
-#### 1.0.2
+#### 2.0.0
 
 * Improved `toString` implementations in file system entity classes
 * Added `ForwardingFileSystem` and associated forwarding classes to the
