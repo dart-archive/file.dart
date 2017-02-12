@@ -39,8 +39,11 @@ void main() {
       () => recordingFileSystem,
       replay: replay,
       skip: <String>[
-        // ReplayFileSystem does not yet replay exceptions
-        '.*(disallows|throws|blocks).*',
+        // ReplayFileSystem does not yet support futures & streams that throw
+        'File > openRead > throws.*',
+        'File > openWrite > throws.*',
+        'File > openWrite > ioSink > throwsIfAddError',
+        'File > openWrite > ioSink > addStream > blocks.*',
 
         'File > open', // Not yet implemented in MemoryFileSystem
       ],

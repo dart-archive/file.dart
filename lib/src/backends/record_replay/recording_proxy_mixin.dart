@@ -113,10 +113,30 @@ abstract class RecordingProxyMixin implements ProxyObject, ReplayAware {
           : super.noSuchMethod(invocation);
     }
 
-    // Invoke the configured delegate method, wrapping Future and Stream
-    // results so that we record their values as they become available.
-    // TODO(tvolkert): record exceptions.
-    dynamic value = Function.apply(method, args, namedArgs);
+    InvocationEvent<dynamic> createEvent({dynamic result, dynamic error}) {
+      if (invocation.isGetter) {
+        return new LivePropertyGetEvent<dynamic>(
+            this, name, result, error, time);
+      } else if (invocation.isSetter) {
+        return new LivePropertySetEvent<dynamic>(
+            this, name, args[0], error, time);
+      } else {
+        return new LiveMethodEvent<dynamic>(
+            this, name, args, namedArgs, result, error, time);
+      }
+    }
+
+    // Invoke the configured delegate method, recording an error if one occurs.
+    dynamic value;
+    try {
+      value = Function.apply(method, args, namedArgs);
+    } catch (error) {
+      recording.add(createEvent(error: error));
+      rethrow;
+    }
+
+    // Wrap Future and Stream results so that we record their values as they
+    // become available.
     if (value is Stream) {
       value = new StreamReference<dynamic>(value);
     } else if (value is Future) {
@@ -124,19 +144,7 @@ abstract class RecordingProxyMixin implements ProxyObject, ReplayAware {
     }
 
     // Record the invocation event associated with this invocation.
-    InvocationEvent<dynamic> event;
-    if (invocation.isGetter) {
-      event = new LivePropertyGetEvent<dynamic>(this, name, value, time);
-    } else if (invocation.isSetter) {
-      // TODO(tvolkert): Remove indirection once SDK 1.22 is in stable branch
-      dynamic temp =
-          new LivePropertySetEvent<dynamic>(this, name, args[0], time);
-      event = temp;
-    } else {
-      event = new LiveMethodEvent<dynamic>(
-          this, name, args, namedArgs, value, time);
-    }
-    recording.add(event);
+    recording.add(createEvent(result: value));
 
     // Unwrap any result references before returning to the caller.
     dynamic result = value;

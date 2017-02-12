@@ -28,6 +28,14 @@ const String kManifestObjectKey = 'object';
 const String kManifestResultKey = 'result';
 
 /// The key in a serialized [InvocationEvent] map that is used to store the
+/// error that was thrown during the invocation.
+const String kManifestErrorKey = 'error';
+
+/// The key in a serialized error that is used to store the runtime type of
+/// the error that was thrown.
+const String kManifestErrorTypeKey = 'type';
+
+/// The key in a serialized [InvocationEvent] map that is used to store the
 /// timestamp of the invocation.
 const String kManifestTimestampKey = 'timestamp';
 
@@ -118,9 +126,9 @@ abstract class ReplayAware {
 bool deeplyEqual(dynamic object1, dynamic object2) {
   if (object1.runtimeType != object2.runtimeType) {
     return false;
-  } else if (object1 is List<dynamic>) {
+  } else if (object1 is List) {
     return _areListsEqual(object1, object2);
-  } else if (object1 is Map<dynamic, dynamic>) {
+  } else if (object1 is Map) {
     return _areMapsEqual(object1, object2);
   } else {
     return object1 == object2;

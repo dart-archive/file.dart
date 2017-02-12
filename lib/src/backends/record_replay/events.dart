@@ -16,9 +16,25 @@ abstract class InvocationEvent<T> {
   /// The object on which the invocation occurred. Will always be non-null.
   Object get object;
 
-  /// The return value of the invocation. This may be null (and will always be
-  /// `null` for setters).
+  /// The return value of the invocation if the invocation completed
+  /// successfully.
+  ///
+  /// This may be null (and will always be `null` for setters).
+  ///
+  /// If the invocation completed with an error, this value will be `null`,
+  /// and [error] will be set.
   T get result;
+
+  /// The error that was thrown by the invocation if the invocation completed
+  /// with an error.
+  ///
+  /// If the invocation completed successfully, this value will be `null`, and
+  /// [result] will hold the result of the invocation (which may also be
+  /// `null`).
+  ///
+  /// This field being non-null can be used as an indication that the invocation
+  /// completed with an error.
+  dynamic get error;
 
   /// The stopwatch value (in milliseconds) when the invocation occurred.
   ///
@@ -60,8 +76,8 @@ abstract class MethodEvent<T> extends InvocationEvent<T> {
 
 /// An [InvocationEvent] that's in the process of being recorded.
 abstract class LiveInvocationEvent<T> implements InvocationEvent<T> {
-  /// Creates a new `LiveInvocationEvent`.
-  LiveInvocationEvent(this.object, this._result, this.timestamp);
+  /// Creates a new [LiveInvocationEvent].
+  LiveInvocationEvent(this.object, this._result, this.error, this.timestamp);
 
   final dynamic _result;
 
@@ -77,6 +93,9 @@ abstract class LiveInvocationEvent<T> implements InvocationEvent<T> {
     }
     return result;
   }
+
+  @override
+  final dynamic error;
 
   @override
   final int timestamp;
@@ -107,6 +126,7 @@ abstract class LiveInvocationEvent<T> implements InvocationEvent<T> {
     return <String, dynamic>{
       kManifestObjectKey: encode(object),
       kManifestResultKey: encode(_result),
+      kManifestErrorKey: encode(error),
       kManifestTimestampKey: timestamp,
     };
   }
@@ -118,9 +138,10 @@ abstract class LiveInvocationEvent<T> implements InvocationEvent<T> {
 /// A [PropertyGetEvent] that's in the process of being recorded.
 class LivePropertyGetEvent<T> extends LiveInvocationEvent<T>
     implements PropertyGetEvent<T> {
-  /// Creates a new `LivePropertyGetEvent`.
-  LivePropertyGetEvent(Object object, this.property, T result, int timestamp)
-      : super(object, result, timestamp);
+  /// Creates a new [LivePropertyGetEvent].
+  LivePropertyGetEvent(
+      Object object, this.property, T result, dynamic error, int timestamp)
+      : super(object, result, error, timestamp);
 
   @override
   final Symbol property;
@@ -137,9 +158,10 @@ class LivePropertyGetEvent<T> extends LiveInvocationEvent<T>
 /// A [PropertySetEvent] that's in the process of being recorded.
 class LivePropertySetEvent<T> extends LiveInvocationEvent<Null>
     implements PropertySetEvent<T> {
-  /// Creates a new `LivePropertySetEvent`.
-  LivePropertySetEvent(Object object, this.property, this.value, int timestamp)
-      : super(object, null, timestamp);
+  /// Creates a new [LivePropertySetEvent].
+  LivePropertySetEvent(
+      Object object, this.property, this.value, dynamic error, int timestamp)
+      : super(object, null, error, timestamp);
 
   @override
   final Symbol property;
@@ -160,20 +182,21 @@ class LivePropertySetEvent<T> extends LiveInvocationEvent<Null>
 /// A [MethodEvent] that's in the process of being recorded.
 class LiveMethodEvent<T> extends LiveInvocationEvent<T>
     implements MethodEvent<T> {
-  /// Creates a new `LiveMethodEvent`.
+  /// Creates a new [LiveMethodEvent].
   LiveMethodEvent(
     Object object,
     this.method,
     List<dynamic> positionalArguments,
     Map<Symbol, dynamic> namedArguments,
     T result,
+    dynamic error,
     int timestamp,
   )
       : this.positionalArguments =
             new List<dynamic>.unmodifiable(positionalArguments),
         this.namedArguments =
             new Map<Symbol, dynamic>.unmodifiable(namedArguments),
-        super(object, result, timestamp);
+        super(object, result, error, timestamp);
 
   @override
   final Symbol method;

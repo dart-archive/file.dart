@@ -126,6 +126,10 @@ abstract class ReplayProxyMixin implements ProxyObject, ReplayAware {
     }
     entry[kManifestOrdinalKey] = _nextOrdinal++;
 
+    dynamic error = entry[kManifestErrorKey];
+    if (error != null) {
+      throw const ToError().convert(error);
+    }
     dynamic result = reviver.convert(entry[kManifestResultKey]);
     result = onResult(invocation, result);
     return result;
