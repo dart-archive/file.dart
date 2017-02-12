@@ -42,3 +42,8 @@ class NoMatchingInvocationError extends Error {
     return buf.toString();
   }
 }
+
+/// Exception thrown during replay when an invocation recorded error, but we
+/// were unable to find a type-specific converter to deserialize the recorded
+/// error into a more specific exception type.
+class InvocationException implements Exception {}

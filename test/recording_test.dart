@@ -130,6 +130,7 @@ void main() {
             'value': 'foo',
             'object': '_RecordingClass',
             'result': null,
+            'error': null,
             'timestamp': 10,
           });
           expect(manifest[1], <String, dynamic>{
@@ -137,6 +138,7 @@ void main() {
             'property': 'basicProperty',
             'object': '_RecordingClass',
             'result': 'foo',
+            'error': null,
             'timestamp': 11,
           });
           expect(manifest[2], <String, dynamic>{
@@ -146,21 +148,21 @@ void main() {
             'namedArguments': <String, dynamic>{'namedArg': 'bar'},
             'object': '_RecordingClass',
             'result': 'foo.bar',
+            'error': null,
             'timestamp': 12
           });
         });
 
-        test('doesntAwaitPendingResultsUnlessToldToDoSo', () async {
-          rc.futureMethod('foo', namedArg: 'bar'); // ignore: unawaited_futures
-          await recording.flush();
-          List<Map<String, dynamic>> manifest = _loadManifest(recording);
-          expect(manifest[0], containsPair('result', null));
+        test('awaitsPendingResultsIndefinitelyByDefault', () async {
+          rc.veryLongFutureMethod(); // ignore: unawaited_futures
+          expect(recording.flush().timeout(const Duration(milliseconds: 50)),
+              throwsTimeoutException);
         });
 
         test('succeedsIfAwaitPendingResultsThatComplete', () async {
           rc.futureMethod('foo', namedArg: 'bar'); // ignore: unawaited_futures
           await recording.flush(
-              awaitPendingResults: const Duration(seconds: 30));
+              pendingResultTimeout: const Duration(seconds: 30));
           List<Map<String, dynamic>> manifest = _loadManifest(recording);
           expect(manifest[0], containsPair('result', 'future.foo.bar'));
         });
@@ -169,7 +171,7 @@ void main() {
           rc.veryLongFutureMethod(); // ignore: unawaited_futures
           DateTime before = new DateTime.now();
           await recording.flush(
-              awaitPendingResults: const Duration(milliseconds: 250));
+              pendingResultTimeout: const Duration(milliseconds: 250));
           DateTime after = new DateTime.now();
           Duration delta = after.difference(before);
           List<Map<String, dynamic>> manifest = _loadManifest(recording);
@@ -200,6 +202,7 @@ void main() {
           'value': 'foo',
           'object': '_RecordingClass',
           'result': isNull,
+          'error': null,
           'timestamp': 10,
         });
         expect(manifest[1], <String, dynamic>{
@@ -207,6 +210,7 @@ void main() {
           'property': 'basicProperty',
           'object': '_RecordingClass',
           'result': 'foo',
+          'error': null,
           'timestamp': 11,
         });
         expect(manifest[2], <String, dynamic>{
@@ -216,6 +220,7 @@ void main() {
           'namedArguments': <String, String>{'namedArg': 'baz'},
           'object': '_RecordingClass',
           'result': 'bar.baz',
+          'error': null,
           'timestamp': 12,
         });
         expect(manifest[3], <String, dynamic>{
@@ -223,6 +228,7 @@ void main() {
           'property': 'futureProperty',
           'object': '_RecordingClass',
           'result': 'future.foo',
+          'error': null,
           'timestamp': 13,
         });
         expect(manifest[4], <String, dynamic>{
@@ -232,6 +238,7 @@ void main() {
           'namedArguments': <String, String>{'namedArg': 'quz'},
           'object': '_RecordingClass',
           'result': 'future.qux.quz',
+          'error': null,
           'timestamp': 14,
         });
         expect(manifest[5], <String, dynamic>{
@@ -241,6 +248,7 @@ void main() {
           'namedArguments': <String, String>{'namedArg': 'quuz'},
           'object': '_RecordingClass',
           'result': <String>['stream', 'quux', 'quuz'],
+          'error': null,
           'timestamp': 15,
         });
       });
@@ -920,3 +928,7 @@ class _FakeStopwatch implements Stopwatch {
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
+
+/// Successfully matches against a function that throws a [TimeoutException].
+const Matcher throwsTimeoutException =
+    const Throws(const isInstanceOf<TimeoutException>());

@@ -10,6 +10,7 @@ import 'package:file/file.dart';
 import 'package:path/path.dart' as path;
 
 import 'common.dart';
+import 'errors.dart';
 import 'events.dart';
 import 'replay_directory.dart';
 import 'replay_file.dart';
@@ -41,8 +42,8 @@ class _ForwardingConverter<S, T> extends Converter<S, T> {
 class _GenericEncoder extends Converter<dynamic, dynamic> {
   const _GenericEncoder();
 
-  /// Known encoders. Types not covered here will be encoded using
-  /// [_encodeDefault].
+  /// Known encoders. Types not covered here will be encoded as a [String]
+  /// whose value is the runtime type of the object being encoded.
   ///
   /// When encoding an object, we will walk this map in insertion order looking
   /// for a matching encoder. Thus, when there are two encoders that match an
@@ -67,22 +68,20 @@ class _GenericEncoder extends Converter<dynamic, dynamic> {
     const TypeMatcher<FileStat>(): FileStatCodec.serialize,
     const TypeMatcher<FileSystemEntityType>(): EntityTypeCodec.serialize,
     const TypeMatcher<FileSystemEvent>(): FileSystemEventCodec.serialize,
+    const TypeMatcher<FileSystemException>(): _FSExceptionCodec.serialize,
+    const TypeMatcher<OSError>(): _OSErrorCodec.serialize,
+    const TypeMatcher<ArgumentError>(): _ArgumentErrorCodec.serialize,
+    const TypeMatcher<NoSuchMethodError>(): _NoSuchMethodErrorCodec.serialize,
   };
-
-  /// Default encoder (used for types not covered in [_encoders]).
-  static String _encodeDefault(dynamic object) => object.runtimeType.toString();
 
   @override
   dynamic convert(dynamic input) {
-    Converter<dynamic, dynamic> encoder =
-        const _ForwardingConverter<dynamic, String>(_encodeDefault);
     for (TypeMatcher<dynamic> matcher in _encoders.keys) {
       if (matcher.matches(input)) {
-        encoder = _encoders[matcher];
-        break;
+        return _encoders[matcher].convert(input);
       }
     }
-    return encoder.convert(input);
+    return input.runtimeType.toString();
   }
 }
 
@@ -551,4 +550,182 @@ class BlobToBytes extends Converter<String, List<int>> {
     File file = _fileSystem.recording.fileSystem.file(path);
     return file.readAsBytesSync();
   }
+}
+
+/// Converts serialized errors into throwable objects.
+class ToError extends Converter<dynamic, dynamic> {
+  /// Creates a new [ToError].
+  const ToError();
+
+  /// Known decoders (keyed by `type`). Types not covered here will be decoded
+  /// into [InvocationException].
+  static const Map<String, Converter<Object, Object>> _decoders =
+      const <String, Converter<Object, Object>>{
+    _FSExceptionCodec.type: _FSExceptionCodec.deserialize,
+    _OSErrorCodec.type: _OSErrorCodec.deserialize,
+    _ArgumentErrorCodec.type: _ArgumentErrorCodec.deserialize,
+    _NoSuchMethodErrorCodec.type: _NoSuchMethodErrorCodec.deserialize,
+  };
+
+  @override
+  dynamic convert(dynamic input) {
+    if (input is Map) {
+      String errorType = input[kManifestErrorTypeKey];
+      if (_decoders.containsKey(errorType)) {
+        return _decoders[errorType].convert(input);
+      }
+    }
+    return new InvocationException();
+  }
+}
+
+class _FSExceptionCodec
+    extends Codec<FileSystemException, Map<String, Object>> {
+  const _FSExceptionCodec();
+
+  static const String type = 'FileSystemException';
+
+  static Map<String, Object> _encode(FileSystemException exception) {
+    return <String, Object>{
+      kManifestErrorTypeKey: type,
+      'message': exception.message,
+      'path': exception.path,
+      'osError': encode(exception.osError),
+    };
+  }
+
+  static FileSystemException _decode(Map<String, Object> input) {
+    Object osError = input['osError'];
+    return new FileSystemException(
+      input['message'],
+      input['path'],
+      osError == null ? null : const ToError().convert(osError),
+    );
+  }
+
+  static const Converter<FileSystemException, Map<String, Object>> serialize =
+      const _ForwardingConverter<FileSystemException, Map<String, Object>>(
+          _encode);
+
+  static const Converter<Map<String, Object>, FileSystemException> deserialize =
+      const _ForwardingConverter<Map<String, Object>, FileSystemException>(
+          _decode);
+
+  @override
+  Converter<FileSystemException, Map<String, Object>> get encoder => serialize;
+
+  @override
+  Converter<Map<String, Object>, FileSystemException> get decoder =>
+      deserialize;
+}
+
+class _OSErrorCodec extends Codec<OSError, Map<String, Object>> {
+  const _OSErrorCodec();
+
+  static const String type = 'OSError';
+
+  static Map<String, Object> _encode(OSError error) {
+    return <String, Object>{
+      kManifestErrorTypeKey: type,
+      'message': error.message,
+      'errorCode': error.errorCode,
+    };
+  }
+
+  static OSError _decode(Map<String, Object> input) {
+    return new OSError(input['message'], input['errorCode']);
+  }
+
+  static const Converter<OSError, Map<String, Object>> serialize =
+      const _ForwardingConverter<OSError, Map<String, Object>>(_encode);
+
+  static const Converter<Map<String, Object>, OSError> deserialize =
+      const _ForwardingConverter<Map<String, Object>, OSError>(_decode);
+
+  @override
+  Converter<OSError, Map<String, Object>> get encoder => serialize;
+
+  @override
+  Converter<Map<String, Object>, OSError> get decoder => deserialize;
+}
+
+class _ArgumentErrorCodec extends Codec<ArgumentError, Map<String, Object>> {
+  const _ArgumentErrorCodec();
+
+  static const String type = 'ArgumentError';
+
+  static Map<String, Object> _encode(ArgumentError error) {
+    return <String, Object>{
+      kManifestErrorTypeKey: type,
+      'message': encode(error.message),
+      'invalidValue': encode(error.invalidValue),
+      'name': error.name,
+    };
+  }
+
+  static ArgumentError _decode(Map<String, Object> input) {
+    dynamic message = input['message'];
+    dynamic invalidValue = input['invalidValue'];
+    String name = input['name'];
+    if (invalidValue != null) {
+      return new ArgumentError.value(invalidValue, name, message);
+    } else if (name != null) {
+      return new ArgumentError.notNull(name);
+    } else {
+      return new ArgumentError(message);
+    }
+  }
+
+  static const Converter<ArgumentError, Map<String, Object>> serialize =
+      const _ForwardingConverter<ArgumentError, Map<String, Object>>(_encode);
+
+  static const Converter<Map<String, Object>, ArgumentError> deserialize =
+      const _ForwardingConverter<Map<String, Object>, ArgumentError>(_decode);
+
+  @override
+  Converter<ArgumentError, Map<String, Object>> get encoder => serialize;
+
+  @override
+  Converter<Map<String, Object>, ArgumentError> get decoder => deserialize;
+}
+
+class _NoSuchMethodErrorCodec
+    extends Codec<NoSuchMethodError, Map<String, Object>> {
+  const _NoSuchMethodErrorCodec();
+
+  static const String type = 'NoSuchMethodError';
+
+  static Map<String, Object> _encode(NoSuchMethodError error) {
+    return <String, Object>{
+      kManifestErrorTypeKey: type,
+      'toString': error.toString(),
+    };
+  }
+
+  static NoSuchMethodError _decode(Map<String, Object> input) {
+    return new _NoSuchMethodError(input['toString']);
+  }
+
+  static const Converter<NoSuchMethodError, Map<String, Object>> serialize =
+      const _ForwardingConverter<NoSuchMethodError, Map<String, Object>>(
+          _encode);
+
+  static const Converter<Map<String, Object>, NoSuchMethodError> deserialize =
+      const _ForwardingConverter<Map<String, Object>, NoSuchMethodError>(
+          _decode);
+
+  @override
+  Converter<NoSuchMethodError, Map<String, Object>> get encoder => serialize;
+
+  @override
+  Converter<Map<String, Object>, NoSuchMethodError> get decoder => deserialize;
+}
+
+class _NoSuchMethodError extends Error implements NoSuchMethodError {
+  final String _toString;
+
+  _NoSuchMethodError(this._toString);
+
+  @override
+  String toString() => _toString;
 }

@@ -32,19 +32,19 @@ class MutableRecording implements LiveRecording {
       new List<LiveInvocationEvent<dynamic>>.unmodifiable(_events);
 
   @override
-  Future<Null> flush({Duration awaitPendingResults}) async {
+  Future<Null> flush({Duration pendingResultTimeout}) async {
     if (_flushing) {
       throw new StateError('Recording is already flushing');
     }
     _flushing = true;
     try {
-      if (awaitPendingResults != null) {
-        Iterable<Future<Null>> futures =
-            _events.map((LiveInvocationEvent<dynamic> event) => event.done);
-        await Future
-            .wait<Null>(futures)
-            .timeout(awaitPendingResults, onTimeout: () {});
+      Iterable<Future<Null>> futures =
+          _events.map((LiveInvocationEvent<dynamic> event) => event.done);
+      Future<List<Null>> results = Future.wait<Null>(futures);
+      if (pendingResultTimeout != null) {
+        results = results.timeout(pendingResultTimeout, onTimeout: () {});
       }
+      await results;
       Directory dir = destination;
       String json = new JsonEncoder.withIndent('  ').convert(encode(_events));
       String filename = dir.fileSystem.path.join(dir.path, kManifestName);

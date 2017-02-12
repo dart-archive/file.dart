@@ -38,7 +38,7 @@ abstract class LiveRecording extends Recording {
   /// callers to call this method when they wish to write the recording to
   /// disk.
   ///
-  /// If [awaitPendingResults] is specified, this will wait the specified
+  /// If [pendingResultTimeout] is specified, this will wait the specified
   /// duration for any results that are `Future`s or `Stream`s to complete
   /// before serializing the recording to disk. Futures that don't complete
   /// within the specified duration will have their results recorded as `null`,
@@ -46,9 +46,13 @@ abstract class LiveRecording extends Recording {
   /// will have their results recorded as the list of events the stream has
   /// fired thus far.
   ///
+  /// If [pendingResultTimeout] is not specified (or is `null`), this will wait
+  /// indefinitely for for any results that are `Future`s or `Stream`s to
+  /// complete before serializing the recording to disk.
+  ///
   /// Throws a [StateError] if a flush is already in progress.
   ///
   /// Returns a future that completes once the recording has been fully written
   /// to disk.
-  Future<Null> flush({Duration awaitPendingResults});
+  Future<Null> flush({Duration pendingResultTimeout});
 }

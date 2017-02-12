@@ -89,9 +89,9 @@ class FutureReference<T> extends ResultReference<Future<T>> {
   @override
   T get recordedValue => _value;
 
-  // TODO(tvolkert): remove `.then()` once Dart 1.22 is in stable
+  // TODO(tvolkert): remove `as Future<Null>` once Dart 1.22 is in stable
   @override
-  Future<Null> get complete => value.then<Null>((_) {});
+  Future<Null> get complete => value.catchError((_) {}) as Future<Null>;
 }
 
 /// Wraps a stream result.
@@ -159,5 +159,5 @@ class StreamReference<T> extends ResultReference<Stream<T>> {
   List<T> get recordedValue => _data;
 
   @override
-  Future<Null> get complete => _completer.future;
+  Future<Null> get complete => _completer.future.catchError((_) {});
 }
