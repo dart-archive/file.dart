@@ -1,5 +1,5 @@
-[![Build Status](https://travis-ci.org/matanlurey/file.svg?branch=master)](https://travis-ci.org/matanlurey/file)
-[![Coverage Status](https://coveralls.io/repos/github/matanlurey/file/badge.svg?branch=master)](https://coveralls.io/github/matanlurey/file?branch=master)
+[![Build Status](https://travis-ci.org/google/file.dart.svg?branch=master)](https://travis-ci.org/google/file.dart)
+[![Coverage Status](https://coveralls.io/repos/github/google/file.dart/badge.svg?branch=master)](https://coveralls.io/github/google/file.dart?branch=master)
 
 # File
 
