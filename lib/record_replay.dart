@@ -2,6 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+/// File systems that work together to record invocations during live operation
+/// and then play invocations back in tests.
 export 'src/backends/record_replay/errors.dart';
 export 'src/backends/record_replay/events.dart'
     show InvocationEvent, PropertyGetEvent, PropertySetEvent, MethodEvent;

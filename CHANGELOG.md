@@ -1,3 +1,7 @@
+#### 2.0.1
+
+* Minor doc updates
+
 #### 2.0.0
 
 * Improved `toString` implementations in file system entity classes

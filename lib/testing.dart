@@ -2,5 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+/// Matchers (from `package:test`) for use in tests that deal with file systems.
 export 'src/testing/core_matchers.dart';
 export 'src/testing/record_replay_matchers.dart';
