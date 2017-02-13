@@ -49,7 +49,7 @@ Matcher isFileSystemException([dynamic message]) =>
 /// [message] may be a String, a predicate function, or a [Matcher]. If it is
 /// a String, it will be wrapped in an equality matcher.
 Matcher throwsFileSystemException([dynamic message]) =>
-    new Throws(isFileSystemException(message));
+    throwsA(isFileSystemException(message));
 
 /// Expects the specified [callback] to throw a [FileSystemException] with the
 /// specified [message].
