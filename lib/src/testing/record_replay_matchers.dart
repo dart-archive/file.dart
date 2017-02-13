@@ -54,8 +54,7 @@ const Matcher isNoMatchingInvocationError = const _NoMatchingInvocationError();
 
 /// A matcher that successfully matches against a future or function
 /// that throws a [NoMatchingInvocationError].
-Matcher throwsNoMatchingInvocationError =
-    throwsA(isNoMatchingInvocationError);
+Matcher throwsNoMatchingInvocationError = throwsA(isNoMatchingInvocationError);
 
 /// Base class for matchers that match against generic [InvocationEvent]
 /// instances.
