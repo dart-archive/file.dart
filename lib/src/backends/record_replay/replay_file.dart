@@ -24,7 +24,6 @@ class ReplayFile extends ReplayFileSystemEntity implements File {
     Converter<String, String> blobToString = blobToBytes.fuse(UTF8.decoder);
     Converter<String, RandomAccessFile> reviveRandomAccessFile =
         new ReviveRandomAccessFile(fileSystem);
-    // TODO(tvolkert) remove `as`: https://github.com/dart-lang/sdk/issues/28748
     Converter<String, List<String>> lineSplitter =
         const LineSplitter() as Converter<String, List<String>>;
     Converter<String, List<String>> blobToLines =

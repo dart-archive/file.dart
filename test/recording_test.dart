@@ -930,5 +930,5 @@ class _FakeStopwatch implements Stopwatch {
 }
 
 /// Successfully matches against a function that throws a [TimeoutException].
-const Matcher throwsTimeoutException =
-    const Throws(const isInstanceOf<TimeoutException>());
+Matcher throwsTimeoutException =
+    throwsA(const isInstanceOf<TimeoutException>());
