@@ -33,10 +33,10 @@ void main() {
       () => fs,
       root: () => tmp.path,
       skip: <String>[
-        // API doesn't yet exist in Dart stable.
-        'File > lastAccessed',
-        'File > setLastAccessed',
-        'File > setLastModified',
+        // API doesn't exit in dart:io until Dart 1.23
+        'File > last\\* > lastAccessed',
+        'File > last\\* > setLastAccessed',
+        'File > last\\* > setLastModified',
 
         // https://github.com/dart-lang/sdk/issues/28170
         'File > create > throwsIfAlreadyExistsAsDirectory',
