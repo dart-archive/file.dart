@@ -4,6 +4,8 @@ analyzer:
     enableStrictCallChecks: true
     enableSuperMixins: true
   errors:
+    # treat missing required parameters as a warning (not a hint)
+    missing_required_param: warning
     # Allow having TODOs in the code
     todo: ignore
 
@@ -60,7 +62,7 @@ linter:
     - super_goes_last
     - type_annotate_public_apis
     - type_init_formals
-    - unawaited_futures
+    # TODO - unawaited_futures (https://github.com/dart-lang/linter/issues/419)
     - unnecessary_brace_in_string_interp
     - unnecessary_getters_setters
 

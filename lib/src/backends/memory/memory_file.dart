@@ -122,10 +122,36 @@ class _MemoryFile extends _MemoryFileSystemEntity implements File {
   File get absolute => super.absolute;
 
   @override
+  Future<DateTime> lastAccessed() async => lastAccessedSync();
+
+  @override
+  DateTime lastAccessedSync() => (_resolvedBacking as _FileNode).stat.accessed;
+
+  @override
+  Future<dynamic> setLastAccessed(DateTime time) async =>
+      setLastAccessedSync(time);
+
+  @override
+  void setLastAccessedSync(DateTime time) {
+    _FileNode node = _resolvedBacking;
+    node.accessed = time.millisecondsSinceEpoch;
+  }
+
+  @override
   Future<DateTime> lastModified() async => lastModifiedSync();
 
   @override
   DateTime lastModifiedSync() => (_resolvedBacking as _FileNode).stat.modified;
+
+  @override
+  Future<dynamic> setLastModified(DateTime time) async =>
+      setLastModifiedSync(time);
+
+  @override
+  void setLastModifiedSync(DateTime time) {
+    _FileNode node = _resolvedBacking;
+    node.modified = time.millisecondsSinceEpoch;
+  }
 
   @override
   Future<io.RandomAccessFile> open(

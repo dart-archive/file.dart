@@ -31,10 +31,30 @@ abstract class ForwardingFile extends ForwardingFileSystemEntity<File, io.File>
   int lengthSync() => delegate.lengthSync();
 
   @override
+  Future<DateTime> lastAccessed() => delegate.lastAccessed();
+
+  @override
+  DateTime lastAccessedSync() => delegate.lastAccessedSync();
+
+  @override
+  Future<dynamic> setLastAccessed(DateTime time) =>
+      delegate.setLastAccessed(time);
+
+  @override
+  void setLastAccessedSync(DateTime time) => delegate.setLastAccessedSync(time);
+
+  @override
   Future<DateTime> lastModified() => delegate.lastModified();
 
   @override
   DateTime lastModifiedSync() => delegate.lastModifiedSync();
+
+  @override
+  Future<dynamic> setLastModified(DateTime time) =>
+      delegate.setLastModified(time);
+
+  @override
+  void setLastModifiedSync(DateTime time) => delegate.setLastModifiedSync(time);
 
   @override
   Future<RandomAccessFile> open({

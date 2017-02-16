@@ -67,10 +67,28 @@ abstract class File implements FileSystemEntity {
   File get absolute;
 
   // ignore: public_member_api_docs
+  Future<DateTime> lastAccessed();
+
+  // ignore: public_member_api_docs
+  DateTime lastAccessedSync();
+
+  // ignore: public_member_api_docs
+  Future<dynamic> setLastAccessed(DateTime time);
+
+  // ignore: public_member_api_docs
+  void setLastAccessedSync(DateTime time);
+
+  // ignore: public_member_api_docs
   Future<DateTime> lastModified();
 
   // ignore: public_member_api_docs
   DateTime lastModifiedSync();
+
+  // ignore: public_member_api_docs
+  Future<dynamic> setLastModified(DateTime time);
+
+  // ignore: public_member_api_docs
+  void setLastModifiedSync(DateTime time);
 
   // ignore: public_member_api_docs
   Future<RandomAccessFile> open({FileMode mode: FileMode.READ});

@@ -12,6 +12,8 @@ import 'package:file/testing.dart';
 import 'package:test/test.dart';
 import 'package:test/test.dart' as testpkg show group, setUp, tearDown, test;
 
+import 'utils.dart';
+
 /// Callback used in [runCommonTests] to produce the root folder in which all
 /// file system entities will be created.
 typedef String RootPathGenerator();
@@ -1483,11 +1485,78 @@ void runCommonTests(
         });
       });
 
+      group('lastAccessed', () {
+        test('isNowForNewlyCreatedFile', () {
+          DateTime before = floor();
+          File f = fs.file(ns('/foo'))..createSync();
+          DateTime after = ceil();
+          DateTime accessed = f.lastAccessedSync();
+          expect(before, isSameOrBefore(accessed));
+          expect(after, isSameOrAfter(accessed));
+        });
+
+        test('throwsIfDoesntExist', () {
+          expectFileSystemException('No such file or directory', () {
+            fs.file(ns('/foo')).lastAccessedSync();
+          });
+        });
+
+        test('throwsIfExistsAsDirectory', () {
+          fs.directory(ns('/foo')).createSync();
+          expectFileSystemException('Is a directory', () {
+            fs.file(ns('/foo')).lastAccessedSync();
+          });
+        });
+
+        test('succeedsIfExistsAsLinkToFile', () {
+          DateTime before = floor();
+          fs.file(ns('/foo')).createSync();
+          fs.link(ns('/bar')).createSync(ns('/foo'));
+          DateTime after = ceil();
+          DateTime accessed = fs.file(ns('/bar')).lastAccessedSync();
+          expect(before, isSameOrBefore(accessed));
+          expect(after, isSameOrAfter(accessed));
+        });
+      });
+
+      group('setLastAccessed', () {
+        final DateTime time = new DateTime(1999);
+
+        test('throwsIfDoesntExist', () {
+          expectFileSystemException('No such file or directory', () {
+            fs.file(ns('/foo')).setLastAccessedSync(time);
+          });
+        });
+
+        test('throwsIfExistsAsDirectory', () {
+          fs.directory(ns('/foo')).createSync();
+          expectFileSystemException('Is a directory', () {
+            fs.file(ns('/foo')).setLastAccessedSync(time);
+          });
+        });
+
+        test('succeedsIfExistsAsFile', () {
+          File f = fs.file(ns('/foo'))..createSync();
+          f.setLastAccessedSync(time);
+          expect(fs.file(ns('/foo')).lastAccessedSync(), time);
+        });
+
+        test('succeedsIfExistsAsLinkToFile', () {
+          File f = fs.file(ns('/foo'))..createSync();
+          fs.link(ns('/bar')).createSync(ns('/foo'));
+          f.setLastAccessedSync(time);
+          expect(fs.file(ns('/bar')).lastAccessedSync(), time);
+        });
+      });
+
       group('lastModified', () {
         test('isNowForNewlyCreatedFile', () {
+          DateTime before = floor();
           File f = fs.file(ns('/foo'))..createSync();
-          expect(new DateTime.now().difference(f.lastModifiedSync()).abs(),
-              lessThan(new Duration(seconds: 2)));
+          DateTime after = ceil();
+          DateTime modified = f.lastModifiedSync();
+          expect(before, isSameOrBefore(modified));
+          expect(after, isSameOrAfter(modified));
         });
 
         test('throwsIfDoesntExist', () {
@@ -1504,14 +1573,43 @@ void runCommonTests(
         });
 
         test('succeedsIfExistsAsLinkToFile', () {
+          DateTime before = floor();
           fs.file(ns('/foo')).createSync();
           fs.link(ns('/bar')).createSync(ns('/foo'));
-          expect(
-            new DateTime.now()
-                .difference(fs.file(ns('/bar')).lastModifiedSync())
-                .abs(),
-            lessThan(new Duration(seconds: 2)),
-          );
+          DateTime after = ceil();
+          DateTime modified = fs.file(ns('/bar')).lastModifiedSync();
+          expect(before, isSameOrBefore(modified));
+          expect(after, isSameOrAfter(modified));
+        });
+      });
+
+      group('setLastModified', () {
+        final DateTime time = new DateTime(1999);
+
+        test('throwsIfDoesntExist', () {
+          expectFileSystemException('No such file or directory', () {
+            fs.file(ns('/foo')).setLastModifiedSync(time);
+          });
+        });
+
+        test('throwsIfExistsAsDirectory', () {
+          fs.directory(ns('/foo')).createSync();
+          expectFileSystemException('Is a directory', () {
+            fs.file(ns('/foo')).setLastModifiedSync(time);
+          });
+        });
+
+        test('succeedsIfExistsAsFile', () {
+          File f = fs.file(ns('/foo'))..createSync();
+          f.setLastModifiedSync(time);
+          expect(fs.file(ns('/foo')).lastModifiedSync(), time);
+        });
+
+        test('succeedsIfExistsAsLinkToFile', () {
+          File f = fs.file(ns('/foo'))..createSync();
+          fs.link(ns('/bar')).createSync(ns('/foo'));
+          f.setLastModifiedSync(time);
+          expect(fs.file(ns('/bar')).lastModifiedSync(), time);
         });
       });
 
