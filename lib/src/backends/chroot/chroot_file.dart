@@ -209,12 +209,36 @@ class _ChrootFile extends _ChrootFileSystemEntity<File, io.File>
   int lengthSync() => getDelegate(followLinks: true).lengthSync();
 
   @override
+  Future<DateTime> lastAccessed() =>
+      getDelegate(followLinks: true).lastAccessed();
+
+  @override
+  DateTime lastAccessedSync() =>
+      getDelegate(followLinks: true).lastAccessedSync();
+
+  @override
+  Future<dynamic> setLastAccessed(DateTime time) =>
+      getDelegate(followLinks: true).setLastAccessed(time);
+
+  @override
+  void setLastAccessedSync(DateTime time) =>
+      getDelegate(followLinks: true).setLastAccessedSync(time);
+
+  @override
   Future<DateTime> lastModified() =>
       getDelegate(followLinks: true).lastModified();
 
   @override
   DateTime lastModifiedSync() =>
       getDelegate(followLinks: true).lastModifiedSync();
+
+  @override
+  Future<dynamic> setLastModified(DateTime time) =>
+      getDelegate(followLinks: true).setLastModified(time);
+
+  @override
+  void setLastModifiedSync(DateTime time) =>
+      getDelegate(followLinks: true).setLastModifiedSync(time);
 
   @override
   Future<RandomAccessFile> open({

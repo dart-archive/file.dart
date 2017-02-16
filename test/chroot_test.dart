@@ -48,6 +48,11 @@ void main() {
       runCommonTests(
         () => fs,
         skip: <String>[
+          // API doesn't yet exist in Dart stable.
+          'File > lastAccessed',
+          'File > setLastAccessed',
+          'File > setLastModified',
+
           // https://github.com/dart-lang/sdk/issues/28170
           'File > create > throwsIfAlreadyExistsAsDirectory',
           'File > create > throwsIfAlreadyExistsAsLinkToDirectory',
