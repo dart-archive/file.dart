@@ -8,10 +8,11 @@ import 'dart:convert';
 import 'dart:io' as io;
 
 import 'package:file/file.dart';
-import 'package:meta/meta.dart';
 import 'package:file/testing.dart';
 import 'package:test/test.dart';
 import 'package:test/test.dart' as testpkg show group, setUp, tearDown, test;
+
+import 'utils.dart';
 
 /// Callback used in [runCommonTests] to produce the root folder in which all
 /// file system entities will be created.
@@ -1484,173 +1485,131 @@ void runCommonTests(
         });
       });
 
-      group('last*', () {
-        DateTime floor([DateTime time]) {
-          time ??= new DateTime.now();
-          return time.subtract(new Duration(
-            milliseconds: time.millisecond,
-            microseconds: time.microsecond,
-          ));
-        }
-
-        DateTime ceil([DateTime time]) {
-          time ??= new DateTime.now();
-          int microseconds = (1000 * time.millisecond) + time.microsecond;
-          return time.add(new Duration(microseconds: 1000000 - microseconds));
-        }
-
-        test('floorAndCeilProduceExactSecondDateTime', () {
-          DateTime time = new DateTime.fromMicrosecondsSinceEpoch(1001);
-          DateTime lower = floor(time);
-          DateTime upper = ceil(time);
-          expect(lower.millisecond, 0);
-          expect(upper.millisecond, 0);
-          expect(lower.microsecond, 0);
-          expect(upper.microsecond, 0);
+      group('lastAccessed', () {
+        test('isNowForNewlyCreatedFile', () {
+          DateTime before = floor();
+          File f = fs.file(ns('/foo'))..createSync();
+          DateTime after = ceil();
+          DateTime accessed = f.lastAccessedSync();
+          expect(before, isSameOrBefore(accessed));
+          expect(after, isSameOrAfter(accessed));
         });
 
-        test('floorAndCeilWorkWithNow', () {
-          DateTime time = new DateTime.now();
-          int lower = time.difference(floor(time)).inMicroseconds;
-          int upper = ceil(time).difference(time).inMicroseconds;
-          expect(lower, lessThan(1000000));
-          expect(upper, lessThanOrEqualTo(1000000));
-        });
-
-        test('floorAndCeilWorkWithExactSecondDateTime', () {
-          DateTime time = DateTime.parse('1999-12-31 23:59:59');
-          int lower = time.difference(floor(time)).inMicroseconds;
-          int upper = ceil(time).difference(time).inMicroseconds;
-          expect(lower, 0);
-          expect(upper, lessThanOrEqualTo(1000000));
-        });
-
-        group('lastAccessed', () {
-          test('isNowForNewlyCreatedFile', () {
-            DateTime before = floor();
-            File f = fs.file(ns('/foo'))..createSync();
-            DateTime after = ceil();
-            DateTime accessed = f.lastAccessedSync();
-            expect(before, isSameOrBefore(accessed));
-            expect(after, isSameOrAfter(accessed));
-          });
-
-          test('throwsIfDoesntExist', () {
-            expectFileSystemException('No such file or directory', () {
-              fs.file(ns('/foo')).lastAccessedSync();
-            });
-          });
-
-          test('throwsIfExistsAsDirectory', () {
-            fs.directory(ns('/foo')).createSync();
-            expectFileSystemException('Is a directory', () {
-              fs.file(ns('/foo')).lastAccessedSync();
-            });
-          });
-
-          test('succeedsIfExistsAsLinkToFile', () {
-            DateTime before = floor();
-            fs.file(ns('/foo')).createSync();
-            fs.link(ns('/bar')).createSync(ns('/foo'));
-            DateTime after = ceil();
-            DateTime accessed = fs.file(ns('/bar')).lastAccessedSync();
-            expect(before, isSameOrBefore(accessed));
-            expect(after, isSameOrAfter(accessed));
+        test('throwsIfDoesntExist', () {
+          expectFileSystemException('No such file or directory', () {
+            fs.file(ns('/foo')).lastAccessedSync();
           });
         });
 
-        group('setLastAccessed', () {
-          final DateTime time = new DateTime(1999);
-
-          test('throwsIfDoesntExist', () {
-            expectFileSystemException('No such file or directory', () {
-              fs.file(ns('/foo')).setLastAccessedSync(time);
-            });
-          });
-
-          test('throwsIfExistsAsDirectory', () {
-            fs.directory(ns('/foo')).createSync();
-            expectFileSystemException('Is a directory', () {
-              fs.file(ns('/foo')).setLastAccessedSync(time);
-            });
-          });
-
-          test('succeedsIfExistsAsFile', () {
-            File f = fs.file(ns('/foo'))..createSync();
-            f.setLastAccessedSync(time);
-            expect(fs.file(ns('/foo')).lastAccessedSync(), time);
-          });
-
-          test('succeedsIfExistsAsLinkToFile', () {
-            File f = fs.file(ns('/foo'))..createSync();
-            fs.link(ns('/bar')).createSync(ns('/foo'));
-            f.setLastAccessedSync(time);
-            expect(fs.file(ns('/bar')).lastAccessedSync(), time);
+        test('throwsIfExistsAsDirectory', () {
+          fs.directory(ns('/foo')).createSync();
+          expectFileSystemException('Is a directory', () {
+            fs.file(ns('/foo')).lastAccessedSync();
           });
         });
 
-        group('lastModified', () {
-          test('isNowForNewlyCreatedFile', () {
-            DateTime before = floor();
-            File f = fs.file(ns('/foo'))..createSync();
-            DateTime after = ceil();
-            DateTime modified = f.lastModifiedSync();
-            expect(before, isSameOrBefore(modified));
-            expect(after, isSameOrAfter(modified));
-          });
+        test('succeedsIfExistsAsLinkToFile', () {
+          DateTime before = floor();
+          fs.file(ns('/foo')).createSync();
+          fs.link(ns('/bar')).createSync(ns('/foo'));
+          DateTime after = ceil();
+          DateTime accessed = fs.file(ns('/bar')).lastAccessedSync();
+          expect(before, isSameOrBefore(accessed));
+          expect(after, isSameOrAfter(accessed));
+        });
+      });
 
-          test('throwsIfDoesntExist', () {
-            expectFileSystemException('No such file or directory', () {
-              fs.file(ns('/foo')).lastModifiedSync();
-            });
-          });
+      group('setLastAccessed', () {
+        final DateTime time = new DateTime(1999);
 
-          test('throwsIfExistsAsDirectory', () {
-            fs.directory(ns('/foo')).createSync();
-            expectFileSystemException('Is a directory', () {
-              fs.file(ns('/foo')).lastModifiedSync();
-            });
-          });
-
-          test('succeedsIfExistsAsLinkToFile', () {
-            DateTime before = floor();
-            fs.file(ns('/foo')).createSync();
-            fs.link(ns('/bar')).createSync(ns('/foo'));
-            DateTime after = ceil();
-            DateTime modified = fs.file(ns('/bar')).lastModifiedSync();
-            expect(before, isSameOrBefore(modified));
-            expect(after, isSameOrAfter(modified));
+        test('throwsIfDoesntExist', () {
+          expectFileSystemException('No such file or directory', () {
+            fs.file(ns('/foo')).setLastAccessedSync(time);
           });
         });
 
-        group('setLastModified', () {
-          final DateTime time = new DateTime(1999);
-
-          test('throwsIfDoesntExist', () {
-            expectFileSystemException('No such file or directory', () {
-              fs.file(ns('/foo')).setLastModifiedSync(time);
-            });
+        test('throwsIfExistsAsDirectory', () {
+          fs.directory(ns('/foo')).createSync();
+          expectFileSystemException('Is a directory', () {
+            fs.file(ns('/foo')).setLastAccessedSync(time);
           });
+        });
 
-          test('throwsIfExistsAsDirectory', () {
-            fs.directory(ns('/foo')).createSync();
-            expectFileSystemException('Is a directory', () {
-              fs.file(ns('/foo')).setLastModifiedSync(time);
-            });
-          });
+        test('succeedsIfExistsAsFile', () {
+          File f = fs.file(ns('/foo'))..createSync();
+          f.setLastAccessedSync(time);
+          expect(fs.file(ns('/foo')).lastAccessedSync(), time);
+        });
 
-          test('succeedsIfExistsAsFile', () {
-            File f = fs.file(ns('/foo'))..createSync();
-            f.setLastModifiedSync(time);
-            expect(fs.file(ns('/foo')).lastModifiedSync(), time);
-          });
+        test('succeedsIfExistsAsLinkToFile', () {
+          File f = fs.file(ns('/foo'))..createSync();
+          fs.link(ns('/bar')).createSync(ns('/foo'));
+          f.setLastAccessedSync(time);
+          expect(fs.file(ns('/bar')).lastAccessedSync(), time);
+        });
+      });
 
-          test('succeedsIfExistsAsLinkToFile', () {
-            File f = fs.file(ns('/foo'))..createSync();
-            fs.link(ns('/bar')).createSync(ns('/foo'));
-            f.setLastModifiedSync(time);
-            expect(fs.file(ns('/bar')).lastModifiedSync(), time);
+      group('lastModified', () {
+        test('isNowForNewlyCreatedFile', () {
+          DateTime before = floor();
+          File f = fs.file(ns('/foo'))..createSync();
+          DateTime after = ceil();
+          DateTime modified = f.lastModifiedSync();
+          expect(before, isSameOrBefore(modified));
+          expect(after, isSameOrAfter(modified));
+        });
+
+        test('throwsIfDoesntExist', () {
+          expectFileSystemException('No such file or directory', () {
+            fs.file(ns('/foo')).lastModifiedSync();
           });
+        });
+
+        test('throwsIfExistsAsDirectory', () {
+          fs.directory(ns('/foo')).createSync();
+          expectFileSystemException('Is a directory', () {
+            fs.file(ns('/foo')).lastModifiedSync();
+          });
+        });
+
+        test('succeedsIfExistsAsLinkToFile', () {
+          DateTime before = floor();
+          fs.file(ns('/foo')).createSync();
+          fs.link(ns('/bar')).createSync(ns('/foo'));
+          DateTime after = ceil();
+          DateTime modified = fs.file(ns('/bar')).lastModifiedSync();
+          expect(before, isSameOrBefore(modified));
+          expect(after, isSameOrAfter(modified));
+        });
+      });
+
+      group('setLastModified', () {
+        final DateTime time = new DateTime(1999);
+
+        test('throwsIfDoesntExist', () {
+          expectFileSystemException('No such file or directory', () {
+            fs.file(ns('/foo')).setLastModifiedSync(time);
+          });
+        });
+
+        test('throwsIfExistsAsDirectory', () {
+          fs.directory(ns('/foo')).createSync();
+          expectFileSystemException('Is a directory', () {
+            fs.file(ns('/foo')).setLastModifiedSync(time);
+          });
+        });
+
+        test('succeedsIfExistsAsFile', () {
+          File f = fs.file(ns('/foo'))..createSync();
+          f.setLastModifiedSync(time);
+          expect(fs.file(ns('/foo')).lastModifiedSync(), time);
+        });
+
+        test('succeedsIfExistsAsLinkToFile', () {
+          File f = fs.file(ns('/foo'))..createSync();
+          fs.link(ns('/bar')).createSync(ns('/foo'));
+          f.setLastModifiedSync(time);
+          expect(fs.file(ns('/bar')).lastModifiedSync(), time);
         });
       });
 
@@ -3280,70 +3239,4 @@ void runCommonTests(
       });
     });
   });
-}
-
-/// Successfully matches against a [DateTime] that is the same moment or before
-/// the specified [time].
-Matcher isSameOrBefore(DateTime time) => new _IsSameOrBefore(time);
-
-/// Successfully matches against a [DateTime] that is the same moment or after
-/// the specified [time].
-Matcher isSameOrAfter(DateTime time) => new _IsSameOrAfter(time);
-
-abstract class _CompareDateTime extends Matcher {
-  final DateTime _time;
-  final Matcher _matcher;
-
-  const _CompareDateTime(this._time, this._matcher);
-
-  @override
-  bool matches(dynamic item, Map<dynamic, dynamic> matchState) {
-    return item is DateTime &&
-        _matcher.matches(item.compareTo(_time), <dynamic, dynamic>{});
-  }
-
-  @protected
-  String get descriptionOperator;
-
-  @override
-  Description describe(Description description) =>
-      description.add('a DateTime $descriptionOperator $_time');
-
-  @protected
-  String get mismatchAdjective;
-
-  @override
-  Description describeMismatch(
-    dynamic item,
-    Description description,
-    Map<dynamic, dynamic> matchState,
-    bool verbose,
-  ) {
-    if (item is DateTime) {
-      Duration diff = item.difference(_time).abs();
-      return description.add('is $mismatchAdjective $_time by $diff');
-    } else {
-      return description.add('is not a DateTime');
-    }
-  }
-}
-
-class _IsSameOrBefore extends _CompareDateTime {
-  const _IsSameOrBefore(DateTime time) : super(time, isNonPositive);
-
-  @override
-  String get descriptionOperator => '<=';
-
-  @override
-  String get mismatchAdjective => 'after';
-}
-
-class _IsSameOrAfter extends _CompareDateTime {
-  const _IsSameOrAfter(DateTime time) : super(time, isNonNegative);
-
-  @override
-  String get descriptionOperator => '>=';
-
-  @override
-  String get mismatchAdjective => 'before';
 }
