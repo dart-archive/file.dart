@@ -1,5 +1,5 @@
 name: file
-version: 2.0.1
+version: 2.1.0
 authors:
 - Matan Lurey <matanl@google.com>
 - Yegor Jbanov <yjbanov@google.com>
@@ -13,7 +13,7 @@ dependencies:
   path: ^1.4.0
 
 dev_dependencies:
-  test: ^0.12.10
+  test: ^0.12.18
 
 environment:
   sdk: '>=1.19.0 <2.0.0'
