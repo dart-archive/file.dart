@@ -13,7 +13,7 @@ import 'replay_proxy_mixin.dart';
 
 /// [IOSink] implementation that replays all invocation activity from a prior
 /// recording.
-class ReplayIOSink extends Object with ReplayProxyMixin implements IOSink {
+class ReplayIOSink extends ReplayProxyMixin implements IOSink {
   final ReplayFileSystemImpl _fileSystem;
 
   /// Creates a new [ReplayIOSink].

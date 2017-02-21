@@ -36,7 +36,7 @@ import 'result_reference.dart';
 ///       int sampleProperty;
 ///     }
 ///
-///     class RecordingFoo extends Object with RecordingProxyMixin implements Foo {
+///     class RecordingFoo extends RecordingProxyMixin implements Foo {
 ///       final Foo delegate;
 ///
 ///       RecordingFoo(this.delegate) {
