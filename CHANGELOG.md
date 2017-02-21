@@ -1,3 +1,7 @@
+#### 2.1.0
+
+* Add support for new `dart:io` API methods added in Dart SDK 1.23
+
 #### 2.0.1
 
 * Minor doc updates
