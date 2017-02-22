@@ -2,7 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-part of file.src.interface;
+import 'platform_shim.dart';
 
 /// Operating system error codes.
 class ErrorCodes {
@@ -86,7 +86,8 @@ class ErrorCodes {
 
   /// File name too long
   // ignore: non_constant_identifier_names
-  static int get ENAMETOOLONG => _platform((_Codes codes) => codes.enametoolong);
+  static int get ENAMETOOLONG =>
+      _platform((_Codes codes) => codes.enametoolong);
 
   /// File table overflow
   // ignore: non_constant_identifier_names
@@ -165,7 +166,7 @@ class ErrorCodes {
   static int get EXDEV => _platform((_Codes codes) => codes.exdev);
 
   static int _platform(int getCode(_Codes codes)) {
-    _Codes codes = _platforms['macos']; // TODO(tvolkert): switch on platform
+    _Codes codes = _platforms[operatingSystem];
     return getCode(codes);
   }
 }

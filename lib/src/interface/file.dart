@@ -2,7 +2,11 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-part of file.src.interface;
+import 'dart:async';
+import 'dart:convert';
+
+import 'file_system_entity.dart';
+import '../io.dart' as io;
 
 /// A reference to a file on the file system.
 abstract class File implements FileSystemEntity, io.File {

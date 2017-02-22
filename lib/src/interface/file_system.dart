@@ -2,7 +2,15 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-part of file.src.interface;
+import 'dart:async';
+
+import 'package:path/path.dart' as path;
+
+import 'directory.dart';
+import 'file.dart';
+import 'file_system_entity.dart';
+import 'link.dart';
+import '../io.dart' as io;
 
 /// A generic representation of a file system.
 ///
