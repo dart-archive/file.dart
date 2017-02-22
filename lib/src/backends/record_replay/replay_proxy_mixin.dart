@@ -43,7 +43,7 @@ int _nextOrdinal = 0;
 ///       Foo sampleParent;
 ///     }
 ///
-///     class ReplayFoo extends Object with ReplayProxyMixin implements Foo {
+///     class ReplayFoo extends ReplayProxyMixin implements Foo {
 ///       final List<Map<String, dynamic>> manifest;
 ///       final String identifier;
 ///
