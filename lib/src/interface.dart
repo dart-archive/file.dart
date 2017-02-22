@@ -4,17 +4,10 @@
 
 library file.src.interface;
 
-import 'dart:async';
-import 'dart:convert';
-
-import 'package:path/path.dart' as path;
-
-import 'io.dart' as io;
-
-export 'io.dart';
-
-part 'interface/directory.dart';
-part 'interface/file.dart';
-part 'interface/file_system.dart';
-part 'interface/file_system_entity.dart';
-part 'interface/link.dart';
+export 'interface/directory.dart';
+export 'interface/error_codes.dart';
+export 'interface/file.dart';
+export 'interface/file_system.dart';
+export 'interface/file_system_entity.dart';
+export 'interface/link.dart';
+export 'io.dart' hide Directory, File, FileSystemEntity, Link;

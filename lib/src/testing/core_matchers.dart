@@ -30,31 +30,36 @@ Matcher hasPath(dynamic path) => new _HasPath(path);
 /// Returns a [Matcher] that successfully matches against an instance of
 /// [FileSystemException].
 ///
-/// If [message] is specified, matches will be limited to exceptions with a
-/// matching `message` (either in the exception itself or in the nested
-/// [OSError]).
+/// If [osErrorCode] is specified, matches will be limited to exceptions whose
+/// `osError.errorCode` also match the specified matcher.
 ///
-/// [message] may be a String, a predicate function, or a [Matcher]. If it is
-/// a String, it will be wrapped in an equality matcher.
-Matcher isFileSystemException([dynamic message]) =>
-    new _FileSystemException(message);
+/// [osErrorCode] may be an `int`, a predicate function, or a [Matcher]. If it
+/// is an `int`, it will be wrapped in an equality matcher.
+Matcher isFileSystemException([dynamic osErrorCode]) =>
+    new _FileSystemException(osErrorCode);
 
 /// Returns a matcher that successfully matches against a future or function
 /// that throws a [FileSystemException].
 ///
-/// If [message] is specified, matches will be limited to exceptions with a
-/// matching `message` (either in the exception itself or in the nested
-/// [OSError]).
+/// If [osErrorCode] is specified, matches will be limited to exceptions whose
+/// `osError.errorCode` also match the specified matcher.
 ///
-/// [message] may be a String, a predicate function, or a [Matcher]. If it is
-/// a String, it will be wrapped in an equality matcher.
-Matcher throwsFileSystemException([dynamic message]) =>
-    throwsA(isFileSystemException(message));
+/// [osErrorCode] may be an `int`, a predicate function, or a [Matcher]. If it
+/// is an `int`, it will be wrapped in an equality matcher.
+Matcher throwsFileSystemException([dynamic osErrorCode]) =>
+    throwsA(isFileSystemException(osErrorCode));
 
 /// Expects the specified [callback] to throw a [FileSystemException] with the
-/// specified [message].
-void expectFileSystemException(dynamic message, void callback()) {
-  expect(callback, throwsFileSystemException(message));
+/// specified [osErrorCode] (matched against the exception's
+/// `osError.errorCode`).
+///
+/// [osErrorCode] may be an `int`, a predicate function, or a [Matcher]. If it
+/// is an `int`, it will be wrapped in an equality matcher.
+///
+/// See also:
+///   - [ErrorCodes]
+void expectFileSystemException(dynamic osErrorCode, void callback()) {
+  expect(callback, throwsFileSystemException(osErrorCode));
 }
 
 /// Matcher that successfully matches against a [FileSystemEntity] that
@@ -64,23 +69,26 @@ const Matcher exists = const _Exists();
 class _FileSystemException extends Matcher {
   final Matcher _matcher;
 
-  _FileSystemException(dynamic message)
-      : _matcher = message == null ? null : wrapMatcher(message);
+  _FileSystemException(dynamic osErrorCode)
+      : _matcher = osErrorCode == null ? null : wrapMatcher(osErrorCode);
 
   @override
   bool matches(dynamic item, Map<dynamic, dynamic> matchState) {
     if (item is FileSystemException) {
       return (_matcher == null ||
-          _matcher.matches(item.message, matchState) ||
-          _matcher.matches(item.osError?.message, matchState));
+          _matcher.matches(item.osError?.errorCode, matchState));
     }
     return false;
   }
 
   @override
   Description describe(Description desc) {
-    desc.add('FileSystemException with message: ');
-    return _matcher.describe(desc);
+    if (_matcher == null) {
+      return desc.add('FileSystemException');
+    } else {
+      desc.add('FileSystemException with osError.errorCode: ');
+      return _matcher.describe(desc);
+    }
   }
 }
 

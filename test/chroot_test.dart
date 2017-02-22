@@ -104,7 +104,7 @@ void main() {
           test('throwsIfSetToSymlinkToDirectoryOutsideJail', () {
             mem.directory('/bar').createSync();
             mem.link('/tmp/foo').createSync('/bar');
-            expectFileSystemException('No such file or directory', () {
+            expectFileSystemException(ErrorCodes.ENOENT, () {
               fs.currentDirectory = '/foo';
             });
           });

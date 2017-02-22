@@ -114,9 +114,9 @@ class ChrootFileSystem extends FileSystem {
       case FileSystemEntityType.DIRECTORY:
         break;
       case FileSystemEntityType.NOT_FOUND:
-        throw new FileSystemException('No such file or directory');
+        throw common.noSuchFileOrDirectory(path);
       default:
-        throw new FileSystemException('Not a directory');
+        throw common.notADirectory(path);
     }
     assert(() {
       p.Context ctx = delegate.path;
@@ -299,17 +299,13 @@ class ChrootFileSystem extends FileSystem {
         case FileSystemEntityType.FILE:
           breadcrumbs.clear();
           if (parts.isNotEmpty) {
-            throw new FileSystemException('Not a directory', currentPath);
+            throw common.notADirectory(currentPath);
           }
           break;
         case FileSystemEntityType.NOT_FOUND:
           String returnEarly() {
             ledger.addAll(parts);
             return getCurrentPath();
-          }
-
-          FileSystemException notFoundException() {
-            return new FileSystemException('No such file or directory', path);
           }
 
           switch (notFound) {
@@ -324,9 +320,9 @@ class ChrootFileSystem extends FileSystem {
               if (parts.isEmpty) {
                 return returnEarly();
               }
-              throw notFoundException();
+              throw common.noSuchFileOrDirectory(path);
             case _NotFoundBehavior.throwError:
-              throw notFoundException();
+              throw common.noSuchFileOrDirectory(path);
           }
           break;
         case FileSystemEntityType.LINK:
@@ -334,8 +330,7 @@ class ChrootFileSystem extends FileSystem {
             break;
           }
           if (!breadcrumbs.add(currentPath)) {
-            throw new FileSystemException(
-                'Too many levels of symbolic links', path);
+            throw common.tooManyLevelsOfSymbolicLinks(path);
           }
           String target = delegate.link(realPath).targetSync();
           if (ctx.isAbsolute(target)) {

@@ -45,7 +45,7 @@ class _ChrootFile extends _ChrootFileSystemEntity<File, io.File>
           };
           break;
         case FileSystemEntityType.DIRECTORY:
-          throw new FileSystemException('Is a directory', newPath);
+          throw common.isADirectory(newPath);
         default:
           // Should never happen.
           throw new AssertionError();
@@ -55,9 +55,9 @@ class _ChrootFile extends _ChrootFileSystemEntity<File, io.File>
     if (_isLink) {
       switch (await fileSystem.type(path)) {
         case FileSystemEntityType.NOT_FOUND:
-          throw new FileSystemException('No such file or directory', path);
+          throw common.noSuchFileOrDirectory(path);
         case FileSystemEntityType.DIRECTORY:
-          throw new FileSystemException('Is a directory', path);
+          throw common.isADirectory(path);
         case FileSystemEntityType.FILE:
           await setUp();
           await fileSystem.delegate
@@ -94,7 +94,7 @@ class _ChrootFile extends _ChrootFileSystemEntity<File, io.File>
           };
           break;
         case FileSystemEntityType.DIRECTORY:
-          throw new FileSystemException('Is a directory', newPath);
+          throw common.isADirectory(newPath);
         default:
           // Should never happen.
           throw new AssertionError();
@@ -104,9 +104,9 @@ class _ChrootFile extends _ChrootFileSystemEntity<File, io.File>
     if (_isLink) {
       switch (fileSystem.typeSync(path)) {
         case FileSystemEntityType.NOT_FOUND:
-          throw new FileSystemException('No such file or directory', path);
+          throw common.noSuchFileOrDirectory(path);
         case FileSystemEntityType.DIRECTORY:
-          throw new FileSystemException('Is a directory', path);
+          throw common.isADirectory(path);
         case FileSystemEntityType.FILE:
           setUp();
           fileSystem.delegate
@@ -149,7 +149,7 @@ class _ChrootFile extends _ChrootFileSystemEntity<File, io.File>
           // Nothing to do.
           return this;
         case FileSystemEntityType.DIRECTORY:
-          throw new FileSystemException('Is a directory', path);
+          throw common.isADirectory(path);
         default:
           throw new AssertionError();
       }
@@ -181,7 +181,7 @@ class _ChrootFile extends _ChrootFileSystemEntity<File, io.File>
           // Nothing to do.
           return;
         case FileSystemEntityType.DIRECTORY:
-          throw new FileSystemException('Is a directory', path);
+          throw common.isADirectory(path);
         default:
           throw new AssertionError();
       }

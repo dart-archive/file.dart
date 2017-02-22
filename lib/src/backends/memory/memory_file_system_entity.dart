@@ -261,7 +261,7 @@ abstract class _MemoryFileSystemEntity implements FileSystemEntity {
     _Node node = _backing;
     if (!recursive) {
       if (node is _DirectoryNode && node.children.isNotEmpty) {
-        throw new io.FileSystemException('Directory not empty', path);
+        throw common.directoryNotEmpty(path);
       }
       (checkType ?? _defaultCheckType)(node);
     }

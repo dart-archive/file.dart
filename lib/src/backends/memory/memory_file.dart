@@ -51,7 +51,7 @@ class _MemoryFile extends _MemoryFileSystemEntity implements File {
     if (node.type != expectedType) {
       // There was an existing non-file entity at this object's path
       assert(node.type == FileSystemEntityType.DIRECTORY);
-      throw new io.FileSystemException('Is a directory', path);
+      throw common.isADirectory(path);
     }
     return node;
   }
@@ -66,10 +66,9 @@ class _MemoryFile extends _MemoryFileSystemEntity implements File {
         checkType: (_Node node) {
           FileSystemEntityType actualType = node.stat.type;
           if (actualType != expectedType) {
-            String msg = actualType == FileSystemEntityType.NOT_FOUND
-                ? 'No such file or directory'
-                : 'Is a directory';
-            throw new FileSystemException(msg, path);
+            throw actualType == FileSystemEntityType.NOT_FOUND
+                ? common.noSuchFileOrDirectory(path)
+                : common.isADirectory(path);
           }
         },
       );
@@ -231,7 +230,7 @@ class _MemoryFile extends _MemoryFileSystemEntity implements File {
     bool flush: false,
   }) {
     if (!_isWriteMode(mode)) {
-      throw new FileSystemException('Bad file descriptor', path);
+      throw common.badFileDescriptor(path);
     }
     _FileNode node = _resolvedBackingOrCreate;
     _truncateIfNecessary(node, mode);
