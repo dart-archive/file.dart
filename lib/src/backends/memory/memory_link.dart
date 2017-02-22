@@ -22,10 +22,17 @@ class _MemoryLink extends _MemoryFileSystemEntity implements Link {
         newPath,
         checkType: (_Node node) {
           if (node.type != expectedType) {
+            String msg;
+            int errorCode;
+            if (node.type == FileSystemEntityType.DIRECTORY) {
+              msg = 'Is a directory';
+              errorCode = ErrorCodes.EISDIR;
+            } else {
+              msg = 'Invalid argument';
+              errorCode = ErrorCodes.EINVAL;
+            }
             throw new FileSystemException(
-                node.type == FileSystemEntityType.DIRECTORY
-                    ? 'Is a directory'
-                    : 'Invalid argument');
+                msg, newPath, new OSError(msg, errorCode));
           }
         },
       );
@@ -50,7 +57,9 @@ class _MemoryLink extends _MemoryFileSystemEntity implements Link {
     });
     if (preexisting) {
       // Per the spec, this is an error.
-      throw new io.FileSystemException('File exists', path);
+      String msg = 'File exists';
+      throw new io.FileSystemException(
+          msg, path, new OSError(msg, ErrorCodes.EEXIST));
     }
   }
 
@@ -82,7 +91,9 @@ class _MemoryLink extends _MemoryFileSystemEntity implements Link {
     _Node node = _backing;
     if (node.type != expectedType) {
       // Note: this may change; https://github.com/dart-lang/sdk/issues/28204
-      throw new FileSystemException('No such file or directory', path);
+      String msg = 'No such file or directory';
+      throw new FileSystemException(
+          msg, path, new OSError(msg, ErrorCodes.ENOENT));
     }
     return (node as _LinkNode).target;
   }

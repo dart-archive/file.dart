@@ -114,9 +114,13 @@ class ChrootFileSystem extends FileSystem {
       case FileSystemEntityType.DIRECTORY:
         break;
       case FileSystemEntityType.NOT_FOUND:
-        throw new FileSystemException('No such file or directory');
+        String msg = 'No such file or directory';
+        throw new FileSystemException(
+            msg, path, new OSError(msg, ErrorCodes.ENOENT));
       default:
-        throw new FileSystemException('Not a directory');
+        String msg = 'Not a directory';
+        throw new FileSystemException(
+            msg, path, new OSError(msg, ErrorCodes.ENOTDIR));
     }
     assert(() {
       p.Context ctx = delegate.path;
@@ -299,7 +303,9 @@ class ChrootFileSystem extends FileSystem {
         case FileSystemEntityType.FILE:
           breadcrumbs.clear();
           if (parts.isNotEmpty) {
-            throw new FileSystemException('Not a directory', currentPath);
+            String msg = 'Not a directory';
+            throw new FileSystemException(
+                msg, currentPath, new OSError(msg, ErrorCodes.ENOTDIR));
           }
           break;
         case FileSystemEntityType.NOT_FOUND:
@@ -309,7 +315,9 @@ class ChrootFileSystem extends FileSystem {
           }
 
           FileSystemException notFoundException() {
-            return new FileSystemException('No such file or directory', path);
+            String msg = 'No such file or directory';
+            return new FileSystemException(
+                msg, path, new OSError(msg, ErrorCodes.ENOENT));
           }
 
           switch (notFound) {
@@ -334,8 +342,9 @@ class ChrootFileSystem extends FileSystem {
             break;
           }
           if (!breadcrumbs.add(currentPath)) {
+            String msg = 'Too many levels of symbolic links';
             throw new FileSystemException(
-                'Too many levels of symbolic links', path);
+                msg, path, new OSError(msg, ErrorCodes.ELOOP));
           }
           String target = delegate.link(realPath).targetSync();
           if (ctx.isAbsolute(target)) {

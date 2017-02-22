@@ -27,14 +27,18 @@ typedef void _TypeChecker(_Node node);
 /// Throws a [io.FileSystemException] if [node] is null.
 void _checkExists(_Node node, _PathGenerator path) {
   if (node == null) {
-    throw new io.FileSystemException('No such file or directory', path());
+    String msg = 'No such file or directory';
+    throw new io.FileSystemException(
+        msg, path(), new OSError(msg, ErrorCodes.ENOENT));
   }
 }
 
 /// Throws a [io.FileSystemException] if [node] is not a directory.
 void _checkIsDir(_Node node, _PathGenerator path) {
   if (!_isDirectory(node)) {
-    throw new io.FileSystemException('Not a directory', path());
+    String msg = 'Not a directory';
+    throw new io.FileSystemException(
+        msg, path(), new OSError(msg, ErrorCodes.ENOTDIR));
   }
 }
 
@@ -47,22 +51,26 @@ void _checkType(
 ) {
   if (expectedType != actualType) {
     String msg;
+    int errorCode;
     switch (expectedType) {
       case FileSystemEntityType.DIRECTORY:
         msg = 'Not a directory';
+        errorCode = ErrorCodes.ENOTDIR;
         break;
       case FileSystemEntityType.FILE:
         assert(actualType == FileSystemEntityType.DIRECTORY);
         msg = 'Is a directory';
+        errorCode = ErrorCodes.EISDIR;
         break;
       case FileSystemEntityType.LINK:
         msg = 'Invalid argument';
+        errorCode = ErrorCodes.EINVAL;
         break;
       default:
         // Should not happen
         throw new AssertionError();
     }
-    throw new io.FileSystemException(msg, path());
+    throw new io.FileSystemException(msg, path(), new OSError(msg, errorCode));
   }
 }
 
@@ -111,8 +119,9 @@ _Node _resolveLinks(
   while (_isLink(node)) {
     link = node;
     if (!breadcrumbs.add(node)) {
+      String msg = 'Too many levels of symbolic links';
       throw new io.FileSystemException(
-          'Too many levels of symbolic links', path());
+          msg, path(), new OSError(msg, ErrorCodes.ELOOP));
     }
     if (ledger != null) {
       if (_isAbsolute(link.target)) {

@@ -30,18 +30,24 @@ class _ChrootDirectory extends _ChrootFileSystemEntity<Directory, io.Directory>
   Future<Directory> rename(String newPath) async {
     if (_isLink) {
       if (await fileSystem.type(path) != expectedType) {
-        throw new FileSystemException('Not a directory', path);
+        String msg = 'Not a directory';
+        throw new FileSystemException(
+            msg, path, new OSError(msg, ErrorCodes.ENOTDIR));
       }
       FileSystemEntityType type = await fileSystem.type(newPath);
       if (type != FileSystemEntityType.NOT_FOUND) {
         if (type != expectedType) {
-          throw new FileSystemException('Not a directory', newPath);
+          String msg = 'Not a directory';
+          throw new FileSystemException(
+              msg, newPath, new OSError(msg, ErrorCodes.ENOTDIR));
         }
         if (!(await fileSystem
             .directory(newPath)
             .list(followLinks: false)
             .isEmpty)) {
-          throw new FileSystemException('Directory not empty', newPath);
+          String msg = 'Directory not empty';
+          throw new FileSystemException(
+              msg, newPath, new OSError(msg, ErrorCodes.ENOTEMPTY));
         }
       }
       String target = await fileSystem.link(path).target();
@@ -58,18 +64,24 @@ class _ChrootDirectory extends _ChrootFileSystemEntity<Directory, io.Directory>
   Directory renameSync(String newPath) {
     if (_isLink) {
       if (fileSystem.typeSync(path) != expectedType) {
-        throw new FileSystemException('Not a directory', path);
+        String msg = 'Not a directory';
+        throw new FileSystemException(
+            msg, path, new OSError(msg, ErrorCodes.ENOTDIR));
       }
       FileSystemEntityType type = fileSystem.typeSync(newPath);
       if (type != FileSystemEntityType.NOT_FOUND) {
         if (type != expectedType) {
-          throw new FileSystemException('Not a directory', newPath);
+          String msg = 'Not a directory';
+          throw new FileSystemException(
+              msg, newPath, new OSError(msg, ErrorCodes.ENOTDIR));
         }
         if (fileSystem
             .directory(newPath)
             .listSync(followLinks: false)
             .isNotEmpty) {
-          throw new FileSystemException('Directory not empty', newPath);
+          String msg = 'Directory not empty';
+          throw new FileSystemException(
+              msg, newPath, new OSError(msg, ErrorCodes.ENOTEMPTY));
         }
       }
       String target = fileSystem.link(path).targetSync();
@@ -99,9 +111,13 @@ class _ChrootDirectory extends _ChrootFileSystemEntity<Directory, io.Directory>
     if (_isLink) {
       switch (await fileSystem.type(path)) {
         case FileSystemEntityType.NOT_FOUND:
-          throw new FileSystemException('No such file or directory', path);
+          String msg = 'No such file or directory';
+          throw new FileSystemException(
+              msg, path, new OSError(msg, ErrorCodes.ENOENT));
         case FileSystemEntityType.FILE:
-          throw new FileSystemException('File exists', path);
+          String msg = 'File exists';
+          throw new FileSystemException(
+              msg, path, new OSError(msg, ErrorCodes.EEXIST));
         case FileSystemEntityType.DIRECTORY:
           // Nothing to do.
           return this;
@@ -118,9 +134,13 @@ class _ChrootDirectory extends _ChrootFileSystemEntity<Directory, io.Directory>
     if (_isLink) {
       switch (fileSystem.typeSync(path)) {
         case FileSystemEntityType.NOT_FOUND:
-          throw new FileSystemException('No such file or directory', path);
+          String msg = 'No such file or directory';
+          throw new FileSystemException(
+              msg, path, new OSError(msg, ErrorCodes.ENOENT));
         case FileSystemEntityType.FILE:
-          throw new FileSystemException('File exists', path);
+          String msg = 'File exists';
+          throw new FileSystemException(
+              msg, path, new OSError(msg, ErrorCodes.EEXIST));
         case FileSystemEntityType.DIRECTORY:
           // Nothing to do.
           return;

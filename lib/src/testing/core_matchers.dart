@@ -57,7 +57,7 @@ Matcher throwsFileSystemException([dynamic osErrorCode]) =>
 /// is an `int`, it will be wrapped in an equality matcher.
 ///
 /// See also:
-///   - [ErrorCode]
+///   - [ErrorCodes]
 void expectFileSystemException(dynamic osErrorCode, void callback()) {
   expect(callback, throwsFileSystemException(osErrorCode));
 }
