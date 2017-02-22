@@ -134,7 +134,9 @@ void runCommonTests(
       assert(rootPrefix.isNotEmpty);
       String result = root == rootPrefix
           ? path
-          : (path == rootPrefix ? root : fs.path.join(root, fs.path.joinAll(parts.sublist(1))));
+          : (path == rootPrefix
+              ? root
+              : fs.path.join(root, fs.path.joinAll(parts.sublist(1))));
       return result;
     }
 
@@ -461,8 +463,8 @@ void runCommonTests(
 
     group('Directory', () {
       test('uri', () {
-        expect(
-            fs.directory(ns('/foo')).uri.toString(), 'file://${ns('/foo')}${fs.path.separator}');
+        expect(fs.directory(ns('/foo')).uri.toString(),
+            'file://${ns('/foo')}${fs.path.separator}');
         expect(fs.directory('foo').uri.toString(), 'foo/');
       });
 
