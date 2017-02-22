@@ -43,7 +43,7 @@ abstract class _ChrootFileSystemEntity<T extends FileSystemEntity,
 
   /// Gets the path of this entity as an absolute path (unchanged if the
   /// entity already specifies an absolute path).
-  String get _absolutePath => fileSystem._context.absolute(path);
+  String get _absolutePath => fileSystem.path.absolute(path);
 
   /// Tells whether this entity's path references a symbolic link.
   bool get _isLink =>
@@ -166,5 +166,5 @@ abstract class _ChrootFileSystemEntity<T extends FileSystemEntity,
       throw new UnsupportedError('watch is not supported on ChrootFileSystem');
 
   @override
-  bool get isAbsolute => fileSystem._context.isAbsolute(path);
+  bool get isAbsolute => fileSystem.path.isAbsolute(path);
 }

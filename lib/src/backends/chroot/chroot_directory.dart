@@ -158,7 +158,7 @@ class _ChrootDirectory extends _ChrootFileSystemEntity<Directory, io.Directory>
   }
 
   FileSystemEntity _denormalize(io.FileSystemEntity entity, String dirname) {
-    p.Context ctx = fileSystem._context;
+    p.Context ctx = fileSystem.path;
     String relativePart = ctx.relative(entity.path, from: dirname);
     String entityPath = ctx.join(path, relativePart);
     if (entity is io.File) {

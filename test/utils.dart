@@ -3,7 +3,15 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'package:meta/meta.dart';
+import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
+
+/// Translates [path] from Posix style to the current platform's native
+/// style.
+String posixToNative(String path) {
+  p.Context posix = new p.Context(style: p.Style.posix);
+  return p.joinAll(posix.split(path));
+}
 
 /// Returns a [DateTime] with an exact second-precision by removing the
 /// milliseconds and microseconds from the specified [time].
