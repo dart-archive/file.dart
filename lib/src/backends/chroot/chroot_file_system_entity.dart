@@ -116,16 +116,9 @@ abstract class _ChrootFileSystemEntity<T extends FileSystemEntity,
         String resolvedPath = fileSystem._resolve(p.basename(path),
             from: p.dirname(path), notFound: _NotFoundBehavior.allowAtTail);
         if (!recursive && await type(resolvedPath) != expectedType) {
-          String msg;
-          int errorCode;
-          if (expectedType == FileSystemEntityType.FILE) {
-            msg = 'Is a directory';
-            errorCode = ErrorCodes.EISDIR;
-          } else {
-            msg = 'Not a directory';
-            errorCode = ErrorCodes.ENOTDIR;
-          }
-          throw new FileSystemException(msg, path, new OSError(msg, errorCode));
+          throw expectedType == FileSystemEntityType.FILE
+              ? common.isADirectory(path)
+              : common.notADirectory(path);
         }
         await fileSystem.delegate.link(real(path)).delete();
       }
@@ -152,16 +145,9 @@ abstract class _ChrootFileSystemEntity<T extends FileSystemEntity,
         String resolvedPath = fileSystem._resolve(p.basename(path),
             from: p.dirname(path), notFound: _NotFoundBehavior.allowAtTail);
         if (!recursive && type(resolvedPath) != expectedType) {
-          String msg;
-          int errorCode;
-          if (expectedType == FileSystemEntityType.FILE) {
-            msg = 'Is a directory';
-            errorCode = ErrorCodes.EISDIR;
-          } else {
-            msg = 'Not a directory';
-            errorCode = ErrorCodes.ENOTDIR;
-          }
-          throw new FileSystemException(msg, path, new OSError(msg, errorCode));
+          throw expectedType == FileSystemEntityType.FILE
+              ? common.isADirectory(path)
+              : common.notADirectory(path);
         }
         fileSystem.delegate.link(real(path)).deleteSync();
       }

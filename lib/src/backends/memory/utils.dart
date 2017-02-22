@@ -27,18 +27,14 @@ typedef void _TypeChecker(_Node node);
 /// Throws a [io.FileSystemException] if [node] is null.
 void _checkExists(_Node node, _PathGenerator path) {
   if (node == null) {
-    String msg = 'No such file or directory';
-    throw new io.FileSystemException(
-        msg, path(), new OSError(msg, ErrorCodes.ENOENT));
+    throw common.noSuchFileOrDirectory(path());
   }
 }
 
 /// Throws a [io.FileSystemException] if [node] is not a directory.
 void _checkIsDir(_Node node, _PathGenerator path) {
   if (!_isDirectory(node)) {
-    String msg = 'Not a directory';
-    throw new io.FileSystemException(
-        msg, path(), new OSError(msg, ErrorCodes.ENOTDIR));
+    throw common.notADirectory(path());
   }
 }
 
@@ -50,27 +46,18 @@ void _checkType(
   _PathGenerator path,
 ) {
   if (expectedType != actualType) {
-    String msg;
-    int errorCode;
     switch (expectedType) {
       case FileSystemEntityType.DIRECTORY:
-        msg = 'Not a directory';
-        errorCode = ErrorCodes.ENOTDIR;
-        break;
+        throw common.notADirectory(path());
       case FileSystemEntityType.FILE:
         assert(actualType == FileSystemEntityType.DIRECTORY);
-        msg = 'Is a directory';
-        errorCode = ErrorCodes.EISDIR;
-        break;
+        throw common.isADirectory(path());
       case FileSystemEntityType.LINK:
-        msg = 'Invalid argument';
-        errorCode = ErrorCodes.EINVAL;
-        break;
+        throw common.invalidArgument(path());
       default:
         // Should not happen
         throw new AssertionError();
     }
-    throw new io.FileSystemException(msg, path(), new OSError(msg, errorCode));
   }
 }
 
@@ -119,9 +106,7 @@ _Node _resolveLinks(
   while (_isLink(node)) {
     link = node;
     if (!breadcrumbs.add(node)) {
-      String msg = 'Too many levels of symbolic links';
-      throw new io.FileSystemException(
-          msg, path(), new OSError(msg, ErrorCodes.ELOOP));
+      throw common.tooManyLevelsOfSymbolicLinks(path());
     }
     if (ledger != null) {
       if (_isAbsolute(link.target)) {

@@ -327,7 +327,9 @@ void runCommonTests(
           fs.link(ns('/bar')).createSync(ns('/foo'));
           expectFileSystemException(
             anyOf(ErrorCodes.EMLINK, ErrorCodes.ELOOP),
-            () => fs.currentDirectory = ns('/foo'),
+            () {
+              fs.currentDirectory = ns('/foo');
+            },
           );
         });
       });
@@ -538,7 +540,9 @@ void runCommonTests(
           // once Dart 1.22 is stable.
           expectFileSystemException(
             anyOf(ErrorCodes.EEXIST, ErrorCodes.ENOTDIR),
-            () => fs.directory(ns('/bar')).createSync(),
+            () {
+              fs.directory(ns('/bar')).createSync();
+            },
           );
         });
 
@@ -624,9 +628,13 @@ void runCommonTests(
         test('throwsIfDestinationIsNonEmptyDirectory', () {
           fs.file(ns('/bar/baz')).createSync(recursive: true);
           Directory src = fs.directory(ns('/foo'))..createSync();
+          // The error will be 'Directory not empty' on OS X, but it will be
+          // 'File exists' on Linux.
           expectFileSystemException(
             anyOf(ErrorCodes.ENOTEMPTY, ErrorCodes.EEXIST),
-            () => src.renameSync(ns('/bar')),
+            () {
+              src.renameSync(ns('/bar'));
+            },
           );
         });
 
@@ -821,7 +829,9 @@ void runCommonTests(
           fs.link(ns('/baz'))..createSync(ns('/foo'));
           expectFileSystemException(
             anyOf(ErrorCodes.EMLINK, ErrorCodes.ELOOP),
-            () => fs.directory(ns('/foo')).resolveSymbolicLinksSync(),
+            () {
+              fs.directory(ns('/foo')).resolveSymbolicLinksSync();
+            },
           );
         });
 
@@ -2840,7 +2850,9 @@ void runCommonTests(
           // once Dart 1.22 is stable.
           expectFileSystemException(
             anyOf(ErrorCodes.EINVAL, ErrorCodes.EISDIR),
-            () => fs.link(ns('/foo')).deleteSync(),
+            () {
+              fs.link(ns('/foo')).deleteSync();
+            },
           );
         });
 
@@ -3005,7 +3017,9 @@ void runCommonTests(
           // once Dart 1.22 is stable.
           expectFileSystemException(
             anyOf(ErrorCodes.EINVAL, ErrorCodes.EISDIR),
-            () => fs.link(ns('/foo')).updateSync(ns('/bar')),
+            () {
+              fs.link(ns('/foo')).updateSync(ns('/bar'));
+            },
           );
         });
 

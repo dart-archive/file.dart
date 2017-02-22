@@ -39,9 +39,7 @@ class _MemoryDirectory extends _MemoryFileSystemEntity implements Directory {
     );
     if (node.type != expectedType) {
       // There was an existing non-directory node at this object's path
-      String msg = 'File exists';
-      throw new io.FileSystemException(
-          msg, path, new OSError(msg, ErrorCodes.ENOTDIR));
+      throw common.notADirectory(path);
     }
   }
 
@@ -75,9 +73,7 @@ class _MemoryDirectory extends _MemoryFileSystemEntity implements Directory {
         newPath,
         validateOverwriteExistingEntity: (_DirectoryNode existingNode) {
           if (existingNode.children.isNotEmpty) {
-            String msg = 'Directory not empty';
-            throw new io.FileSystemException(
-                msg, newPath, new OSError(msg, ErrorCodes.ENOTEMPTY));
+            throw common.directoryNotEmpty(newPath);
           }
         },
       );

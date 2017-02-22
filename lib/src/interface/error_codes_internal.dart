@@ -4,5 +4,5 @@
 
 /// In environments that don't have `dart:io`, we can't access the Platform
 /// class to determine what platform we're on, so we just pretend we're on
-/// Linux, meaning we'll get errno values that match Linux errno.h.
+/// Linux, meaning we'll get errno values that match Linux's errno.h.
 const String operatingSystem = 'linux';

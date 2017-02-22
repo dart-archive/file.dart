@@ -114,13 +114,9 @@ class ChrootFileSystem extends FileSystem {
       case FileSystemEntityType.DIRECTORY:
         break;
       case FileSystemEntityType.NOT_FOUND:
-        String msg = 'No such file or directory';
-        throw new FileSystemException(
-            msg, path, new OSError(msg, ErrorCodes.ENOENT));
+        throw common.noSuchFileOrDirectory(path);
       default:
-        String msg = 'Not a directory';
-        throw new FileSystemException(
-            msg, path, new OSError(msg, ErrorCodes.ENOTDIR));
+        throw common.notADirectory(path);
     }
     assert(() {
       p.Context ctx = delegate.path;
@@ -303,21 +299,13 @@ class ChrootFileSystem extends FileSystem {
         case FileSystemEntityType.FILE:
           breadcrumbs.clear();
           if (parts.isNotEmpty) {
-            String msg = 'Not a directory';
-            throw new FileSystemException(
-                msg, currentPath, new OSError(msg, ErrorCodes.ENOTDIR));
+            throw common.notADirectory(currentPath);
           }
           break;
         case FileSystemEntityType.NOT_FOUND:
           String returnEarly() {
             ledger.addAll(parts);
             return getCurrentPath();
-          }
-
-          FileSystemException notFoundException() {
-            String msg = 'No such file or directory';
-            return new FileSystemException(
-                msg, path, new OSError(msg, ErrorCodes.ENOENT));
           }
 
           switch (notFound) {
@@ -332,9 +320,9 @@ class ChrootFileSystem extends FileSystem {
               if (parts.isEmpty) {
                 return returnEarly();
               }
-              throw notFoundException();
+              throw common.noSuchFileOrDirectory(path);
             case _NotFoundBehavior.throwError:
-              throw notFoundException();
+              throw common.noSuchFileOrDirectory(path);
           }
           break;
         case FileSystemEntityType.LINK:
@@ -342,9 +330,7 @@ class ChrootFileSystem extends FileSystem {
             break;
           }
           if (!breadcrumbs.add(currentPath)) {
-            String msg = 'Too many levels of symbolic links';
-            throw new FileSystemException(
-                msg, path, new OSError(msg, ErrorCodes.ELOOP));
+            throw common.tooManyLevelsOfSymbolicLinks(path);
           }
           String target = delegate.link(realPath).targetSync();
           if (ctx.isAbsolute(target)) {

@@ -45,9 +45,7 @@ class _ChrootFile extends _ChrootFileSystemEntity<File, io.File>
           };
           break;
         case FileSystemEntityType.DIRECTORY:
-          String msg = 'Is a directory';
-          throw new FileSystemException(
-              msg, newPath, new OSError(msg, ErrorCodes.EISDIR));
+          throw common.isADirectory(newPath);
         default:
           // Should never happen.
           throw new AssertionError();
@@ -57,13 +55,9 @@ class _ChrootFile extends _ChrootFileSystemEntity<File, io.File>
     if (_isLink) {
       switch (await fileSystem.type(path)) {
         case FileSystemEntityType.NOT_FOUND:
-          String msg = 'No such file or directory';
-          throw new FileSystemException(
-              msg, path, new OSError(msg, ErrorCodes.ENOENT));
+          throw common.noSuchFileOrDirectory(path);
         case FileSystemEntityType.DIRECTORY:
-          String msg = 'Is a directory';
-          throw new FileSystemException(
-              msg, path, new OSError(msg, ErrorCodes.EISDIR));
+          throw common.isADirectory(path);
         case FileSystemEntityType.FILE:
           await setUp();
           await fileSystem.delegate
@@ -100,9 +94,7 @@ class _ChrootFile extends _ChrootFileSystemEntity<File, io.File>
           };
           break;
         case FileSystemEntityType.DIRECTORY:
-          String msg = 'Is a directory';
-          throw new FileSystemException(
-              msg, newPath, new OSError(msg, ErrorCodes.EISDIR));
+          throw common.isADirectory(newPath);
         default:
           // Should never happen.
           throw new AssertionError();
@@ -112,13 +104,9 @@ class _ChrootFile extends _ChrootFileSystemEntity<File, io.File>
     if (_isLink) {
       switch (fileSystem.typeSync(path)) {
         case FileSystemEntityType.NOT_FOUND:
-          String msg = 'No such file or directory';
-          throw new FileSystemException(
-              msg, path, new OSError(msg, ErrorCodes.ENOENT));
+          throw common.noSuchFileOrDirectory(path);
         case FileSystemEntityType.DIRECTORY:
-          String msg = 'Is a directory';
-          throw new FileSystemException(
-              msg, path, new OSError(msg, ErrorCodes.EISDIR));
+          throw common.isADirectory(path);
         case FileSystemEntityType.FILE:
           setUp();
           fileSystem.delegate
@@ -161,9 +149,7 @@ class _ChrootFile extends _ChrootFileSystemEntity<File, io.File>
           // Nothing to do.
           return this;
         case FileSystemEntityType.DIRECTORY:
-          String msg = 'Is a directory';
-          throw new FileSystemException(
-              msg, path, new OSError(msg, ErrorCodes.EISDIR));
+          throw common.isADirectory(path);
         default:
           throw new AssertionError();
       }
@@ -195,9 +181,7 @@ class _ChrootFile extends _ChrootFileSystemEntity<File, io.File>
           // Nothing to do.
           return;
         case FileSystemEntityType.DIRECTORY:
-          String msg = 'Is a directory';
-          throw new FileSystemException(
-              msg, path, new OSError(msg, ErrorCodes.EISDIR));
+          throw common.isADirectory(path);
         default:
           throw new AssertionError();
       }

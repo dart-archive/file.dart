@@ -30,24 +30,18 @@ class _ChrootDirectory extends _ChrootFileSystemEntity<Directory, io.Directory>
   Future<Directory> rename(String newPath) async {
     if (_isLink) {
       if (await fileSystem.type(path) != expectedType) {
-        String msg = 'Not a directory';
-        throw new FileSystemException(
-            msg, path, new OSError(msg, ErrorCodes.ENOTDIR));
+        throw common.notADirectory(path);
       }
       FileSystemEntityType type = await fileSystem.type(newPath);
       if (type != FileSystemEntityType.NOT_FOUND) {
         if (type != expectedType) {
-          String msg = 'Not a directory';
-          throw new FileSystemException(
-              msg, newPath, new OSError(msg, ErrorCodes.ENOTDIR));
+          throw common.notADirectory(newPath);
         }
         if (!(await fileSystem
             .directory(newPath)
             .list(followLinks: false)
             .isEmpty)) {
-          String msg = 'Directory not empty';
-          throw new FileSystemException(
-              msg, newPath, new OSError(msg, ErrorCodes.ENOTEMPTY));
+          throw common.directoryNotEmpty(newPath);
         }
       }
       String target = await fileSystem.link(path).target();
@@ -64,24 +58,18 @@ class _ChrootDirectory extends _ChrootFileSystemEntity<Directory, io.Directory>
   Directory renameSync(String newPath) {
     if (_isLink) {
       if (fileSystem.typeSync(path) != expectedType) {
-        String msg = 'Not a directory';
-        throw new FileSystemException(
-            msg, path, new OSError(msg, ErrorCodes.ENOTDIR));
+        throw common.notADirectory(path);
       }
       FileSystemEntityType type = fileSystem.typeSync(newPath);
       if (type != FileSystemEntityType.NOT_FOUND) {
         if (type != expectedType) {
-          String msg = 'Not a directory';
-          throw new FileSystemException(
-              msg, newPath, new OSError(msg, ErrorCodes.ENOTDIR));
+          throw common.notADirectory(newPath);
         }
         if (fileSystem
             .directory(newPath)
             .listSync(followLinks: false)
             .isNotEmpty) {
-          String msg = 'Directory not empty';
-          throw new FileSystemException(
-              msg, newPath, new OSError(msg, ErrorCodes.ENOTEMPTY));
+          throw common.directoryNotEmpty(newPath);
         }
       }
       String target = fileSystem.link(path).targetSync();
@@ -111,13 +99,9 @@ class _ChrootDirectory extends _ChrootFileSystemEntity<Directory, io.Directory>
     if (_isLink) {
       switch (await fileSystem.type(path)) {
         case FileSystemEntityType.NOT_FOUND:
-          String msg = 'No such file or directory';
-          throw new FileSystemException(
-              msg, path, new OSError(msg, ErrorCodes.ENOENT));
+          throw common.noSuchFileOrDirectory(path);
         case FileSystemEntityType.FILE:
-          String msg = 'File exists';
-          throw new FileSystemException(
-              msg, path, new OSError(msg, ErrorCodes.EEXIST));
+          throw common.fileExists(path);
         case FileSystemEntityType.DIRECTORY:
           // Nothing to do.
           return this;
@@ -134,13 +118,9 @@ class _ChrootDirectory extends _ChrootFileSystemEntity<Directory, io.Directory>
     if (_isLink) {
       switch (fileSystem.typeSync(path)) {
         case FileSystemEntityType.NOT_FOUND:
-          String msg = 'No such file or directory';
-          throw new FileSystemException(
-              msg, path, new OSError(msg, ErrorCodes.ENOENT));
+          throw common.noSuchFileOrDirectory(path);
         case FileSystemEntityType.FILE:
-          String msg = 'File exists';
-          throw new FileSystemException(
-              msg, path, new OSError(msg, ErrorCodes.EEXIST));
+          throw common.fileExists(path);
         case FileSystemEntityType.DIRECTORY:
           // Nothing to do.
           return;
