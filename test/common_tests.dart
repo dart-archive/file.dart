@@ -227,14 +227,14 @@ void runCommonTests(
         });
 
         test('throwsIfSetToNonExistentPath', () {
-          expectFileSystemException('No such file or directory', () {
+          expectFileSystemException(ErrorCodes.linux.ENOENT, () {
             fs.currentDirectory = ns('/foo');
           });
         });
 
         test('throwsIfHasNonExistentPathInComplexChain', () {
           fs.directory(ns('/foo')).createSync();
-          expectFileSystemException('No such file or directory', () {
+          expectFileSystemException(ErrorCodes.linux.ENOENT, () {
             fs.currentDirectory = ns('/bar/../foo');
           });
         });
@@ -295,14 +295,14 @@ void runCommonTests(
 
         test('throwsIfSetToFilePathSegmentAtTail', () {
           fs.file(ns('/foo')).createSync();
-          expectFileSystemException('Not a directory', () {
+          expectFileSystemException(ErrorCodes.linux.ENOTDIR, () {
             fs.currentDirectory = ns('/foo');
           });
         });
 
         test('throwsIfSetToFilePathSegmentViaTraversal', () {
           fs.file(ns('/foo')).createSync();
-          expectFileSystemException('Not a directory', () {
+          expectFileSystemException(ErrorCodes.linux.ENOTDIR, () {
             fs.currentDirectory = ns('/foo/bar/baz');
           });
         });
@@ -325,7 +325,7 @@ void runCommonTests(
         test('throwsIfSetToLinkLoop', () {
           fs.link(ns('/foo')).createSync(ns('/bar'));
           fs.link(ns('/bar')).createSync(ns('/foo'));
-          expectFileSystemException('Too many levels of symbolic links', () {
+          expectFileSystemException(ErrorCodes.linux.ETIME, () {
             fs.currentDirectory = ns('/foo');
           });
         });
@@ -395,14 +395,14 @@ void runCommonTests(
         });
 
         test('throwsForDifferentPathsToNonExistentEntities', () {
-          expectFileSystemException('No such file or directory', () {
+          expectFileSystemException(ErrorCodes.linux.ENOENT, () {
             fs.identicalSync(ns('/foo'), ns('/bar'));
           });
         });
 
         test('throwsForDifferentPathsToOneFileOneNonExistentEntity', () {
           fs.file(ns('/foo')).createSync();
-          expectFileSystemException('No such file or directory', () {
+          expectFileSystemException(ErrorCodes.linux.ENOENT, () {
             fs.identicalSync(ns('/foo'), ns('/bar'));
           });
         });
@@ -519,10 +519,7 @@ void runCommonTests(
 
         test('throwsIfAlreadyExistsAsFile', () {
           fs.file(ns('/foo')).createSync();
-          // TODO(tvolkert): Change this to just be 'Not a directory'
-          // once Dart 1.22 is stable.
-          String pattern = '(File exists|Not a directory)';
-          expectFileSystemException(matches(pattern), () {
+          expectFileSystemException(ErrorCodes.linux.ENOTDIR, () {
             fs.directory(ns('/foo')).createSync();
           });
         });
@@ -536,24 +533,21 @@ void runCommonTests(
         test('throwsIfAlreadyExistsAsLinkToFile', () {
           fs.file(ns('/foo')).createSync();
           fs.link(ns('/bar')).createSync(ns('/foo'));
-          // TODO(tvolkert): Change this to just be 'Not a directory'
-          // once Dart 1.22 is stable.
-          String pattern = '(File exists|Not a directory)';
-          expectFileSystemException(matches(pattern), () {
+          expectFileSystemException(ErrorCodes.linux.ENOTDIR, () {
             fs.directory(ns('/bar')).createSync();
           });
         });
 
         test('throwsIfAlreadyExistsAsLinkToNotFoundAtTail', () {
           fs.link(ns('/foo')).createSync(ns('/bar'));
-          expectFileSystemException('No such file or directory', () {
+          expectFileSystemException(ErrorCodes.linux.ENOENT, () {
             fs.directory(ns('/foo')).createSync();
           });
         });
 
         test('throwsIfAlreadyExistsAsLinkToNotFoundViaTraversal', () {
           fs.link(ns('/foo')).createSync(ns('/bar/baz'));
-          expectFileSystemException('No such file or directory', () {
+          expectFileSystemException(ErrorCodes.linux.ENOENT, () {
             fs.directory(ns('/foo')).createSync();
           });
         });
@@ -562,7 +556,7 @@ void runCommonTests(
           fs.directory(ns('/foo')).createSync();
           fs.directory(ns('/bar')).createSync();
           fs.link(ns('/bar/baz')).createSync(ns('/foo/qux'));
-          expectFileSystemException('No such file or directory', () {
+          expectFileSystemException(ErrorCodes.linux.ENOENT, () {
             fs.directory(ns('/bar/baz')).createSync();
           });
         });
@@ -574,7 +568,7 @@ void runCommonTests(
         });
 
         test('throwsIfAncestorDoesntExistRecursiveFalse', () {
-          expectFileSystemException('No such file or directory', () {
+          expectFileSystemException(ErrorCodes.linux.ENOENT, () {
             fs.directory(ns('/foo/bar')).createSync();
           });
         });
@@ -611,14 +605,14 @@ void runCommonTests(
         test('throwsIfDestinationIsFile', () {
           fs.file(ns('/bar')).createSync();
           Directory src = fs.directory(ns('/foo'))..createSync();
-          expectFileSystemException('Not a directory', () {
+          expectFileSystemException(ErrorCodes.linux.ENOTDIR, () {
             src.renameSync(ns('/bar'));
           });
         });
 
         test('throwsIfDestinationParentFolderDoesntExist', () {
           Directory src = fs.directory(ns('/foo'))..createSync();
-          expectFileSystemException('No such file or directory', () {
+          expectFileSystemException(ErrorCodes.linux.ENOENT, () {
             src.renameSync(ns('/bar/baz'));
           });
         });
@@ -626,26 +620,21 @@ void runCommonTests(
         test('throwsIfDestinationIsNonEmptyDirectory', () {
           fs.file(ns('/bar/baz')).createSync(recursive: true);
           Directory src = fs.directory(ns('/foo'))..createSync();
-          // The error will be 'Directory not empty' on OS X, but it will be
-          // 'File exists' on Linux, so we just ignore it here in the test.
-          expectFileSystemException(null, () {
-            src.renameSync(ns('/bar'));
-          });
+          expectFileSystemException(
+            anyOf(ErrorCodes.macos.ENOTEMPTY, ErrorCodes.linux.EEXIST),
+            () => src.renameSync(ns('/bar')),
+          );
         });
 
         test('throwsIfSourceDoesntExist', () {
-          expectFileSystemException('No such file or directory', () {
+          expectFileSystemException(ErrorCodes.linux.ENOENT, () {
             fs.directory(ns('/foo')).renameSync(ns('/bar'));
           });
         });
 
         test('throwsIfSourceIsFile', () {
           fs.file(ns('/foo')).createSync();
-          // The error message is usually 'No such file or directory', but
-          // it's occasionally 'Not a directory', 'Directory not empty',
-          // 'File exists', or 'Undefined error'.
-          // https://github.com/dart-lang/sdk/issues/28147
-          expectFileSystemException(null, () {
+          expectFileSystemException(ErrorCodes.linux.ENOTDIR, () {
             fs.directory(ns('/foo')).renameSync(ns('/bar'));
           });
         });
@@ -665,7 +654,7 @@ void runCommonTests(
         test('throwsIfDestinationIsLinkToNotFound', () {
           Directory src = fs.directory(ns('/foo'))..createSync();
           fs.link(ns('/bar')).createSync(ns('/baz'));
-          expectFileSystemException('Not a directory', () {
+          expectFileSystemException(ErrorCodes.linux.ENOTDIR, () {
             src.renameSync(ns('/bar'));
           });
         });
@@ -674,7 +663,7 @@ void runCommonTests(
           Directory src = fs.directory(ns('/foo'))..createSync();
           fs.directory(ns('/bar')).createSync();
           fs.link(ns('/baz')).createSync(ns('/bar'));
-          expectFileSystemException('Not a directory', () {
+          expectFileSystemException(ErrorCodes.linux.ENOTDIR, () {
             src.renameSync(ns('/baz'));
           });
         });
@@ -723,9 +712,10 @@ void runCommonTests(
         test('throwsIfNonEmptyDirectoryExistsAndRecursiveFalse', () {
           Directory dir = fs.directory(ns('/foo'))..createSync();
           fs.file(ns('/foo/bar')).createSync();
-          expectFileSystemException('Directory not empty', () {
-            dir.deleteSync();
-          });
+          expectFileSystemException(
+            anyOf(ErrorCodes.linux.ENOTEMPTY, ErrorCodes.macos.ENOTEMPTY),
+            () => dir.deleteSync(),
+          );
         });
 
         test('succeedsIfNonEmptyDirectoryExistsAndRecursiveTrue', () {
@@ -737,13 +727,13 @@ void runCommonTests(
         });
 
         test('throwsIfDirectoryDoesntExistAndRecursiveFalse', () {
-          expectFileSystemException('No such file or directory', () {
+          expectFileSystemException(ErrorCodes.linux.ENOENT, () {
             fs.directory(ns('/foo')).deleteSync();
           });
         });
 
         test('throwsIfDirectoryDoesntExistAndRecursiveTrue', () {
-          expectFileSystemException('No such file or directory', () {
+          expectFileSystemException(ErrorCodes.linux.ENOENT, () {
             fs.directory(ns('/foo')).deleteSync(recursive: true);
           });
         });
@@ -756,7 +746,7 @@ void runCommonTests(
 
         test('throwsIfPathReferencesFileAndRecursiveFalse', () {
           fs.file(ns('/foo')).createSync();
-          expectFileSystemException('Not a directory', () {
+          expectFileSystemException(ErrorCodes.linux.ENOTDIR, () {
             fs.directory(ns('/foo')).deleteSync();
           });
         });
@@ -804,14 +794,14 @@ void runCommonTests(
         test('throwsIfPathReferencesLinkToFileAndRecursiveFalse', () {
           fs.file(ns('/foo')).createSync();
           fs.link(ns('/bar')).createSync(ns('/foo'));
-          expectFileSystemException('Not a directory', () {
+          expectFileSystemException(ErrorCodes.linux.ENOTDIR, () {
             fs.directory(ns('/bar')).deleteSync();
           });
         });
 
         test('throwsIfPathReferencesLinkToNotFoundAndRecursiveFalse', () {
           fs.link(ns('/foo')).createSync(ns('/bar'));
-          expectFileSystemException('Not a directory', () {
+          expectFileSystemException(ErrorCodes.linux.ENOTDIR, () {
             fs.directory(ns('/foo')).deleteSync();
           });
         });
@@ -826,26 +816,26 @@ void runCommonTests(
           fs.link(ns('/foo')).createSync(ns('/bar'));
           fs.link(ns('/bar')).createSync(ns('/baz'));
           fs.link(ns('/baz'))..createSync(ns('/foo'));
-          expectFileSystemException('Too many levels of symbolic links', () {
+          expectFileSystemException(ErrorCodes.linux.ETIME, () {
             fs.directory(ns('/foo')).resolveSymbolicLinksSync();
           });
         });
 
         test('throwsIfPathNotFoundInTraversal', () {
-          expectFileSystemException('No such file or directory', () {
+          expectFileSystemException(ErrorCodes.linux.ENOENT, () {
             fs.directory(ns('/foo/bar')).resolveSymbolicLinksSync();
           });
         });
 
         test('throwsIfPathNotFoundAtTail', () {
-          expectFileSystemException('No such file or directory', () {
+          expectFileSystemException(ErrorCodes.linux.ENOENT, () {
             fs.directory(ns('/foo')).resolveSymbolicLinksSync();
           });
         });
 
         test('throwsIfPathNotFoundInMiddleThenBackedOut', () {
           fs.directory(ns('/foo/bar')).createSync(recursive: true);
-          expectFileSystemException('No such file or directory', () {
+          expectFileSystemException(ErrorCodes.linux.ENOENT, () {
             fs.directory(ns('/foo/baz/../bar')).resolveSymbolicLinksSync();
           });
         });
@@ -955,7 +945,7 @@ void runCommonTests(
         });
 
         test('throwsIfDirectoryDoesntExist', () {
-          expectFileSystemException('No such file or directory', () {
+          expectFileSystemException(ErrorCodes.linux.ENOENT, () {
             fs.directory(ns('/foo')).createTempSync();
           });
         });
@@ -985,7 +975,7 @@ void runCommonTests(
 
         test('throwsWithNestedPathPrefixThatDoesntExist', () {
           Directory dir = fs.directory(ns('/foo'))..createSync();
-          expectFileSystemException('No such file or directory', () {
+          expectFileSystemException(ErrorCodes.linux.ENOENT, () {
             dir.createTempSync('bar/baz');
           });
         });
@@ -1019,7 +1009,7 @@ void runCommonTests(
         });
 
         test('throwsIfDirectoryDoesntExist', () {
-          expectFileSystemException('No such file or directory', () {
+          expectFileSystemException(ErrorCodes.linux.ENOENT, () {
             fs.directory(ns('/bar')).listSync();
           });
         });
@@ -1122,7 +1112,7 @@ void runCommonTests(
         });
 
         test('throwsIfAncestorDoesntExistRecursiveFalse', () {
-          expectFileSystemException('No such file or directory', () {
+          expectFileSystemException(ErrorCodes.linux.ENOENT, () {
             fs.file(ns('/foo/bar')).createSync();
           });
         });
@@ -1134,7 +1124,7 @@ void runCommonTests(
 
         test('throwsIfAlreadyExistsAsDirectory', () {
           fs.directory(ns('/foo')).createSync();
-          expectFileSystemException('Is a directory', () {
+          expectFileSystemException(ErrorCodes.linux.EISDIR, () {
             fs.file(ns('/foo')).createSync();
           });
         });
@@ -1142,7 +1132,7 @@ void runCommonTests(
         test('throwsIfAlreadyExistsAsLinkToDirectory', () {
           fs.directory(ns('/foo')).createSync();
           fs.link(ns('/bar')).createSync(ns('/foo'));
-          expectFileSystemException('Is a directory', () {
+          expectFileSystemException(ErrorCodes.linux.EISDIR, () {
             fs.file(ns('/bar')).createSync();
           });
         });
@@ -1165,10 +1155,10 @@ void runCommonTests(
 
         test('throwsIfAlreadyExistsAsLinkToNotFoundViaTraversal', () {
           fs.link(ns('/foo')).createSync(ns('/bar/baz'));
-          expectFileSystemException('No such file or directory', () {
+          expectFileSystemException(ErrorCodes.linux.ENOENT, () {
             fs.file(ns('/foo')).createSync();
           });
-          expectFileSystemException('No such file or directory', () {
+          expectFileSystemException(ErrorCodes.linux.ENOENT, () {
             fs.file(ns('/foo')).createSync(recursive: true);
           });
         });
@@ -1176,7 +1166,7 @@ void runCommonTests(
         /*
         test('throwsIfPathSegmentIsLinkToNotFoundAndRecursiveTrue', () {
           fs.link(ns('/foo')).createSync(ns('/bar'));
-          expectFileSystemException('No such file or directory', () {
+          expectFileSystemException(ErrorCodes.linux.ENOENT, () {
             fs.file(ns('/foo/baz')).createSync(recursive: true);
           });
         });
@@ -1210,7 +1200,7 @@ void runCommonTests(
 
         test('throwsIfDestinationDoesntExistViaTraversal', () {
           File f = fs.file(ns('/foo'))..createSync();
-          expectFileSystemException('No such file or directory', () {
+          expectFileSystemException(ErrorCodes.linux.ENOENT, () {
             f.renameSync(ns('/bar/baz'));
           });
         });
@@ -1226,7 +1216,7 @@ void runCommonTests(
         test('throwsIfDestinationExistsAsDirectory', () {
           File f = fs.file(ns('/foo'))..createSync();
           fs.directory(ns('/bar')).createSync();
-          expectFileSystemException('Is a directory', () {
+          expectFileSystemException(ErrorCodes.linux.EISDIR, () {
             f.renameSync(ns('/bar'));
           });
         });
@@ -1247,7 +1237,7 @@ void runCommonTests(
           File f = fs.file(ns('/foo'))..createSync();
           fs.directory(ns('/bar')).createSync();
           fs.link(ns('/baz')).createSync(ns('/bar'));
-          expectFileSystemException('Is a directory', () {
+          expectFileSystemException(ErrorCodes.linux.EISDIR, () {
             f.renameSync(ns('/baz'));
           });
         });
@@ -1262,14 +1252,14 @@ void runCommonTests(
         });
 
         test('throwsIfSourceDoesntExist', () {
-          expectFileSystemException('No such file or directory', () {
+          expectFileSystemException(ErrorCodes.linux.ENOENT, () {
             fs.file(ns('/foo')).renameSync(ns('/bar'));
           });
         });
 
         test('throwsIfSourceExistsAsDirectory', () {
           fs.directory(ns('/foo')).createSync();
-          expectFileSystemException('Is a directory', () {
+          expectFileSystemException(ErrorCodes.linux.EISDIR, () {
             fs.file(ns('/foo')).renameSync(ns('/bar'));
           });
         });
@@ -1288,14 +1278,14 @@ void runCommonTests(
         test('throwsIfSourceExistsAsLinkToDirectory', () {
           fs.directory(ns('/foo')).createSync();
           fs.link(ns('/bar')).createSync(ns('/foo'));
-          expectFileSystemException('Is a directory', () {
+          expectFileSystemException(ErrorCodes.linux.EISDIR, () {
             fs.file(ns('/bar')).renameSync(ns('/baz'));
           });
         });
 
         test('throwsIfSourceExistsAsLinkToNotFound', () {
           fs.link(ns('/foo')).createSync(ns('/bar'));
-          expectFileSystemException('No such file or directory', () {
+          expectFileSystemException(ErrorCodes.linux.ENOENT, () {
             fs.file(ns('/foo')).renameSync(ns('/baz'));
           });
         });
@@ -1320,7 +1310,7 @@ void runCommonTests(
 
         test('throwsIfDestinationDoesntExistViaTraversal', () {
           File f = fs.file(ns('/foo'))..createSync();
-          expectFileSystemException('No such file or directory', () {
+          expectFileSystemException(ErrorCodes.linux.ENOENT, () {
             f.copySync(ns('/bar/baz'));
           });
         });
@@ -1342,7 +1332,7 @@ void runCommonTests(
         test('throwsIfDestinationExistsAsDirectory', () {
           File f = fs.file(ns('/foo'))..createSync();
           fs.directory(ns('/bar')).createSync();
-          expectFileSystemException('Is a directory', () {
+          expectFileSystemException(ErrorCodes.linux.EISDIR, () {
             f.copySync(ns('/bar'));
           });
         });
@@ -1370,20 +1360,20 @@ void runCommonTests(
           File f = fs.file(ns('/foo'))..createSync();
           fs.directory(ns('/bar')).createSync();
           fs.link(ns('/baz')).createSync(ns('/bar'));
-          expectFileSystemException('Is a directory', () {
+          expectFileSystemException(ErrorCodes.linux.EISDIR, () {
             f.copySync(ns('/baz'));
           });
         });
 
         test('throwsIfSourceDoesntExist', () {
-          expectFileSystemException('No such file or directory', () {
+          expectFileSystemException(ErrorCodes.linux.ENOENT, () {
             fs.file(ns('/foo')).copySync(ns('/bar'));
           });
         });
 
         test('throwsIfSourceExistsAsDirectory', () {
           fs.directory(ns('/foo')).createSync();
-          expectFileSystemException('Is a directory', () {
+          expectFileSystemException(ErrorCodes.linux.EISDIR, () {
             fs.file(ns('/foo')).copySync(ns('/bar'));
           });
         });
@@ -1454,14 +1444,14 @@ void runCommonTests(
 
       group('length', () {
         test('throwsIfDoesntExist', () {
-          expectFileSystemException('No such file or directory', () {
+          expectFileSystemException(ErrorCodes.linux.ENOENT, () {
             fs.file(ns('/foo')).lengthSync();
           });
         });
 
         test('throwsIfExistsAsDirectory', () {
           fs.directory(ns('/foo')).createSync();
-          expectFileSystemException('Is a directory', () {
+          expectFileSystemException(ErrorCodes.linux.EISDIR, () {
             fs.file(ns('/foo')).lengthSync();
           });
         });
@@ -1505,14 +1495,14 @@ void runCommonTests(
         });
 
         test('throwsIfDoesntExist', () {
-          expectFileSystemException('No such file or directory', () {
+          expectFileSystemException(ErrorCodes.linux.ENOENT, () {
             fs.file(ns('/foo')).lastAccessedSync();
           });
         });
 
         test('throwsIfExistsAsDirectory', () {
           fs.directory(ns('/foo')).createSync();
-          expectFileSystemException('Is a directory', () {
+          expectFileSystemException(ErrorCodes.linux.EISDIR, () {
             fs.file(ns('/foo')).lastAccessedSync();
           });
         });
@@ -1532,14 +1522,14 @@ void runCommonTests(
         final DateTime time = new DateTime(1999);
 
         test('throwsIfDoesntExist', () {
-          expectFileSystemException('No such file or directory', () {
+          expectFileSystemException(ErrorCodes.linux.ENOENT, () {
             fs.file(ns('/foo')).setLastAccessedSync(time);
           });
         });
 
         test('throwsIfExistsAsDirectory', () {
           fs.directory(ns('/foo')).createSync();
-          expectFileSystemException('Is a directory', () {
+          expectFileSystemException(ErrorCodes.linux.EISDIR, () {
             fs.file(ns('/foo')).setLastAccessedSync(time);
           });
         });
@@ -1569,14 +1559,14 @@ void runCommonTests(
         });
 
         test('throwsIfDoesntExist', () {
-          expectFileSystemException('No such file or directory', () {
+          expectFileSystemException(ErrorCodes.linux.ENOENT, () {
             fs.file(ns('/foo')).lastModifiedSync();
           });
         });
 
         test('throwsIfExistsAsDirectory', () {
           fs.directory(ns('/foo')).createSync();
-          expectFileSystemException('Is a directory', () {
+          expectFileSystemException(ErrorCodes.linux.EISDIR, () {
             fs.file(ns('/foo')).lastModifiedSync();
           });
         });
@@ -1596,14 +1586,14 @@ void runCommonTests(
         final DateTime time = new DateTime(1999);
 
         test('throwsIfDoesntExist', () {
-          expectFileSystemException('No such file or directory', () {
+          expectFileSystemException(ErrorCodes.linux.ENOENT, () {
             fs.file(ns('/foo')).setLastModifiedSync(time);
           });
         });
 
         test('throwsIfExistsAsDirectory', () {
           fs.directory(ns('/foo')).createSync();
-          expectFileSystemException('Is a directory', () {
+          expectFileSystemException(ErrorCodes.linux.EISDIR, () {
             fs.file(ns('/foo')).setLastModifiedSync(time);
           });
         });
@@ -1626,7 +1616,7 @@ void runCommonTests(
         void testIfDoesntExistAtTail(FileMode mode) {
           if (mode == FileMode.READ) {
             test('throwsIfDoesntExistAtTail', () {
-              expectFileSystemException('No such file or directory', () {
+              expectFileSystemException(ErrorCodes.linux.ENOENT, () {
                 fs.file(ns('/bar')).openSync(mode: mode);
               });
             });
@@ -1641,7 +1631,7 @@ void runCommonTests(
 
         void testThrowsIfDoesntExistViaTraversal(FileMode mode) {
           test('throwsIfDoesntExistViaTraversal', () {
-            expectFileSystemException('No such file or directory', () {
+            expectFileSystemException(ErrorCodes.linux.ENOENT, () {
               fs.file(ns('/bar/baz')).openSync(mode: mode);
             });
           });
@@ -1668,28 +1658,28 @@ void runCommonTests(
 
             test('succeedsIfClosedAfterClosed', () {
               raf.closeSync();
-              expectFileSystemException('File closed', () {
+              expectFileSystemException(null, () {
                 raf.closeSync();
               });
             });
 
             test('throwsIfReadAfterClose', () {
               raf.closeSync();
-              expectFileSystemException('File closed', () {
+              expectFileSystemException(null, () {
                 raf.readByteSync();
               });
             });
 
             test('throwsIfWriteAfterClose', () {
               raf.closeSync();
-              expectFileSystemException('File closed', () {
+              expectFileSystemException(null, () {
                 raf.writeByteSync(0xBAD);
               });
             });
 
             test('throwsIfTruncateAfterClose', () {
               raf.closeSync();
-              expectFileSystemException('File closed', () {
+              expectFileSystemException(null, () {
                 raf.truncateSync(0);
               });
             });
@@ -1707,19 +1697,19 @@ void runCommonTests(
             if (mode == FileMode.WRITE_ONLY ||
                 mode == FileMode.WRITE_ONLY_APPEND) {
               test('throwsIfReadByte', () {
-                expectFileSystemException('Bad file descriptor', () {
+                expectFileSystemException(ErrorCodes.linux.EBADF, () {
                   raf.readByteSync();
                 });
               });
 
               test('throwsIfRead', () {
-                expectFileSystemException('Bad file descriptor', () {
+                expectFileSystemException(ErrorCodes.linux.EBADF, () {
                   raf.readSync(2);
                 });
               });
 
               test('throwsIfReadInto', () {
-                expectFileSystemException('Bad file descriptor', () {
+                expectFileSystemException(ErrorCodes.linux.EBADF, () {
                   raf.readIntoSync(new List<int>(5));
                 });
               });
@@ -1777,19 +1767,19 @@ void runCommonTests(
 
             if (mode == FileMode.READ) {
               test('throwsIfWriteByte', () {
-                expectFileSystemException('Bad file descriptor', () {
+                expectFileSystemException(ErrorCodes.linux.EBADF, () {
                   raf.writeByteSync(0xBAD);
                 });
               });
 
               test('throwsIfWriteFrom', () {
-                expectFileSystemException('Bad file descriptor', () {
+                expectFileSystemException(ErrorCodes.linux.EBADF, () {
                   raf.writeFromSync(<int>[1, 2, 3, 4]);
                 });
               });
 
               test('throwsIfWriteString', () {
-                expectFileSystemException('Bad file descriptor', () {
+                expectFileSystemException(ErrorCodes.linux.EBADF, () {
                   raf.writeStringSync('This should throw.');
                 });
               });
@@ -1927,7 +1917,7 @@ void runCommonTests(
               }
 
               test('throwsIfSetToNegativeNumber', () {
-                expectFileSystemException('Invalid argument', () {
+                expectFileSystemException(ErrorCodes.linux.EINVAL, () {
                   raf.setPositionSync(-12);
                 });
               });
@@ -1935,7 +1925,7 @@ void runCommonTests(
 
             if (mode == FileMode.READ) {
               test('throwsIfTruncate', () {
-                expectFileSystemException('Invalid argument', () {
+                expectFileSystemException(ErrorCodes.linux.EINVAL, () {
                   raf.truncateSync(5);
                 });
               });
@@ -1963,7 +1953,7 @@ void runCommonTests(
                 });
 
                 test('throwsIfSetToNegativeNumber', () {
-                  expectFileSystemException('Invalid argument', () {
+                  expectFileSystemException(ErrorCodes.linux.EINVAL, () {
                     raf.truncateSync(-2);
                   });
                 });
@@ -2000,7 +1990,7 @@ void runCommonTests(
         test('throwsIfDoesntExist', () {
           Stream<List<int>> stream = fs.file(ns('/foo')).openRead();
           expect(stream.drain(),
-              throwsFileSystemException('No such file or directory'));
+              throwsFileSystemException(ErrorCodes.linux.ENOENT));
         });
 
         test('succeedsIfExistsAsFile', () async {
@@ -2015,7 +2005,8 @@ void runCommonTests(
         test('throwsIfExistsAsDirectory', () {
           fs.directory(ns('/foo')).createSync();
           Stream<List<int>> stream = fs.file(ns('/foo')).openRead();
-          expect(stream.drain(), throwsFileSystemException('Is a directory'));
+          expect(stream.drain(),
+              throwsFileSystemException(ErrorCodes.linux.EISDIR));
         });
 
         test('succeedsIfExistsAsLinkToFile', () async {
@@ -2074,14 +2065,14 @@ void runCommonTests(
         test('throwsIfExistsAsDirectory', () {
           fs.directory(ns('/foo')).createSync();
           expect(fs.file(ns('/foo')).openWrite().close(),
-              throwsFileSystemException('Is a directory'));
+              throwsFileSystemException(ErrorCodes.linux.EISDIR));
         });
 
         test('throwsIfExistsAsLinkToDirectory', () {
           fs.directory(ns('/foo')).createSync();
           fs.link(ns('/bar')).createSync(ns('/foo'));
           expect(fs.file(ns('/bar')).openWrite().close(),
-              throwsFileSystemException('Is a directory'));
+              throwsFileSystemException(ErrorCodes.linux.EISDIR));
         });
 
         test('throwsIfModeIsRead', () {
@@ -2281,14 +2272,14 @@ void runCommonTests(
 
       group('readAsBytes', () {
         test('throwsIfDoesntExist', () {
-          expectFileSystemException('No such file or directory', () {
+          expectFileSystemException(ErrorCodes.linux.ENOENT, () {
             fs.file(ns('/foo')).readAsBytesSync();
           });
         });
 
         test('throwsIfExistsAsDirectory', () {
           fs.directory(ns('/foo')).createSync();
-          expectFileSystemException('Is a directory', () {
+          expectFileSystemException(ErrorCodes.linux.EISDIR, () {
             fs.file(ns('/foo')).readAsBytesSync();
           });
         });
@@ -2296,7 +2287,7 @@ void runCommonTests(
         test('throwsIfExistsAsLinkToDirectory', () {
           fs.directory(ns('/foo')).createSync();
           fs.link(ns('/bar')).createSync(ns('/foo'));
-          expectFileSystemException('Is a directory', () {
+          expectFileSystemException(ErrorCodes.linux.EISDIR, () {
             fs.file(ns('/bar')).readAsBytesSync();
           });
         });
@@ -2322,14 +2313,14 @@ void runCommonTests(
 
       group('readAsString', () {
         test('throwsIfDoesntExist', () {
-          expectFileSystemException('No such file or directory', () {
+          expectFileSystemException(ErrorCodes.linux.ENOENT, () {
             fs.file(ns('/foo')).readAsStringSync();
           });
         });
 
         test('throwsIfExistsAsDirectory', () {
           fs.directory(ns('/foo')).createSync();
-          expectFileSystemException('Is a directory', () {
+          expectFileSystemException(ErrorCodes.linux.EISDIR, () {
             fs.file(ns('/foo')).readAsStringSync();
           });
         });
@@ -2337,7 +2328,7 @@ void runCommonTests(
         test('throwsIfExistsAsLinkToDirectory', () {
           fs.directory(ns('/foo')).createSync();
           fs.link(ns('/bar')).createSync(ns('/foo'));
-          expectFileSystemException('Is a directory', () {
+          expectFileSystemException(ErrorCodes.linux.EISDIR, () {
             fs.file(ns('/bar')).readAsStringSync();
           });
         });
@@ -2370,14 +2361,14 @@ void runCommonTests(
 
       group('readAsLines', () {
         test('throwsIfDoesntExist', () {
-          expectFileSystemException('No such file or directory', () {
+          expectFileSystemException(ErrorCodes.linux.ENOENT, () {
             fs.file(ns('/foo')).readAsLinesSync();
           });
         });
 
         test('throwsIfExistsAsDirectory', () {
           fs.directory(ns('/foo')).createSync();
-          expectFileSystemException('Is a directory', () {
+          expectFileSystemException(ErrorCodes.linux.EISDIR, () {
             fs.file(ns('/foo')).readAsLinesSync();
           });
         });
@@ -2385,7 +2376,7 @@ void runCommonTests(
         test('throwsIfExistsAsLinkToDirectory', () {
           fs.directory(ns('/foo')).createSync();
           fs.link(ns('/bar')).createSync(ns('/foo'));
-          expectFileSystemException('Is a directory', () {
+          expectFileSystemException(ErrorCodes.linux.EISDIR, () {
             fs.file(ns('/bar')).readAsLinesSync();
           });
         });
@@ -2431,7 +2422,7 @@ void runCommonTests(
 
         test('throwsIfExistsAsDirectory', () {
           fs.directory(ns('/foo')).createSync();
-          expectFileSystemException('Is a directory', () {
+          expectFileSystemException(ErrorCodes.linux.EISDIR, () {
             fs.file(ns('/foo')).writeAsBytesSync(<int>[1, 2, 3, 4]);
           });
         });
@@ -2439,7 +2430,7 @@ void runCommonTests(
         test('throwsIfExistsAsLinkToDirectory', () {
           fs.directory(ns('/foo')).createSync();
           fs.link(ns('/bar')).createSync(ns('/foo'));
-          expectFileSystemException('Is a directory', () {
+          expectFileSystemException(ErrorCodes.linux.EISDIR, () {
             fs.file(ns('/foo')).writeAsBytesSync(<int>[1, 2, 3, 4]);
           });
         });
@@ -2453,7 +2444,7 @@ void runCommonTests(
 
         test('throwsIfFileModeRead', () {
           File f = fs.file(ns('/foo'))..createSync();
-          expectFileSystemException('Bad file descriptor', () {
+          expectFileSystemException(ErrorCodes.linux.EBADF, () {
             f.writeAsBytesSync(<int>[1], mode: FileMode.READ);
           });
         });
@@ -2495,7 +2486,7 @@ void runCommonTests(
 
         test('throwsIfExistsAsDirectory', () {
           fs.directory(ns('/foo')).createSync();
-          expectFileSystemException('Is a directory', () {
+          expectFileSystemException(ErrorCodes.linux.EISDIR, () {
             fs.file(ns('/foo')).writeAsStringSync('Hello world');
           });
         });
@@ -2503,7 +2494,7 @@ void runCommonTests(
         test('throwsIfExistsAsLinkToDirectory', () {
           fs.directory(ns('/foo')).createSync();
           fs.link(ns('/bar')).createSync(ns('/foo'));
-          expectFileSystemException('Is a directory', () {
+          expectFileSystemException(ErrorCodes.linux.EISDIR, () {
             fs.file(ns('/foo')).writeAsStringSync('Hello world');
           });
         });
@@ -2517,7 +2508,7 @@ void runCommonTests(
 
         test('throwsIfFileModeRead', () {
           File f = fs.file(ns('/foo'))..createSync();
-          expectFileSystemException('Bad file descriptor', () {
+          expectFileSystemException(ErrorCodes.linux.EBADF, () {
             f.writeAsStringSync('Hello world', mode: FileMode.READ);
           });
         });
@@ -2633,13 +2624,13 @@ void runCommonTests(
         });
 
         test('throwsIfDoesntExistAndRecursiveFalse', () {
-          expectFileSystemException('No such file or directory', () {
+          expectFileSystemException(ErrorCodes.linux.ENOENT, () {
             fs.file(ns('/foo')).deleteSync();
           });
         });
 
         test('throwsIfDoesntExistAndRecursiveTrue', () {
-          expectFileSystemException('No such file or directory', () {
+          expectFileSystemException(ErrorCodes.linux.ENOENT, () {
             fs.file(ns('/foo')).deleteSync(recursive: true);
           });
         });
@@ -2652,7 +2643,7 @@ void runCommonTests(
 
         test('throwsIfExistsAsDirectoryAndRecursiveFalse', () {
           fs.directory(ns('/foo')).createSync();
-          expectFileSystemException('Is a directory', () {
+          expectFileSystemException(ErrorCodes.linux.EISDIR, () {
             fs.file(ns('/foo')).deleteSync();
           });
         });
@@ -2685,7 +2676,7 @@ void runCommonTests(
         test('throwsIfExistsAsLinkToDirectoryAndRecursiveFalse', () {
           fs.directory(ns('/foo')).createSync();
           fs.link(ns('/bar')).createSync(ns('/foo'));
-          expectFileSystemException('Is a directory', () {
+          expectFileSystemException(ErrorCodes.linux.EISDIR, () {
             fs.file(ns('/bar')).deleteSync();
           });
         });
@@ -2816,20 +2807,20 @@ void runCommonTests(
         });
 
         test('throwsIfLinkDoesntExistAtTail', () {
-          expectFileSystemException('No such file or directory', () {
+          expectFileSystemException(ErrorCodes.linux.ENOENT, () {
             fs.link(ns('/foo')).deleteSync();
           });
         });
 
         test('throwsIfLinkDoesntExistViaTraversal', () {
-          expectFileSystemException('No such file or directory', () {
+          expectFileSystemException(ErrorCodes.linux.ENOENT, () {
             fs.link(ns('/foo/bar')).deleteSync();
           });
         });
 
         test('throwsIfPathReferencesFileAndRecursiveFalse', () {
           fs.file(ns('/foo')).createSync();
-          expectFileSystemException('Invalid argument', () {
+          expectFileSystemException(ErrorCodes.linux.EINVAL, () {
             fs.link(ns('/foo')).deleteSync();
           });
         });
@@ -2843,10 +2834,7 @@ void runCommonTests(
 
         test('throwsIfPathReferencesDirectoryAndRecursiveFalse', () {
           fs.directory(ns('/foo')).createSync();
-          // TODO(tvolkert): Change this to just be 'Is a directory'
-          // once Dart 1.22 is stable.
-          String pattern = '(Invalid argument|Is a directory)';
-          expectFileSystemException(matches(pattern), () {
+          expectFileSystemException(ErrorCodes.linux.EISDIR, () {
             fs.link(ns('/foo')).deleteSync();
           });
         });
@@ -2938,7 +2926,7 @@ void runCommonTests(
         });
 
         test('throwsIfLinkDoesntExistViaTraversalAndRecursiveFalse', () {
-          expectFileSystemException('No such file or directory', () {
+          expectFileSystemException(ErrorCodes.linux.ENOENT, () {
             fs.link(ns('/foo/bar')).createSync('baz');
           });
         });
@@ -2954,28 +2942,28 @@ void runCommonTests(
 
         test('throwsIfAlreadyExistsAsFile', () {
           fs.file(ns('/foo')).createSync();
-          expectFileSystemException('File exists', () {
+          expectFileSystemException(ErrorCodes.linux.EEXIST, () {
             fs.link(ns('/foo')).createSync(ns('/bar'));
           });
         });
 
         test('throwsIfAlreadyExistsAsDirectory', () {
           fs.directory(ns('/foo')).createSync();
-          expectFileSystemException('File exists', () {
+          expectFileSystemException(ErrorCodes.linux.EEXIST, () {
             fs.link(ns('/foo')).createSync(ns('/bar'));
           });
         });
 
         test('throwsIfAlreadyExistsWithSameTarget', () {
           fs.link(ns('/foo')).createSync(ns('/bar'));
-          expectFileSystemException('File exists', () {
+          expectFileSystemException(ErrorCodes.linux.EEXIST, () {
             fs.link(ns('/foo')).createSync(ns('/bar'));
           });
         });
 
         test('throwsIfAlreadyExistsWithDifferentTarget', () {
           fs.link(ns('/foo')).createSync(ns('/bar'));
-          expectFileSystemException('File exists', () {
+          expectFileSystemException(ErrorCodes.linux.EEXIST, () {
             fs.link(ns('/foo')).createSync(ns('/baz'));
           });
         });
@@ -2988,30 +2976,27 @@ void runCommonTests(
         });
 
         test('throwsIfLinkDoesntExistAtTail', () {
-          expectFileSystemException('No such file or directory', () {
+          expectFileSystemException(ErrorCodes.linux.ENOENT, () {
             fs.link(ns('/foo')).updateSync(ns('/bar'));
           });
         });
 
         test('throwsIfLinkDoesntExistViaTraversal', () {
-          expectFileSystemException('No such file or directory', () {
+          expectFileSystemException(ErrorCodes.linux.ENOENT, () {
             fs.link(ns('/foo/bar')).updateSync(ns('/baz'));
           });
         });
 
         test('throwsIfPathReferencesFile', () {
           fs.file(ns('/foo')).createSync();
-          expectFileSystemException('Invalid argument', () {
+          expectFileSystemException(ErrorCodes.linux.EINVAL, () {
             fs.link(ns('/foo')).updateSync(ns('/bar'));
           });
         });
 
         test('throwsIfPathReferencesDirectory', () {
           fs.directory(ns('/foo')).createSync();
-          // TODO(tvolkert): Change this to just be 'Is a directory'
-          // once Dart 1.22 is stable.
-          String pattern = '(Invalid argument|Is a directory)';
-          expectFileSystemException(matches(pattern), () {
+          expectFileSystemException(ErrorCodes.linux.EISDIR, () {
             fs.link(ns('/foo')).updateSync(ns('/bar'));
           });
         });
@@ -3049,27 +3034,27 @@ void runCommonTests(
 
       group('target', () {
         test('throwsIfLinkDoesntExistAtTail', () {
-          expectFileSystemException('No such file or directory', () {
+          expectFileSystemException(ErrorCodes.linux.ENOENT, () {
             fs.link(ns('/foo')).targetSync();
           });
         });
 
         test('throwsIfLinkDoesntExistViaTraversal', () {
-          expectFileSystemException('No such file or directory', () {
+          expectFileSystemException(ErrorCodes.linux.ENOENT, () {
             fs.link(ns('/foo/bar')).targetSync();
           });
         });
 
         test('throwsIfPathReferencesFile', () {
           fs.file(ns('/foo')).createSync();
-          expectFileSystemException('No such file or directory', () {
+          expectFileSystemException(ErrorCodes.linux.ENOENT, () {
             fs.link(ns('/foo')).targetSync();
           });
         });
 
         test('throwsIfPathReferencesDirectory', () {
           fs.directory(ns('/foo')).createSync();
-          expectFileSystemException('No such file or directory', () {
+          expectFileSystemException(ErrorCodes.linux.ENOENT, () {
             fs.link(ns('/foo')).targetSync();
           });
         });
@@ -3106,27 +3091,27 @@ void runCommonTests(
         });
 
         test('throwsIfSourceDoesntExistAtTail', () {
-          expectFileSystemException('No such file or directory', () {
+          expectFileSystemException(ErrorCodes.linux.ENOENT, () {
             fs.link(ns('/foo')).renameSync(ns('/bar'));
           });
         });
 
         test('throwsIfSourceDoesntExistViaTraversal', () {
-          expectFileSystemException('No such file or directory', () {
+          expectFileSystemException(ErrorCodes.linux.ENOENT, () {
             fs.link(ns('/foo/bar')).renameSync(ns('/bar'));
           });
         });
 
         test('throwsIfSourceIsFile', () {
           fs.file(ns('/foo')).createSync();
-          expectFileSystemException('Invalid argument', () {
+          expectFileSystemException(ErrorCodes.linux.EINVAL, () {
             fs.link(ns('/foo')).renameSync(ns('/bar'));
           });
         });
 
         test('throwsIfSourceIsDirectory', () {
           fs.directory(ns('/foo')).createSync();
-          expectFileSystemException('Is a directory', () {
+          expectFileSystemException(ErrorCodes.linux.EISDIR, () {
             fs.link(ns('/foo')).renameSync(ns('/bar'));
           });
         });
@@ -3189,7 +3174,7 @@ void runCommonTests(
 
         test('throwsIfDestinationDoesntExistViaTraversal', () {
           Link l = fs.link(ns('/foo'))..createSync(ns('/bar'));
-          expectFileSystemException('No such file or directory', () {
+          expectFileSystemException(ErrorCodes.linux.ENOENT, () {
             l.renameSync(ns('/baz/qux'));
           });
         });
@@ -3197,7 +3182,7 @@ void runCommonTests(
         test('throwsIfDestinationExistsAsFile', () {
           Link l = fs.link(ns('/foo'))..createSync(ns('/bar'));
           fs.file(ns('/baz')).createSync();
-          expectFileSystemException('Invalid argument', () {
+          expectFileSystemException(ErrorCodes.linux.EINVAL, () {
             l.renameSync(ns('/baz'));
           });
         });
@@ -3205,7 +3190,7 @@ void runCommonTests(
         test('throwsIfDestinationExistsAsDirectory', () {
           Link l = fs.link(ns('/foo'))..createSync(ns('/bar'));
           fs.directory(ns('/baz')).createSync();
-          expectFileSystemException('Invalid argument', () {
+          expectFileSystemException(ErrorCodes.linux.EINVAL, () {
             l.renameSync(ns('/baz'));
           });
         });
