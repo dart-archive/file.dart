@@ -1,3 +1,7 @@
+#### 2.2.0
+
+* Added `ErrorCodes` class, which holds errno values.
+
 #### 2.1.0
 
 * Add support for new `dart:io` API methods added in Dart SDK 1.23

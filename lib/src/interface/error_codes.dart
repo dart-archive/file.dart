@@ -6,6 +6,7 @@ import 'error_codes_internal.dart'
     if (dart.library.io) 'error_codes_dart_io.dart';
 
 /// Operating system error codes.
+// TODO(tvolkert): Remove (https://github.com/dart-lang/sdk/issues/28860)
 class ErrorCodes {
   ErrorCodes._();
 
