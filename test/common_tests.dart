@@ -9,6 +9,7 @@ import 'dart:io' as io;
 
 import 'package:file/file.dart';
 import 'package:file/testing.dart';
+import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 import 'package:test/test.dart' as testpkg show group, setUp, tearDown, test;
 
@@ -126,17 +127,25 @@ void runCommonTests(
     /// Returns [path] prefixed by the [root] namespace.
     /// This is only intended for absolute paths.
     String ns(String path) {
-      // We purposefully don't use package:path here because some of our tests
-      // use non-standard paths that package:path would correct for us
-      // inadvertently (thus thwarting the purpose of that test).
-      assert(path.startsWith('/'));
-      return root == '/' ? path : (path == '/' ? root : '$root$path');
+      p.Context posix = new p.Context(style: p.Style.posix);
+      List<String> parts = posix.split(path);
+      path = fs.path.joinAll(parts);
+      String rootPrefix = fs.path.rootPrefix(path);
+      assert(rootPrefix.isNotEmpty);
+      String result = root == rootPrefix
+          ? path
+          : (path == rootPrefix
+              ? root
+              : fs.path.join(root, fs.path.joinAll(parts.sublist(1))));
+      return result;
     }
 
     setUp(() async {
       root = rootfn != null ? rootfn() : '/';
-      assert(root.startsWith('/') && (root == '/' || !root.endsWith('/')));
       fs = await createFs();
+      assert(fs.path.isAbsolute(root));
+      assert(!root.endsWith(fs.path.separator) ||
+          fs.path.rootPrefix(root) == root);
     });
 
     group('FileSystem', () {
@@ -454,8 +463,8 @@ void runCommonTests(
 
     group('Directory', () {
       test('uri', () {
-        expect(
-            fs.directory(ns('/foo')).uri.toString(), 'file://${ns('/foo/')}');
+        expect(fs.directory(ns('/foo')).uri.toString(),
+            'file://${ns('/foo')}${fs.path.separator}');
         expect(fs.directory('foo').uri.toString(), 'foo/');
       });
 
