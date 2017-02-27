@@ -12,7 +12,7 @@ abstract class ProxyObject {}
 /// This is used when a caller accesses a method on a [ProxyObject] via the
 /// method's getter. In these cases, the caller will receive a [MethodProxy]
 /// that allows delayed invocation of the method.
-class MethodProxy extends Object implements Function {
+class MethodProxy {
   /// The object on which the method was retrieved.
   ///
   /// This will be the target object when this method proxy is invoked.

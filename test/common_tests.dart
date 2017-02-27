@@ -2276,7 +2276,7 @@ void runCommonTests(
             });
 
             test('blocksCallToFlushWhileStreamIsActive', () {
-              expect(sink.flush, throwsStateError);
+              expect(() => sink.flush(), throwsStateError);
             });
           });
         });
