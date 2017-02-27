@@ -1,3 +1,10 @@
+#### 2.3.0
+
+* Added the following convenience methods in `Directory`:
+  * `Directory.childDirectory(String basename)`
+  * `Directory.childFile(String basename)`
+  * `Directory.childLink(String basename)`
+
 #### 2.2.0
 
 * Added `ErrorCodes` class, which holds errno values.

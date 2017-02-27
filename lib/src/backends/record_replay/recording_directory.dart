@@ -24,6 +24,9 @@ class RecordingDirectory extends RecordingFileSystemEntity<Directory>
       #createTempSync: _createTempSync,
       #list: _list,
       #listSync: _listSync,
+      #childDirectory: _childDirectory,
+      #childFile: _childFile,
+      #childLink: _childLink,
     });
   }
 
@@ -63,4 +66,11 @@ class RecordingDirectory extends RecordingFileSystemEntity<Directory>
     }
     throw new FileSystemException('Unsupported type: $entity', entity.path);
   }
+
+  Directory _childDirectory(String basename) =>
+      wrapDirectory(delegate.childDirectory(basename));
+
+  File _childFile(String basename) => wrapFile(delegate.childFile(basename));
+
+  Link _childLink(String basename) => wrapLink(delegate.childLink(basename));
 }

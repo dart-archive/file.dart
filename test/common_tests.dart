@@ -1101,6 +1101,16 @@ void runCommonTests(
           }
         });
       });
+
+      test('childEntities', () {
+        Directory dir = fs.directory(ns('/foo'))..createSync();
+        dir.childDirectory('bar').createSync();
+        dir.childFile('baz').createSync();
+        dir.childLink('qux').createSync('bar');
+        expect(fs.directory(ns('/foo/bar')), exists);
+        expect(fs.file(ns('/foo/baz')), exists);
+        expect(fs.link(ns('/foo/qux')), exists);
+      });
     });
 
     group('File', () {

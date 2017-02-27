@@ -4,7 +4,9 @@
 
 part of file.src.backends.memory;
 
-class _MemoryDirectory extends _MemoryFileSystemEntity implements Directory {
+class _MemoryDirectory extends _MemoryFileSystemEntity
+    with common.DirectoryAddOnsMixin
+    implements Directory {
   static int _tempCounter = 0;
 
   _MemoryDirectory(MemoryFileSystem fileSystem, String path)
