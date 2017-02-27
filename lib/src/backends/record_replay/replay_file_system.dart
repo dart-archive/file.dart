@@ -41,6 +41,22 @@ import 'replay_proxy_mixin.dart';
 ///     assertions in your tests about which methods were invoked and in what
 ///     order.
 ///
+/// *Implementation note*: this class uses [noSuchMethod] to dynamically handle
+/// invocations. As a result, method references on objects herein will not pass
+/// `is` checks or checked-mode checks on type. For example:
+///
+/// ```dart
+/// typedef FileStat StatSync(String path);
+/// FileSystem fs = new ReplayFileSystem(directory);
+///
+/// StatSync method = fs.statSync;     // Will fail in checked-mode
+/// fs.statSync is StatSync            // Will return false
+/// fs.statSync is Function            // Will return false
+///
+/// dynamic method2 = fs.statSync;     // OK
+/// FileStat stat = method2('/path');  // OK
+/// ```
+///
 /// See also:
 ///   - [RecordingFileSystem]
 abstract class ReplayFileSystem extends FileSystem {
