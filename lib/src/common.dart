@@ -63,3 +63,22 @@ FileSystemException badFileDescriptor(String path) {
 FileSystemException _fsException(String path, String msg, int errorCode) {
   return new FileSystemException(msg, path, new OSError(msg, errorCode));
 }
+
+/// Mixin containing implementations of [Directory] methods that are common
+/// to all implementations.
+abstract class DirectoryAddOnsMixin implements Directory {
+  @override
+  Directory childDirectory(String basename) {
+    return fileSystem.directory(fileSystem.path.join(path, basename));
+  }
+
+  @override
+  File childFile(String basename) {
+    return fileSystem.file(fileSystem.path.join(path, basename));
+  }
+
+  @override
+  Link childLink(String basename) {
+    return fileSystem.link(fileSystem.path.join(path, basename));
+  }
+}

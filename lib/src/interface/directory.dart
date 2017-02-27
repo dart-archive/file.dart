@@ -4,7 +4,9 @@
 
 import 'dart:async';
 
+import 'file.dart';
 import 'file_system_entity.dart';
+import 'link.dart';
 import '../io.dart' as io;
 
 /// A reference to a directory on the file system.
@@ -35,4 +37,16 @@ abstract class Directory implements FileSystemEntity, io.Directory {
   @override
   List<FileSystemEntity> listSync(
       {bool recursive: false, bool followLinks: true});
+
+  /// Returns a reference to a [Directory] that exists as a child of this
+  /// directory and has the specified [basename].
+  Directory childDirectory(String basename);
+
+  /// Returns a reference to a [File] that exists as a child of this directory
+  /// and has the specified [basename].
+  File childFile(String basename);
+
+  /// Returns a reference to a [Link] that exists as a child of this directory
+  /// and has the specified [basename].
+  Link childLink(String basename);
 }

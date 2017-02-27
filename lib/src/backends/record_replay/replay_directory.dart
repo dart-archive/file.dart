@@ -36,6 +36,9 @@ class ReplayDirectory extends ReplayFileSystemEntity implements Directory {
       #createTempSync: reviveDirectory,
       #list: reviveEntities.fuse(const ToStream<FileSystemEntity>()),
       #listSync: reviveEntities,
+      #childDirectory: reviveDirectory,
+      #childFile: new ReviveFile(fileSystem),
+      #childLink: new ReviveLink(fileSystem),
     });
 
     properties.addAll(<Symbol, Converter<dynamic, dynamic>>{
