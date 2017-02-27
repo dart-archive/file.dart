@@ -42,7 +42,7 @@ import 'replay_file_system.dart';
 ///
 /// ```dart
 /// typedef FileStat StatSync(String path);
-/// FileSystem fs = new ReplayFileSystem(delegate: delegate, destination: dir);
+/// FileSystem fs = new RecordingFileSystem(delegate: delegate, destination: dir);
 ///
 /// StatSync method = fs.statSync;     // Will fail in checked-mode
 /// fs.statSync is StatSync            // Will return false
