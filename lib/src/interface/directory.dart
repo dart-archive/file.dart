@@ -40,19 +40,13 @@ abstract class Directory implements FileSystemEntity, io.Directory {
 
   /// Returns a reference to a [Directory] that exists as a child of this
   /// directory and has the specified [basename].
-  Directory childDirectory(String basename) {
-    return fileSystem.directory(fileSystem.path.join(path, basename));
-  }
+  Directory childDirectory(String basename);
 
   /// Returns a reference to a [File] that exists as a child of this directory
   /// and has the specified [basename].
-  File childFile(String basename) {
-    return fileSystem.file(fileSystem.path.join(path, basename));
-  }
+  File childFile(String basename);
 
   /// Returns a reference to a [Link] that exists as a child of this directory
   /// and has the specified [basename].
-  Link childLink(String basename) {
-    return fileSystem.link(fileSystem.path.join(path, basename));
-  }
+  Link childLink(String basename);
 }
