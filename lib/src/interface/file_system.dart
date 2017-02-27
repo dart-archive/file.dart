@@ -4,7 +4,7 @@
 
 import 'dart:async';
 
-import 'package:path/path.dart' as path;
+import 'package:path/path.dart' as p;
 
 import 'directory.dart';
 import 'file.dart';
@@ -38,7 +38,7 @@ abstract class FileSystem {
   Link link(dynamic path);
 
   /// An object for manipulating paths in this file system.
-  path.Context get path;
+  p.Context get path;
 
   /// Gets the system temp directory.
   ///
