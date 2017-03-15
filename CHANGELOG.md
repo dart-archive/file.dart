@@ -1,3 +1,8 @@
+#### 2.3.1
+
+* Fixed `MemoryFileSystem` to make `File.writeAs...()` update the last modified
+  time of the file.
+
 #### 2.3.0
 
 * Added the following convenience methods in `Directory`:

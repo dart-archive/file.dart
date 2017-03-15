@@ -235,6 +235,7 @@ class _MemoryFile extends _MemoryFileSystemEntity implements File {
     _FileNode node = _resolvedBackingOrCreate;
     _truncateIfNecessary(node, mode);
     node.content.addAll(bytes);
+    node.touch();
   }
 
   @override
