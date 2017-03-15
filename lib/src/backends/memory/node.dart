@@ -84,6 +84,11 @@ abstract class _RealNode extends _Node {
 
   /// The size of the file system entity in bytes.
   int get size;
+
+  /// Updates the last modified time of the node.
+  void touch() {
+    modified = new DateTime.now().millisecondsSinceEpoch;
+  }
 }
 
 /// Class that represents the backing for an in-memory directory.

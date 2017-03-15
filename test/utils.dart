@@ -36,6 +36,10 @@ Matcher isSameOrBefore(DateTime time) => new _IsSameOrBefore(time);
 /// the specified [time].
 Matcher isSameOrAfter(DateTime time) => new _IsSameOrAfter(time);
 
+/// Successfully matches against a [DateTime] that is after the specified
+/// [time].
+Matcher isAfter(DateTime time) => new _IsAfter(time);
+
 abstract class _CompareDateTime extends Matcher {
   final DateTime _time;
   final Matcher _matcher;
@@ -89,6 +93,16 @@ class _IsSameOrAfter extends _CompareDateTime {
 
   @override
   String get descriptionOperator => '>=';
+
+  @override
+  String get mismatchAdjective => 'before';
+}
+
+class _IsAfter extends _CompareDateTime {
+  const _IsAfter(DateTime time) : super(time, isPositive);
+
+  @override
+  String get descriptionOperator => '>';
 
   @override
   String get mismatchAdjective => 'before';

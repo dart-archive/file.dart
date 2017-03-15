@@ -2492,6 +2492,15 @@ void runCommonTests(
           f.writeAsBytesSync(<int>[]);
           expect(f.readAsBytesSync(), <int>[]);
         });
+
+        test('updatesLastModifiedTime', () async {
+          File f = fs.file(ns('/foo'))..createSync();
+          DateTime before = f.statSync().modified;
+          await new Future<Null>.delayed(const Duration(seconds: 2));
+          f.writeAsBytesSync(<int>[1, 2, 3]);
+          DateTime after = f.statSync().modified;
+          expect(after, isAfter(before));
+        });
       });
 
       group('writeAsString', () {
