@@ -32,6 +32,8 @@ void main() {
 
     setUpAll(() {
       if (io.Platform.isWindows) {
+        // TODO(tvolkert): Remove once all more serious test failures are fixed
+        // https://github.com/google/file.dart/issues/56
         ignoreOsErrorCodes = true;
       }
     });
