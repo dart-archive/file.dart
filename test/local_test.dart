@@ -29,6 +29,10 @@ void main() {
       tmp.deleteSync(recursive: true);
     });
 
+    Map<String, List<String>> skipOnPlatform = <String, List<String>>{
+      'windows': <String>[],
+    };
+
     runCommonTests(
       () => fs,
       root: () => tmp.path,
@@ -70,7 +74,7 @@ void main() {
 
         // https://github.com/dart-lang/sdk/issues/28277
         'Link > rename > throwsIfDestinationExistsAsFile',
-      ],
+      ]..addAll(skipOnPlatform[io.Platform.operatingSystem] ?? <String>[]),
     );
 
     group('toString', () {
