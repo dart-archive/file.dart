@@ -96,6 +96,7 @@ void main() {
         'File > open > READ > RandomAccessFile > throwsIfTruncate',
         'File > open > WRITE > throwsIfDoesntExistViaTraversal',
         'File > open > WRITE > RandomAccessFile > position > throwsIfSetToNegativeNumber',
+        'File > open > WRITE > RandomAccessFile > truncate > throwsIfSetToNegativeNumber',
       ],
     };
 
