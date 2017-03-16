@@ -31,58 +31,61 @@ void main() {
       );
     });
 
-    group('localBacked', () {
-      ChrootFileSystem fs;
-      io.Directory tmp;
+    // LocalFileSystem is broken on Windows
+    if (!io.Platform.isWindows) {
+      group('localBacked', () {
+        ChrootFileSystem fs;
+        io.Directory tmp;
 
-      setUp(() {
-        tmp = io.Directory.systemTemp.createTempSync('file_test_');
-        tmp = new io.Directory(tmp.resolveSymbolicLinksSync());
-        fs = new ChrootFileSystem(new LocalFileSystem(), tmp.path);
+        setUp(() {
+          tmp = io.Directory.systemTemp.createTempSync('file_test_');
+          tmp = new io.Directory(tmp.resolveSymbolicLinksSync());
+          fs = new ChrootFileSystem(new LocalFileSystem(), tmp.path);
+        });
+
+        tearDown(() {
+          tmp.deleteSync(recursive: true);
+        });
+
+        runCommonTests(
+          () => fs,
+          skip: <String>[
+            // API doesn't exit in dart:io until Dart 1.23
+            'File > lastAccessed',
+            'File > setLastAccessed',
+            'File > setLastModified',
+
+            // https://github.com/dart-lang/sdk/issues/28170
+            'File > create > throwsIfAlreadyExistsAsDirectory',
+            'File > create > throwsIfAlreadyExistsAsLinkToDirectory',
+
+            // https://github.com/dart-lang/sdk/issues/28172
+            'File > length > throwsIfExistsAsDirectory',
+
+            // https://github.com/dart-lang/sdk/issues/28173
+            'File > lastModified > throwsIfExistsAsDirectory',
+
+            // https://github.com/dart-lang/sdk/issues/28174
+            '.+ > RandomAccessFile > writeFromWithStart',
+            '.+ > RandomAccessFile > writeFromWithStartAndEnd',
+
+            // https://github.com/dart-lang/sdk/issues/28201
+            'Link > update > throwsIfLinkDoesntExistAtTail',
+            'Link > update > throwsIfLinkDoesntExistViaTraversal',
+
+            // https://github.com/dart-lang/sdk/issues/28202
+            'Link > rename > throwsIfSourceDoesntExistAtTail',
+            'Link > rename > throwsIfSourceDoesntExistViaTraversal',
+
+            // https://github.com/dart-lang/sdk/issues/28275
+            'Link > rename > throwsIfDestinationExistsAsDirectory',
+
+            // https://github.com/dart-lang/sdk/issues/28277
+            'Link > rename > throwsIfDestinationExistsAsFile',
+          ],
+        );
       });
-
-      tearDown(() {
-        tmp.deleteSync(recursive: true);
-      });
-
-      runCommonTests(
-        () => fs,
-        skip: <String>[
-          // API doesn't exit in dart:io until Dart 1.23
-          'File > lastAccessed',
-          'File > setLastAccessed',
-          'File > setLastModified',
-
-          // https://github.com/dart-lang/sdk/issues/28170
-          'File > create > throwsIfAlreadyExistsAsDirectory',
-          'File > create > throwsIfAlreadyExistsAsLinkToDirectory',
-
-          // https://github.com/dart-lang/sdk/issues/28172
-          'File > length > throwsIfExistsAsDirectory',
-
-          // https://github.com/dart-lang/sdk/issues/28173
-          'File > lastModified > throwsIfExistsAsDirectory',
-
-          // https://github.com/dart-lang/sdk/issues/28174
-          '.+ > RandomAccessFile > writeFromWithStart',
-          '.+ > RandomAccessFile > writeFromWithStartAndEnd',
-
-          // https://github.com/dart-lang/sdk/issues/28201
-          'Link > update > throwsIfLinkDoesntExistAtTail',
-          'Link > update > throwsIfLinkDoesntExistViaTraversal',
-
-          // https://github.com/dart-lang/sdk/issues/28202
-          'Link > rename > throwsIfSourceDoesntExistAtTail',
-          'Link > rename > throwsIfSourceDoesntExistViaTraversal',
-
-          // https://github.com/dart-lang/sdk/issues/28275
-          'Link > rename > throwsIfDestinationExistsAsDirectory',
-
-          // https://github.com/dart-lang/sdk/issues/28277
-          'Link > rename > throwsIfDestinationExistsAsFile',
-        ],
-      );
-    });
+    }
 
     group('chrootSpecific', () {
       ChrootFileSystem fs;
