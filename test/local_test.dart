@@ -96,10 +96,18 @@ void main() {
         'File > open > READ > RandomAccessFile > throwsIfTruncate',
         'File > open > WRITE > throwsIfDoesntExistViaTraversal',
         'File > open > WRITE > RandomAccessFile > position > throwsIfSetToNegativeNumber',
-        'File > open > WRITE > RandomAccessFile > truncate > throwsIfSetToNegativeNumber',
         'File > open > APPEND > throwsIfDoesntExistViaTraversal',
         'File > open > APPEND > RandomAccessFile > position > throwsIfSetToNegativeNumber',
+        'File > open > WRITE_ONLY > throwsIfDoesntExistViaTraversal',
+        'File > open > WRITE_ONLY > RandomAccessFile > throwsIfReadByte',
+        'File > open > WRITE_ONLY > RandomAccessFile > throwsIfRead',
+        'File > open > WRITE_ONLY > RandomAccessFile > throwsIfReadInto',
+        'File > open > WRITE_ONLY > RandomAccessFile > position > throwsIfSetToNegativeNumber',
+
+        // Fixed in SDK 1.23 (https://github.com/dart-lang/sdk/issues/28852)
+        'File > open > WRITE > RandomAccessFile > truncate > throwsIfSetToNegativeNumber',
         'File > open > APPEND > RandomAccessFile > truncate > throwsIfSetToNegativeNumber',
+        'File > open > WRITE_ONLY > RandomAccessFile > truncate > throwsIfSetToNegativeNumber',
       ],
     };
 
