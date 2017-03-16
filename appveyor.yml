@@ -1,0 +1,14 @@
+install:
+  - choco install dart-sdk
+  - ps: refreshenv
+  - refreshenv
+  - set DART_DIR=c:\tools\dart-sdk\bin
+  - set PUB_EXECUTABLE=pub.bat
+  - ps: pwd
+  - pub get
+
+build: off
+
+test_script:
+  # TODO(tvolkert): Broaden scope of tests
+  - pub run test test\memory_test.dart
