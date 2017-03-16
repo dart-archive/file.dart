@@ -5,6 +5,8 @@
 import 'package:file/file.dart';
 import 'package:test/test.dart';
 
+import 'internal.dart';
+
 /// Matcher that successfully matches against any instance of [Directory].
 const Matcher isDirectory = const isInstanceOf<Directory>();
 
@@ -70,7 +72,14 @@ class _FileSystemException extends Matcher {
   final Matcher _matcher;
 
   _FileSystemException(dynamic osErrorCode)
-      : _matcher = osErrorCode == null ? null : wrapMatcher(osErrorCode);
+      : _matcher = _wrapMatcher(osErrorCode);
+
+  static Matcher _wrapMatcher(dynamic osErrorCode) {
+    if (osErrorCode == null) {
+      return null;
+    }
+    return ignoreOsErrorCodes ? anything : wrapMatcher(osErrorCode);
+  }
 
   @override
   bool matches(dynamic item, Map<dynamic, dynamic> matchState) {
