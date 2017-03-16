@@ -82,7 +82,7 @@ void main() {
           'Link > rename > throwsIfDestinationExistsAsFile',
         ],
       );
-    });
+    }, skip: io.Platform.isWindows);
 
     group('chrootSpecific', () {
       ChrootFileSystem fs;

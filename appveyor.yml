@@ -10,5 +10,9 @@ install:
 build: off
 
 test_script:
-  # TODO(tvolkert): Broaden scope of tests
+  # TODO(tvolkert): Enable testing of LocalFileSystem
+  - pub run test test\chroot_test.dart
   - pub run test test\memory_test.dart
+  - pub run test test\recording_test.dart
+  - pub run test test\replay_test.dart
+  - pub run test test\utils_test.dart
