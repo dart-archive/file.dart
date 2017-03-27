@@ -4,6 +4,7 @@
 
 import 'dart:async';
 
+import 'package:meta/meta.dart';
 import 'package:path/path.dart' as p;
 
 import 'directory.dart';
@@ -144,4 +145,20 @@ abstract class FileSystem {
   /// [io.FileSystemEntityType.LINK].
   bool isLinkSync(String path) =>
       typeSync(path) == io.FileSystemEntityType.LINK;
+
+  /// Gets the string path represented by the specified generic [path].
+  ///
+  /// [path] may be a [io.FileSystemEntity], a [String], or a [Uri].
+  @protected
+  String getPath(dynamic path) {
+    if (path is io.FileSystemEntity) {
+      return path.path;
+    } else if (path is String) {
+      return path;
+    } else if (path is Uri) {
+      return this.path.fromUri(path);
+    } else {
+      throw new ArgumentError('Invalid type for "path": ${path?.runtimeType}');
+    }
+  }
 }

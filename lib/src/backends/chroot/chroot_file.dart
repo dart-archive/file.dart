@@ -333,4 +333,7 @@ class _ChrootFile extends _ChrootFileSystemEntity<File, io.File>
         encoding: encoding,
         flush: flush,
       );
+
+  @override
+  String toString() => "ChrootFile: '$path'";
 }

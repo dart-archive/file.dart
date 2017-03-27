@@ -158,6 +158,12 @@ void runCommonTests(
           expect(fs.directory(Uri.parse('file:///')), isDirectory);
         });
 
+        test('succeedsWithUriArgument', () {
+          fs.directory(ns('/foo')).createSync();
+          Uri uri = Uri.parse('file://${ns('/foo')}${fs.path.separator}');
+          expect(fs.directory(uri), exists);
+        });
+
         test('allowsDirectoryArgument', () {
           expect(fs.directory(new io.Directory(ns('/foo'))), isDirectory);
         });
@@ -176,6 +182,12 @@ void runCommonTests(
           expect(fs.file(Uri.parse('file:///')), isFile);
         });
 
+        test('succeedsWithUriArgument', () {
+          fs.file(ns('/foo')).createSync();
+          Uri uri = Uri.parse('file://${ns('/foo')}');
+          expect(fs.file(uri), exists);
+        });
+
         test('allowsDirectoryArgument', () {
           expect(fs.file(new io.File(ns('/foo'))), isFile);
         });
@@ -192,6 +204,13 @@ void runCommonTests(
 
         test('allowsUriArgument', () {
           expect(fs.link(Uri.parse('file:///')), isLink);
+        });
+
+        test('succeedsWithUriArgument', () {
+          fs.file(ns('/foo')).createSync();
+          fs.link(ns('/bar')).createSync(ns('/foo'));
+          Uri uri = Uri.parse('file://${ns('/bar')}');
+          expect(fs.link(uri), exists);
         });
 
         test('allowsDirectoryArgument', () {

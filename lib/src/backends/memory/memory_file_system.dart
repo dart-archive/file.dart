@@ -61,13 +61,13 @@ class MemoryFileSystem extends FileSystem {
 
   @override
   Directory directory(dynamic path) =>
-      new _MemoryDirectory(this, common.getPath(path));
+      new _MemoryDirectory(this, getPath(path));
 
   @override
-  File file(dynamic path) => new _MemoryFile(this, common.getPath(path));
+  File file(dynamic path) => new _MemoryFile(this, getPath(path));
 
   @override
-  Link link(dynamic path) => new _MemoryLink(this, common.getPath(path));
+  Link link(dynamic path) => new _MemoryLink(this, getPath(path));
 
   @override
   p.Context get path => new p.Context(style: p.Style.posix, current: _cwd);

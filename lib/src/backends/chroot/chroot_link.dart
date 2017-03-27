@@ -41,4 +41,7 @@ class _ChrootLink extends _ChrootFileSystemEntity<Link, io.Link>
 
   @override
   Link get absolute => new _ChrootLink(fileSystem, _absolutePath);
+
+  @override
+  String toString() => "ChrootLink: '$path'";
 }

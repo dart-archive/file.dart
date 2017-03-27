@@ -1,3 +1,9 @@
+#### 2.3.2
+
+* Fixed `FileSystem.directory(Uri)`, `FileSystem.file(Uri)`, and
+  `FileSystem.link(Uri)` to consult the file system's path context when
+  converting the URI to a file path rather than using `Uri.toFilePath()`.
+
 #### 2.3.1
 
 * Fixed `MemoryFileSystem` to make `File.writeAs...()` update the last modified
