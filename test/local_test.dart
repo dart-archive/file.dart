@@ -44,6 +44,9 @@ void main() {
 
     Map<String, List<String>> skipOnPlatform = <String, List<String>>{
       'windows': <String>[
+        'FileSystem > directory > succeedsWithUriArgument',
+        'FileSystem > file > succeedsWithUriArgument',
+        'FileSystem > link > succeedsWithUriArgument',
         'FileSystem > currentDirectory > throwsIfHasNonExistentPathInComplexChain',
         'FileSystem > currentDirectory > staysAtRootIfSetToParentOfRoot',
         'FileSystem > currentDirectory > resolvesLinksIfEncountered',

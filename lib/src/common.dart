@@ -3,20 +3,6 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'interface.dart';
-import 'io.dart' as io;
-
-/// Gets the string path represented by the specified generic [path].
-String getPath(dynamic path) {
-  if (path is io.FileSystemEntity) {
-    return path.path;
-  } else if (path is String) {
-    return path;
-  } else if (path is Uri) {
-    return path.toFilePath();
-  } else {
-    throw new ArgumentError('Invalid type for "path": ${path?.runtimeType}');
-  }
-}
 
 /// Returns a 'No such file or directory' [FileSystemException].
 FileSystemException noSuchFileOrDirectory(String path) {

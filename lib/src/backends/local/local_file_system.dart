@@ -14,13 +14,13 @@ class LocalFileSystem extends FileSystem {
 
   @override
   Directory directory(dynamic path) =>
-      new _LocalDirectory(this, shim.newDirectory(path));
+      new _LocalDirectory(this, shim.newDirectory(getPath(path)));
 
   @override
-  File file(dynamic path) => new _LocalFile(this, shim.newFile(path));
+  File file(dynamic path) => new _LocalFile(this, shim.newFile(getPath(path)));
 
   @override
-  Link link(dynamic path) => new _LocalLink(this, shim.newLink(path));
+  Link link(dynamic path) => new _LocalLink(this, shim.newLink(getPath(path)));
 
   @override
   p.Context get path => new p.Context();

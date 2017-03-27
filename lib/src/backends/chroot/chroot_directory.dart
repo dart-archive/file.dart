@@ -170,4 +170,7 @@ class _ChrootDirectory extends _ChrootFileSystemEntity<Directory, io.Directory>
     }
     throw new FileSystemException('Unsupported type: $entity', entity.path);
   }
+
+  @override
+  String toString() => "ChrootDirectory: '$path'";
 }

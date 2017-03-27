@@ -3,20 +3,16 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
-
 import 'dart:io' as io;
 
-import 'package:file/src/common.dart' as common;
-
 /// Creates a new [io.Directory] with the specified [path].
-io.Directory newDirectory(dynamic path) =>
-    new io.Directory(common.getPath(path));
+io.Directory newDirectory(String path) => new io.Directory(path);
 
 /// Creates a new [io.File] with the specified [path].
-io.File newFile(dynamic path) => new io.File(common.getPath(path));
+io.File newFile(String path) => new io.File(path);
 
 /// Creates a new [io.Link] with the specified [path].
-io.Link newLink(dynamic path) => new io.Link(common.getPath(path));
+io.Link newLink(String path) => new io.Link(path);
 
 /// Wraps [io.Directory.systemTemp].
 io.Directory systemTemp() => io.Directory.systemTemp;

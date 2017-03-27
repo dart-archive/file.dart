@@ -61,13 +61,13 @@ class ChrootFileSystem extends FileSystem {
 
   @override
   Directory directory(dynamic path) =>
-      new _ChrootDirectory(this, common.getPath(path));
+      new _ChrootDirectory(this, getPath(path));
 
   @override
-  File file(dynamic path) => new _ChrootFile(this, common.getPath(path));
+  File file(dynamic path) => new _ChrootFile(this, getPath(path));
 
   @override
-  Link link(dynamic path) => new _ChrootLink(this, common.getPath(path));
+  Link link(dynamic path) => new _ChrootLink(this, getPath(path));
 
   @override
   p.Context get path =>
