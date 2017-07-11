@@ -2188,7 +2188,7 @@ void runCommonTests(
             isSinkClosed = true;
           });
 
-          test('throwsIfEncodingIsNullAndWriteObject', () {
+          test('throwsIfEncodingIsNullAndWriteObject', () async {
             sink.encoding = null;
             expect(() => sink.write('Hello world'), throwsNoSuchMethodError);
           });
