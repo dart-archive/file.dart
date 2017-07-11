@@ -1,3 +1,7 @@
+#### 2.3.3
+
+* Relaxes version requirements on `package:intl`
+
 #### 2.3.2
 
 * Fixed `FileSystem.directory(Uri)`, `FileSystem.file(Uri)`, and
