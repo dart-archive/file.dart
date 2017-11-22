@@ -85,6 +85,32 @@ class _GenericEncoder extends Converter<dynamic, dynamic> {
   }
 }
 
+/// A trivial conversion turning a Sink<List<String>> into a
+/// Sink<String>
+class _StringSinkWrapper implements Sink<String> {
+  Sink<List<String>> _sink;
+  _StringSinkWrapper(this._sink);
+  @override
+  void add(String s) => _sink.add(<String>[s]);
+  @override
+  void close() => _sink.close();
+}
+
+/// An Converter version of the dart:convert LineSplitter (which in
+/// 2.0 no longer implements the Converter interface)
+class LineSplitterConverter extends Converter<String, List<String>> {
+  final LineSplitter _splitter = const LineSplitter();
+
+  /// Creates a new [LineSplitterConverter]
+  const LineSplitterConverter();
+
+  @override
+  List<String> convert(String input) => _splitter.convert(input);
+  @override
+  StringConversionSink startChunkedConversion(Sink<List<String>> sink) =>
+      _splitter.startChunkedConversion(new _StringSinkWrapper(sink));
+}
+
 /// Converter that leaves an object untouched.
 class Passthrough<T> extends Converter<T, T> {
   /// Creates a new [Passthrough].
