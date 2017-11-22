@@ -1,3 +1,7 @@
+#### 2.3.5
+
+* Fix internal use of a cast which fails on Dart 2.0 .
+
 #### 2.3.4
 
 * Bumped maximum Dart SDK version to 2.0.0-dev.infinity
