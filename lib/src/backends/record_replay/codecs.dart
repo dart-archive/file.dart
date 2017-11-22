@@ -88,7 +88,7 @@ class _GenericEncoder extends Converter<dynamic, dynamic> {
 /// A trivial conversion turning a Sink<List<String>> into a
 /// Sink<String>
 class _StringSinkWrapper implements Sink<String> {
-  Sink<List<String>> _sink;
+  final Sink<List<String>> _sink;
   _StringSinkWrapper(this._sink);
   @override
   void add(String s) => _sink.add(<String>[s]);
