@@ -121,7 +121,7 @@ class ChrootFileSystem extends FileSystem {
     assert(() {
       p.Context ctx = delegate.path;
       return ctx.isAbsolute(value) && value == ctx.canonicalize(value);
-    });
+    }());
     _cwd = value;
   }
 
@@ -232,7 +232,7 @@ class ChrootFileSystem extends FileSystem {
     if (resolve) {
       localPath = _resolve(localPath, followLinks: followLinks);
     } else {
-      assert(() => path.isAbsolute(localPath));
+      assert(path.isAbsolute(localPath));
     }
     return '$root$localPath';
   }
