@@ -73,8 +73,8 @@ class _MemoryDirectory extends _MemoryFileSystemEntity
   @override
   Directory renameSync(String newPath) => _renameSync(
         newPath,
-        validateOverwriteExistingEntity: (_DirectoryNode existingNode) {
-          if (existingNode.children.isNotEmpty) {
+        validateOverwriteExistingEntity: (_Node existingNode) {
+          if ((existingNode as _DirectoryNode).children.isNotEmpty) {
             throw common.directoryNotEmpty(newPath);
           }
         },
