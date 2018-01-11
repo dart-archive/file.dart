@@ -209,7 +209,7 @@ abstract class _MemoryFileSystemEntity implements FileSystemEntity {
   /// [_defaultCheckType] is used to perform this validation.
   FileSystemEntity _renameSync(
     String newPath, {
-    _RenameOverwriteValidator<dynamic> validateOverwriteExistingEntity,
+    _RenameOverwriteValidator<_DirectoryNode> validateOverwriteExistingEntity,
     bool followTailLink: false,
     _TypeChecker checkType,
   }) {
