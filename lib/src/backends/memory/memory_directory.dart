@@ -71,10 +71,10 @@ class _MemoryDirectory extends _MemoryFileSystemEntity
   Future<Directory> rename(String newPath) async => renameSync(newPath);
 
   @override
-  Directory renameSync(String newPath) => _renameSync(
+  Directory renameSync(String newPath) => _renameSync<_DirectoryNode>(
         newPath,
-        validateOverwriteExistingEntity: (_Node existingNode) {
-          if ((existingNode as _DirectoryNode).children.isNotEmpty) {
+        validateOverwriteExistingEntity: (_DirectoryNode existingNode) {
+          if (existingNode.children.isNotEmpty) {
             throw common.directoryNotEmpty(newPath);
           }
         },
