@@ -207,9 +207,9 @@ abstract class _MemoryFileSystemEntity implements FileSystemEntity {
   /// If [checkType] is specified, it will be used to validate that the file
   /// system entity that exists at [path] is of the expected type. By default,
   /// [_defaultCheckType] is used to perform this validation.
-  FileSystemEntity _renameSync(
+  FileSystemEntity _renameSync<T extends _Node>(
     String newPath, {
-    _RenameOverwriteValidator<_Node> validateOverwriteExistingEntity,
+    _RenameOverwriteValidator<T> validateOverwriteExistingEntity,
     bool followTailLink: false,
     _TypeChecker checkType,
   }) {
