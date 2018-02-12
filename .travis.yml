@@ -4,6 +4,3 @@ dart:
   - stable
   - dev
 script: ./tool/travis.sh
-matrix:
-  allow_failures:
-    - dart: dev
