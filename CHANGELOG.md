@@ -1,3 +1,7 @@
+#### 2.3.6
+
+* Relax sdk upper bound constraint to  '<2.0.0' to allow 'edge' dart sdk use.
+
 #### 2.3.5
 
 * Fix internal use of a cast which fails on Dart 2.0 .
