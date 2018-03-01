@@ -6,8 +6,7 @@ part of file.src.forwarding;
 
 /// A directory that forwards all methods and properties to a delegate.
 abstract class ForwardingDirectory<T extends Directory>
-    extends ForwardingFileSystemEntity<T, io.Directory>
-    implements Directory {
+    extends ForwardingFileSystemEntity<T, io.Directory> implements Directory {
   @override
   T wrap(io.Directory delegate) => wrapDirectory(delegate);
 
