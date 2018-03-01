@@ -5,11 +5,10 @@
 part of file.src.forwarding;
 
 /// A directory that forwards all methods and properties to a delegate.
-abstract class ForwardingDirectory
-    extends ForwardingFileSystemEntity<Directory, io.Directory>
-    implements Directory {
+abstract class ForwardingDirectory<T extends Directory>
+    extends ForwardingFileSystemEntity<T, io.Directory> implements Directory {
   @override
-  ForwardingDirectory wrap(io.Directory delegate) => wrapDirectory(delegate);
+  T wrap(io.Directory delegate) => wrapDirectory(delegate);
 
   @override
   Future<Directory> create({bool recursive: false}) async =>
