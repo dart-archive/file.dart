@@ -1,3 +1,11 @@
+#### 2.4.0
+
+* Import `dart:io` unconditionally. More recent Dart SDK revisions allow
+  `dart:io` to be imported in a browser context, though if methods are actually
+  invoked, they will fail. This matches well with `package:file`, where users
+  can use the `memory` library and get in-memory implementations of the
+  `dart:io` interfaces.
+
 #### 2.3.7
 
 * Fix Dart 2 error.
