@@ -12,8 +12,6 @@ import 'package:file/src/io.dart' as io;
 import 'package:file/file.dart';
 import 'package:path/path.dart' as p;
 
-import '../io/shim.dart' as shim;
-
 part 'local/local_directory.dart';
 part 'local/local_file.dart';
 part 'local/local_file_system.dart';
