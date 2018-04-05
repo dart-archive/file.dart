@@ -1,3 +1,9 @@
+#### 3.0.1 
+
+* Change method signature for `RecordingRandomAccessFile._close` to return a 
+  `Future<void>` instead of `Future<RandomAccessFile>`. This follows a change in 
+  dart:io, Dart SDK `2.0.0-dev.40`.
+
 #### 3.0.0
 
 * Import `dart:io` unconditionally. More recent Dart SDK revisions allow

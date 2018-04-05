@@ -77,7 +77,7 @@ class RecordingRandomAccessFile extends Object
   RandomAccessFile _wrap(RandomAccessFile raw) =>
       raw == delegate ? this : new RecordingRandomAccessFile(fileSystem, raw);
 
-  Future<RandomAccessFile> _close() => delegate.close().then(_wrap);
+  Future<void> _close() => delegate.close();
 
   Future<RandomAccessFile> _writeByte(int value) =>
       delegate.writeByte(value).then(_wrap);
