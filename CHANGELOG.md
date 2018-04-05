@@ -1,4 +1,4 @@
-#### 3.0.1 
+#### 4.0.0 
 
 * Change method signature for `RecordingRandomAccessFile._close` to return a 
   `Future<void>` instead of `Future<RandomAccessFile>`. This follows a change in 
