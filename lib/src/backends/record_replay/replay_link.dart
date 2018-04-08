@@ -29,7 +29,7 @@ class ReplayLink extends ReplayFileSystemEntity implements Link {
       #createSync: const Passthrough<Null>(),
       #update: reviveLinkAsFuture,
       #updateSync: const Passthrough<Null>(),
-      #target: const Passthrough<String>().fuse(const ToFuture<String>()),
+      #target: const ToFuture<String>(),
       #targetSync: const Passthrough<String>(),
     });
 

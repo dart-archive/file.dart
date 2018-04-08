@@ -2,11 +2,18 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-part of file.src.backends.local;
+import 'package:file/src/forwarding.dart';
+import 'package:file/src/io.dart' as io;
+import 'package:file/file.dart';
 
-class _LocalLink extends _LocalFileSystemEntity<Link, io.Link>
+import 'local_file_system_entity.dart';
+
+/// [Link] implementation that forwards all calls to `dart:io`.
+class LocalLink extends LocalFileSystemEntity<Link, io.Link>
     with ForwardingLink {
-  _LocalLink(FileSystem fs, io.Link delegate) : super(fs, delegate);
+  /// Instantiates a new [LocalLink] tied to the specified file system
+  /// and delegating to the specified [delegate].
+  LocalLink(FileSystem fs, io.Link delegate) : super(fs, delegate);
 
   @override
   String toString() => "LocalLink: '$path'";

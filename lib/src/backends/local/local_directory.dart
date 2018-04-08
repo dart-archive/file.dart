@@ -2,12 +2,19 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-part of file.src.backends.local;
+import 'package:file/src/common.dart' as common;
+import 'package:file/src/forwarding.dart';
+import 'package:file/src/io.dart' as io;
+import 'package:file/file.dart';
 
-class _LocalDirectory
-    extends _LocalFileSystemEntity<_LocalDirectory, io.Directory>
-    with ForwardingDirectory, common.DirectoryAddOnsMixin {
-  _LocalDirectory(FileSystem fs, io.Directory delegate) : super(fs, delegate);
+import 'local_file_system_entity.dart';
+
+/// [Directory] implementation that forwards all calls to `dart:io`.
+class LocalDirectory extends LocalFileSystemEntity<LocalDirectory, io.Directory>
+    with ForwardingDirectory<LocalDirectory>, common.DirectoryAddOnsMixin {
+  /// Instantiates a new [LocalDirectory] tied to the specified file system
+  /// and delegating to the specified [delegate].
+  LocalDirectory(FileSystem fs, io.Directory delegate) : super(fs, delegate);
 
   @override
   String toString() => "LocalDirectory: '$path'";

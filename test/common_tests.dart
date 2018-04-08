@@ -65,7 +65,7 @@ void runCommonTests(
 
     List<String> stack = <String>[];
 
-    void skipIfNecessary(String description, callback()) {
+    void skipIfNecessary(String description, void callback()) {
       stack.add(description);
       bool matchesCurrentFrame(String input) =>
           new RegExp('^$input\$').hasMatch(stack.join(' > '));
@@ -83,11 +83,11 @@ void runCommonTests(
       root = null;
     });
 
-    void setUp(callback()) {
+    void setUp(FutureOr<void> callback()) {
       testpkg.setUp(replay == null ? callback : () => setUps.add(callback));
     }
 
-    void tearDown(callback()) {
+    void tearDown(FutureOr<void> callback()) {
       if (replay == null) {
         testpkg.tearDown(callback);
       } else {
@@ -95,10 +95,11 @@ void runCommonTests(
       }
     }
 
-    void group(String description, body()) =>
+    void group(String description, void body()) =>
         skipIfNecessary(description, () => testpkg.group(description, body));
 
-    void test(String description, body()) => skipIfNecessary(description, () {
+    void test(String description, FutureOr<void> body()) =>
+        skipIfNecessary(description, () {
           if (replay == null) {
             testpkg.test(description, body);
           } else {
@@ -1768,20 +1769,20 @@ void runCommonTests(
                 });
 
                 test('readByte', () {
-                  expect(UTF8.decode(<int>[raf.readByteSync()]), 'p');
+                  expect(utf8.decode(<int>[raf.readByteSync()]), 'p');
                 });
 
                 test('read', () {
                   List<int> bytes = raf.readSync(1024);
                   expect(bytes.length, 21);
-                  expect(UTF8.decode(bytes), 'pre-existing content\n');
+                  expect(utf8.decode(bytes), 'pre-existing content\n');
                 });
 
                 test('readIntoWithBufferLargerThanContent', () {
                   List<int> buffer = new List<int>(1024);
                   int numRead = raf.readIntoSync(buffer);
                   expect(numRead, 21);
-                  expect(UTF8.decode(buffer.sublist(0, 21)),
+                  expect(utf8.decode(buffer.sublist(0, 21)),
                       'pre-existing content\n');
                 });
 
@@ -1789,21 +1790,21 @@ void runCommonTests(
                   List<int> buffer = new List<int>(10);
                   int numRead = raf.readIntoSync(buffer);
                   expect(numRead, 10);
-                  expect(UTF8.decode(buffer), 'pre-existi');
+                  expect(utf8.decode(buffer), 'pre-existi');
                 });
 
                 test('readIntoWithStart', () {
                   List<int> buffer = new List<int>(10);
                   int numRead = raf.readIntoSync(buffer, 2);
                   expect(numRead, 8);
-                  expect(UTF8.decode(buffer.sublist(2)), 'pre-exis');
+                  expect(utf8.decode(buffer.sublist(2)), 'pre-exis');
                 });
 
                 test('readIntoWithStartAndEnd', () {
                   List<int> buffer = new List<int>(10);
                   int numRead = raf.readIntoSync(buffer, 2, 5);
                   expect(numRead, 3);
-                  expect(UTF8.decode(buffer.sublist(2, 5)), 'pre');
+                  expect(utf8.decode(buffer.sublist(2, 5)), 'pre');
                 });
               });
             }
@@ -1841,7 +1842,7 @@ void runCommonTests(
               });
 
               test('writeByte', () {
-                raf.writeByteSync(UTF8.encode('A').first);
+                raf.writeByteSync(utf8.encode('A').first);
                 raf.flushSync();
                 if (mode == FileMode.WRITE || mode == FileMode.WRITE_ONLY) {
                   expect(f.readAsStringSync(), 'A');
@@ -1851,7 +1852,7 @@ void runCommonTests(
               });
 
               test('writeFrom', () {
-                raf.writeFromSync(UTF8.encode('Hello world'));
+                raf.writeFromSync(utf8.encode('Hello world'));
                 raf.flushSync();
                 if (mode == FileMode.WRITE || mode == FileMode.WRITE_ONLY) {
                   expect(f.readAsStringSync(), 'Hello world');
@@ -1862,7 +1863,7 @@ void runCommonTests(
               });
 
               test('writeFromWithStart', () {
-                raf.writeFromSync(UTF8.encode('Hello world'), 2);
+                raf.writeFromSync(utf8.encode('Hello world'), 2);
                 raf.flushSync();
                 if (mode == FileMode.WRITE || mode == FileMode.WRITE_ONLY) {
                   expect(f.readAsStringSync(), 'llo world');
@@ -1873,7 +1874,7 @@ void runCommonTests(
               });
 
               test('writeFromWithStartAndEnd', () {
-                raf.writeFromSync(UTF8.encode('Hello world'), 2, 5);
+                raf.writeFromSync(utf8.encode('Hello world'), 2, 5);
                 raf.flushSync();
                 if (mode == FileMode.WRITE || mode == FileMode.WRITE_ONLY) {
                   expect(f.readAsStringSync(), 'llo');
@@ -1922,7 +1923,7 @@ void runCommonTests(
 
                 test('affectsRead', () {
                   raf.setPositionSync(5);
-                  expect(UTF8.decode(raf.readSync(5)), 'xisti');
+                  expect(utf8.decode(raf.readSync(5)), 'xisti');
                 });
               }
 
@@ -1952,9 +1953,9 @@ void runCommonTests(
                   raf.flushSync();
                   List<int> bytes = f.readAsBytesSync();
                   expect(bytes.length, 36);
-                  expect(UTF8.decode(bytes.sublist(0, 21)),
+                  expect(utf8.decode(bytes.sublist(0, 21)),
                       'pre-existing content\n');
-                  expect(UTF8.decode(bytes.sublist(32, 36)), 'here');
+                  expect(utf8.decode(bytes.sublist(32, 36)), 'here');
                   expect(bytes.sublist(21, 32), everyElement(0));
                 });
               }
@@ -2006,7 +2007,7 @@ void runCommonTests(
                   raf.flushSync();
                   List<int> bytes = f.readAsBytesSync();
                   expect(bytes.length, 32);
-                  expect(UTF8.decode(bytes.sublist(0, 21)),
+                  expect(utf8.decode(bytes.sublist(0, 21)),
                       'pre-existing content\n');
                   expect(bytes.sublist(21, 32), everyElement(0));
                 });
@@ -2032,7 +2033,8 @@ void runCommonTests(
       group('openRead', () {
         test('throwsIfDoesntExist', () {
           Stream<List<int>> stream = fs.file(ns('/foo')).openRead();
-          expect(stream.drain(), throwsFileSystemException(ErrorCodes.ENOENT));
+          expect(stream.drain<void>(),
+              throwsFileSystemException(ErrorCodes.ENOENT));
         });
 
         test('succeedsIfExistsAsFile', () async {
@@ -2041,13 +2043,14 @@ void runCommonTests(
           Stream<List<int>> stream = f.openRead();
           List<List<int>> data = await stream.toList();
           expect(data, hasLength(1));
-          expect(UTF8.decode(data[0]), 'Hello world');
+          expect(utf8.decode(data[0]), 'Hello world');
         });
 
         test('throwsIfExistsAsDirectory', () {
           fs.directory(ns('/foo')).createSync();
           Stream<List<int>> stream = fs.file(ns('/foo')).openRead();
-          expect(stream.drain(), throwsFileSystemException(ErrorCodes.EISDIR));
+          expect(stream.drain<void>(),
+              throwsFileSystemException(ErrorCodes.EISDIR));
         });
 
         test('succeedsIfExistsAsLinkToFile', () async {
@@ -2057,7 +2060,7 @@ void runCommonTests(
           Stream<List<int>> stream = fs.file(ns('/bar')).openRead();
           List<List<int>> data = await stream.toList();
           expect(data, hasLength(1));
-          expect(UTF8.decode(data[0]), 'Hello world');
+          expect(utf8.decode(data[0]), 'Hello world');
         });
 
         test('respectsStartAndEndParameters', () async {
@@ -2066,17 +2069,17 @@ void runCommonTests(
           Stream<List<int>> stream = f.openRead(2);
           List<List<int>> data = await stream.toList();
           expect(data, hasLength(1));
-          expect(UTF8.decode(data[0]), 'llo world');
+          expect(utf8.decode(data[0]), 'llo world');
           stream = f.openRead(2, 5);
           data = await stream.toList();
           expect(data, hasLength(1));
-          expect(UTF8.decode(data[0]), 'llo');
+          expect(utf8.decode(data[0]), 'llo');
         });
 
         test('throwsIfStartParameterIsNegative', () async {
           File f = fs.file(ns('/foo'))..createSync();
           Stream<List<int>> stream = f.openRead(-2);
-          expect(stream.drain(), throwsRangeError);
+          expect(stream.drain<void>(), throwsRangeError);
         });
 
         test('stopsAtEndOfFileIfEndParameterIsPastEndOfFile', () async {
@@ -2085,7 +2088,7 @@ void runCommonTests(
           Stream<List<int>> stream = f.openRead(2, 1024);
           List<List<int>> data = await stream.toList();
           expect(data, hasLength(1));
-          expect(UTF8.decode(data[0]), 'llo world');
+          expect(utf8.decode(data[0]), 'llo world');
         });
 
         test('providesSingleSubscriptionStream', () async {
@@ -2093,7 +2096,7 @@ void runCommonTests(
           f.writeAsStringSync('Hello world', flush: true);
           Stream<List<int>> stream = f.openRead();
           expect(stream.isBroadcast, isFalse);
-          await stream.drain();
+          await stream.drain<void>();
         });
       });
 
@@ -2194,9 +2197,9 @@ void runCommonTests(
           });
 
           test('allowsChangingEncoding', () async {
-            sink.encoding = LATIN1;
+            sink.encoding = latin1;
             sink.write('ÿ');
-            sink.encoding = UTF8;
+            sink.encoding = utf8;
             sink.write('ÿ');
             await sink.flush();
             expect(await f.readAsBytes(), <int>[255, 195, 191]);
@@ -2232,23 +2235,27 @@ void runCommonTests(
             expect(await f.readAsString(), 'Hello world\n');
           });
 
+          // TODO(tvolkert): Fix and re-enable: http://dartbug.com/29554
+          /*
           test('ignoresDataWrittenAfterClose', () async {
             sink.write('Before close');
             await closeSink();
             sink.write('After close');
             expect(await f.readAsString(), 'Before close');
           });
+          */
 
           test('ignoresCloseAfterAlreadyClosed', () async {
             sink.write('Hello world');
             Future<dynamic> f1 = closeSink();
             Future<dynamic> f2 = closeSink();
-            await Future.wait(<Future<dynamic>>[f1, f2]);
+            await Future.wait<dynamic>(<Future<dynamic>>[f1, f2]);
           });
 
           test('returnsAccurateDoneFuture', () async {
             bool done = false;
-            sink.done.then((_) => done = true); // ignore: unawaited_futures
+            sink.done
+                .then((dynamic _) => done = true); // ignore: unawaited_futures
             expect(done, isFalse);
             sink.write('foo');
             expect(done, isFalse);

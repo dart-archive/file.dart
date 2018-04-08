@@ -99,7 +99,7 @@ class RecordingFile extends RecordingFileSystemEntity<File> implements File {
     );
   }
 
-  IOSink _openWrite({FileMode mode: FileMode.WRITE, Encoding encoding: UTF8}) {
+  IOSink _openWrite({FileMode mode: FileMode.WRITE, Encoding encoding: utf8}) {
     return new RecordingIOSink(
       fileSystem,
       delegate.openWrite(mode: mode, encoding: encoding),
@@ -126,7 +126,7 @@ class RecordingFile extends RecordingFileSystemEntity<File> implements File {
     );
   }
 
-  FutureReference<String> _readAsString({Encoding encoding: UTF8}) {
+  FutureReference<String> _readAsString({Encoding encoding: utf8}) {
     return new _BlobFutureReference<String>(
       file: _newRecordingFile(),
       future: delegate.readAsString(encoding: encoding),
@@ -136,7 +136,7 @@ class RecordingFile extends RecordingFileSystemEntity<File> implements File {
     );
   }
 
-  ResultReference<String> _readAsStringSync({Encoding encoding: UTF8}) {
+  ResultReference<String> _readAsStringSync({Encoding encoding: utf8}) {
     return new _BlobReference<String>(
       file: _newRecordingFile(),
       value: delegate.readAsStringSync(encoding: encoding),
@@ -146,7 +146,7 @@ class RecordingFile extends RecordingFileSystemEntity<File> implements File {
     );
   }
 
-  FutureReference<List<String>> _readAsLines({Encoding encoding: UTF8}) {
+  FutureReference<List<String>> _readAsLines({Encoding encoding: utf8}) {
     return new _BlobFutureReference<List<String>>(
       file: _newRecordingFile(),
       future: delegate.readAsLines(encoding: encoding),
@@ -156,7 +156,7 @@ class RecordingFile extends RecordingFileSystemEntity<File> implements File {
     );
   }
 
-  ResultReference<List<String>> _readAsLinesSync({Encoding encoding: UTF8}) {
+  ResultReference<List<String>> _readAsLinesSync({Encoding encoding: utf8}) {
     return new _BlobReference<List<String>>(
       file: _newRecordingFile(),
       value: delegate.readAsLinesSync(encoding: encoding),
@@ -176,7 +176,7 @@ class RecordingFile extends RecordingFileSystemEntity<File> implements File {
   Future<File> _writeAsString(
     String contents, {
     FileMode mode: FileMode.WRITE,
-    Encoding encoding: UTF8,
+    Encoding encoding: utf8,
     bool flush: false,
   }) =>
       delegate
@@ -194,8 +194,7 @@ class _BlobReference<T> extends ResultReference<T> {
     @required File file,
     @required T value,
     @required _BlobDataSyncWriter<T> writer,
-  })
-      : _file = file,
+  })  : _file = file,
         _value = value,
         _writer = writer;
 
@@ -221,8 +220,7 @@ class _BlobFutureReference<T> extends FutureReference<T> {
     @required File file,
     @required Future<T> future,
     @required _BlobDataAsyncWriter<T> writer,
-  })
-      : _file = file,
+  })  : _file = file,
         _writer = writer,
         super(future);
 
@@ -247,8 +245,7 @@ class _BlobStreamReference<T> extends StreamReference<T> {
     @required File file,
     @required Stream<T> stream,
     @required _BlobDataSyncWriter<T> writer,
-  })
-      : _file = file,
+  })  : _file = file,
         _writer = writer,
         super(stream);
 

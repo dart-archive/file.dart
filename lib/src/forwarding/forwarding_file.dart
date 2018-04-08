@@ -2,7 +2,11 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-part of file.src.forwarding;
+import 'dart:async';
+import 'dart:convert';
+
+import 'package:file/src/io.dart' as io;
+import 'package:file/file.dart';
 
 /// A file that forwards all methods and properties to a delegate.
 abstract class ForwardingFile extends ForwardingFileSystemEntity<File, io.File>
@@ -73,7 +77,7 @@ abstract class ForwardingFile extends ForwardingFileSystemEntity<File, io.File>
   @override
   IOSink openWrite({
     FileMode mode: FileMode.WRITE,
-    Encoding encoding: UTF8,
+    Encoding encoding: utf8,
   }) =>
       delegate.openWrite(mode: mode, encoding: encoding);
 
@@ -84,19 +88,19 @@ abstract class ForwardingFile extends ForwardingFileSystemEntity<File, io.File>
   List<int> readAsBytesSync() => delegate.readAsBytesSync();
 
   @override
-  Future<String> readAsString({Encoding encoding: UTF8}) =>
+  Future<String> readAsString({Encoding encoding: utf8}) =>
       delegate.readAsString(encoding: encoding);
 
   @override
-  String readAsStringSync({Encoding encoding: UTF8}) =>
+  String readAsStringSync({Encoding encoding: utf8}) =>
       delegate.readAsStringSync(encoding: encoding);
 
   @override
-  Future<List<String>> readAsLines({Encoding encoding: UTF8}) =>
+  Future<List<String>> readAsLines({Encoding encoding: utf8}) =>
       delegate.readAsLines(encoding: encoding);
 
   @override
-  List<String> readAsLinesSync({Encoding encoding: UTF8}) =>
+  List<String> readAsLinesSync({Encoding encoding: utf8}) =>
       delegate.readAsLinesSync(encoding: encoding);
 
   @override
@@ -123,7 +127,7 @@ abstract class ForwardingFile extends ForwardingFileSystemEntity<File, io.File>
   Future<File> writeAsString(
     String contents, {
     FileMode mode: FileMode.WRITE,
-    Encoding encoding: UTF8,
+    Encoding encoding: utf8,
     bool flush: false,
   }) async =>
       wrap(await delegate.writeAsString(
@@ -137,7 +141,7 @@ abstract class ForwardingFile extends ForwardingFileSystemEntity<File, io.File>
   void writeAsStringSync(
     String contents, {
     FileMode mode: FileMode.WRITE,
-    Encoding encoding: UTF8,
+    Encoding encoding: utf8,
     bool flush: false,
   }) =>
       delegate.writeAsStringSync(

@@ -2,14 +2,28 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-part of file.src.backends.memory;
+import 'dart:async';
 
-class _MemoryDirectory extends _MemoryFileSystemEntity
+import 'package:file/file.dart';
+import 'package:file/src/common.dart' as common;
+import 'package:file/src/io.dart' as io;
+import 'package:meta/meta.dart';
+
+import 'common.dart';
+import 'memory_file.dart';
+import 'memory_file_system_entity.dart';
+import 'memory_link.dart';
+import 'node.dart';
+import 'utils.dart' as utils;
+
+/// Internal implementation of [Directory].
+class MemoryDirectory extends MemoryFileSystemEntity
     with common.DirectoryAddOnsMixin
     implements Directory {
   static int _tempCounter = 0;
 
-  _MemoryDirectory(MemoryFileSystem fileSystem, String path)
+  /// Instantiates a new [MemoryDirectory].
+  MemoryDirectory(NodeBasedFileSystem fileSystem, String path)
       : super(fileSystem, path);
 
   @override
@@ -19,7 +33,7 @@ class _MemoryDirectory extends _MemoryFileSystemEntity
   Uri get uri => new Uri.directory(path);
 
   @override
-  bool existsSync() => _backingOrNull?.stat?.type == expectedType;
+  bool existsSync() => backingOrNull?.stat?.type == expectedType;
 
   @override
   Future<Directory> create({bool recursive: false}) async {
@@ -29,12 +43,12 @@ class _MemoryDirectory extends _MemoryFileSystemEntity
 
   @override
   void createSync({bool recursive: false}) {
-    _Node node = _createSync(
+    Node node = internalCreateSync(
       followTailLink: true,
       visitLinks: true,
-      createChild: (_DirectoryNode parent, bool isFinalSegment) {
+      createChild: (DirectoryNode parent, bool isFinalSegment) {
         if (recursive || isFinalSegment) {
-          return new _DirectoryNode(parent);
+          return new DirectoryNode(parent);
         }
         return null;
       },
@@ -54,16 +68,16 @@ class _MemoryDirectory extends _MemoryFileSystemEntity
     String fullPath = fileSystem.path.join(path, prefix);
     String dirname = fileSystem.path.dirname(fullPath);
     String basename = fileSystem.path.basename(fullPath);
-    _DirectoryNode node = fileSystem._findNode(dirname);
-    _checkExists(node, () => dirname);
-    _checkIsDir(node, () => dirname);
+    DirectoryNode node = fileSystem.findNode(dirname);
+    checkExists(node, () => dirname);
+    utils.checkIsDir(node, () => dirname);
     String name() => '$basename$_tempCounter';
     while (node.children.containsKey(name())) {
       _tempCounter++;
     }
-    _DirectoryNode tempDir = new _DirectoryNode(node);
+    DirectoryNode tempDir = new DirectoryNode(node);
     node.children[name()] = tempDir;
-    return new _MemoryDirectory(
+    return new MemoryDirectory(
         fileSystem, fileSystem.path.join(dirname, name()));
   }
 
@@ -71,9 +85,9 @@ class _MemoryDirectory extends _MemoryFileSystemEntity
   Future<Directory> rename(String newPath) async => renameSync(newPath);
 
   @override
-  Directory renameSync(String newPath) => _renameSync<_DirectoryNode>(
+  Directory renameSync(String newPath) => internalRenameSync<DirectoryNode>(
         newPath,
-        validateOverwriteExistingEntity: (_DirectoryNode existingNode) {
+        validateOverwriteExistingEntity: (DirectoryNode existingNode) {
           if (existingNode.children.isNotEmpty) {
             throw common.directoryNotEmpty(newPath);
           }
@@ -82,7 +96,7 @@ class _MemoryDirectory extends _MemoryFileSystemEntity
 
   @override
   Directory get parent =>
-      (_backingOrNull?.isRoot ?? false) ? this : super.parent;
+      (backingOrNull?.isRoot ?? false) ? this : super.parent;
 
   @override
   Directory get absolute => super.absolute;
@@ -102,35 +116,35 @@ class _MemoryDirectory extends _MemoryFileSystemEntity
     bool recursive: false,
     bool followLinks: true,
   }) {
-    _DirectoryNode node = _backing;
+    DirectoryNode node = backing;
     List<FileSystemEntity> listing = <FileSystemEntity>[];
     List<_PendingListTask> tasks = <_PendingListTask>[
       new _PendingListTask(
         node,
-        path.endsWith(_separator) ? path.substring(0, path.length - 1) : path,
-        new Set<_LinkNode>(),
+        path.endsWith(separator) ? path.substring(0, path.length - 1) : path,
+        new Set<LinkNode>(),
       ),
     ];
     while (tasks.isNotEmpty) {
       _PendingListTask task = tasks.removeLast();
-      task.dir.children.forEach((String name, _Node child) {
-        Set<_LinkNode> breadcrumbs = new Set<_LinkNode>.from(task.breadcrumbs);
+      task.dir.children.forEach((String name, Node child) {
+        Set<LinkNode> breadcrumbs = new Set<LinkNode>.from(task.breadcrumbs);
         String childPath = fileSystem.path.join(task.path, name);
-        while (followLinks && _isLink(child) && breadcrumbs.add(child)) {
-          _Node referent = (child as _LinkNode).referentOrNull;
+        while (followLinks && utils.isLink(child) && breadcrumbs.add(child)) {
+          Node referent = (child as LinkNode).referentOrNull;
           if (referent != null) {
             child = referent;
           }
         }
-        if (_isDirectory(child)) {
-          listing.add(new _MemoryDirectory(fileSystem, childPath));
+        if (utils.isDirectory(child)) {
+          listing.add(new MemoryDirectory(fileSystem, childPath));
           if (recursive) {
             tasks.add(new _PendingListTask(child, childPath, breadcrumbs));
           }
-        } else if (_isLink(child)) {
-          listing.add(new _MemoryLink(fileSystem, childPath));
-        } else if (_isFile(child)) {
-          listing.add(new _MemoryFile(fileSystem, childPath));
+        } else if (utils.isLink(child)) {
+          listing.add(new MemoryLink(fileSystem, childPath));
+        } else if (utils.isFile(child)) {
+          listing.add(new MemoryFile(fileSystem, childPath));
         }
       });
     }
@@ -138,15 +152,16 @@ class _MemoryDirectory extends _MemoryFileSystemEntity
   }
 
   @override
-  Directory _clone(String path) => new _MemoryDirectory(fileSystem, path);
+  @protected
+  Directory clone(String path) => new MemoryDirectory(fileSystem, path);
 
   @override
   String toString() => "MemoryDirectory: '$path'";
 }
 
 class _PendingListTask {
-  final _DirectoryNode dir;
+  final DirectoryNode dir;
   final String path;
-  final Set<_LinkNode> breadcrumbs;
+  final Set<LinkNode> breadcrumbs;
   _PendingListTask(this.dir, this.path, this.breadcrumbs);
 }

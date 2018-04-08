@@ -1,7 +1,8 @@
 analyzer:
-  strong-mode: true
+  strong-mode:
+    implicit-dynamic: false
   language:
-    enableStrictCallChecks: true
+    enablePreviewDart2: true
     enableSuperMixins: true
   errors:
     # treat missing required parameters as a warning (not a hint)
@@ -63,7 +64,7 @@ linter:
     - type_annotate_public_apis
     - type_init_formals
     # TODO - unawaited_futures (https://github.com/dart-lang/linter/issues/419)
-    - unnecessary_brace_in_string_interp
+    - unnecessary_brace_in_string_interps
     - unnecessary_getters_setters
 
     # === pub rules ===

@@ -2,7 +2,11 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-part of file.src.forwarding;
+import 'dart:async';
+
+import 'package:file/src/io.dart' as io;
+import 'package:file/file.dart';
+import 'package:meta/meta.dart';
 
 /// A file system entity that forwards all methods and properties to a delegate.
 abstract class ForwardingFileSystemEntity<T extends FileSystemEntity,

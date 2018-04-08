@@ -257,7 +257,7 @@ class _ChrootFile extends _ChrootFileSystemEntity<File, io.File>
   @override
   IOSink openWrite({
     FileMode mode: FileMode.WRITE,
-    Encoding encoding: UTF8,
+    Encoding encoding: utf8,
   }) =>
       getDelegate(followLinks: true).openWrite(mode: mode, encoding: encoding);
 
@@ -270,19 +270,19 @@ class _ChrootFile extends _ChrootFileSystemEntity<File, io.File>
       getDelegate(followLinks: true).readAsBytesSync();
 
   @override
-  Future<String> readAsString({Encoding encoding: UTF8}) =>
+  Future<String> readAsString({Encoding encoding: utf8}) =>
       getDelegate(followLinks: true).readAsString(encoding: encoding);
 
   @override
-  String readAsStringSync({Encoding encoding: UTF8}) =>
+  String readAsStringSync({Encoding encoding: utf8}) =>
       getDelegate(followLinks: true).readAsStringSync(encoding: encoding);
 
   @override
-  Future<List<String>> readAsLines({Encoding encoding: UTF8}) =>
+  Future<List<String>> readAsLines({Encoding encoding: utf8}) =>
       getDelegate(followLinks: true).readAsLines(encoding: encoding);
 
   @override
-  List<String> readAsLinesSync({Encoding encoding: UTF8}) =>
+  List<String> readAsLinesSync({Encoding encoding: utf8}) =>
       getDelegate(followLinks: true).readAsLinesSync(encoding: encoding);
 
   @override
@@ -310,7 +310,7 @@ class _ChrootFile extends _ChrootFileSystemEntity<File, io.File>
   Future<File> writeAsString(
     String contents, {
     FileMode mode: FileMode.WRITE,
-    Encoding encoding: UTF8,
+    Encoding encoding: utf8,
     bool flush: false,
   }) async =>
       wrap(await getDelegate(followLinks: true).writeAsString(
@@ -324,7 +324,7 @@ class _ChrootFile extends _ChrootFileSystemEntity<File, io.File>
   void writeAsStringSync(
     String contents, {
     FileMode mode: FileMode.WRITE,
-    Encoding encoding: UTF8,
+    Encoding encoding: utf8,
     bool flush: false,
   }) =>
       getDelegate(followLinks: true).writeAsStringSync(

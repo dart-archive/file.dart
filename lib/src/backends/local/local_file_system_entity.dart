@@ -2,9 +2,16 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-part of file.src.backends.local;
+import 'package:file/src/forwarding.dart';
+import 'package:file/src/io.dart' as io;
+import 'package:file/file.dart';
 
-abstract class _LocalFileSystemEntity<T extends FileSystemEntity,
+import 'local_directory.dart';
+import 'local_file.dart';
+import 'local_link.dart';
+
+/// [FileSystemEntity] implementation that forwards all calls to `dart:io`.
+abstract class LocalFileSystemEntity<T extends FileSystemEntity,
     D extends io.FileSystemEntity> extends ForwardingFileSystemEntity<T, D> {
   @override
   final FileSystem fileSystem;
@@ -12,7 +19,9 @@ abstract class _LocalFileSystemEntity<T extends FileSystemEntity,
   @override
   final D delegate;
 
-  _LocalFileSystemEntity(this.fileSystem, this.delegate);
+  /// Instantiates a new [LocalFileSystemEntity] tied to the specified file
+  /// system and delegating to the specified [delegate].
+  LocalFileSystemEntity(this.fileSystem, this.delegate);
 
   @override
   String get dirname => fileSystem.path.dirname(path);
@@ -22,11 +31,11 @@ abstract class _LocalFileSystemEntity<T extends FileSystemEntity,
 
   @override
   Directory wrapDirectory(io.Directory delegate) =>
-      new _LocalDirectory(fileSystem, delegate);
+      new LocalDirectory(fileSystem, delegate);
 
   @override
-  File wrapFile(io.File delegate) => new _LocalFile(fileSystem, delegate);
+  File wrapFile(io.File delegate) => new LocalFile(fileSystem, delegate);
 
   @override
-  Link wrapLink(io.Link delegate) => new _LocalLink(fileSystem, delegate);
+  Link wrapLink(io.Link delegate) => new LocalLink(fileSystem, delegate);
 }

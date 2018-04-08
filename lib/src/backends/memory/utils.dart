@@ -2,48 +2,42 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-part of file.src.backends.memory;
+import 'package:file/file.dart';
+import 'package:file/src/common.dart' as common;
+import 'package:file/src/io.dart' as io;
+
+import 'common.dart';
+import 'node.dart';
 
 /// Checks if `node.type` returns [io.FileSystemEntityType.FILE].
-bool _isFile(_Node node) => node?.type == io.FileSystemEntityType.FILE;
+bool isFile(Node node) => node?.type == io.FileSystemEntityType.FILE;
 
 /// Checks if `node.type` returns [io.FileSystemEntityType.DIRECTORY].
-bool _isDirectory(_Node node) =>
-    node?.type == io.FileSystemEntityType.DIRECTORY;
+bool isDirectory(Node node) => node?.type == io.FileSystemEntityType.DIRECTORY;
 
 /// Checks if `node.type` returns [io.FileSystemEntityType.LINK].
-bool _isLink(_Node node) => node?.type == io.FileSystemEntityType.LINK;
+bool isLink(Node node) => node?.type == io.FileSystemEntityType.LINK;
 
 /// Tells whether the specified path represents an absolute path.
-bool _isAbsolute(String path) => path.startsWith(_separator);
-
-/// Generates a path to use in error messages.
-typedef dynamic _PathGenerator();
+bool isAbsolute(String path) => path.startsWith(separator);
 
 /// Validator function that is expected to throw a [FileSystemException] if
 /// the node does not represent the type that is expected in any given context.
-typedef void _TypeChecker(_Node node);
-
-/// Throws a [io.FileSystemException] if [node] is null.
-void _checkExists(_Node node, _PathGenerator path) {
-  if (node == null) {
-    throw common.noSuchFileOrDirectory(path());
-  }
-}
+typedef void TypeChecker(Node node);
 
 /// Throws a [io.FileSystemException] if [node] is not a directory.
-void _checkIsDir(_Node node, _PathGenerator path) {
-  if (!_isDirectory(node)) {
+void checkIsDir(Node node, PathGenerator path) {
+  if (!isDirectory(node)) {
     throw common.notADirectory(path());
   }
 }
 
 /// Throws a [io.FileSystemException] if [expectedType] doesn't match
 /// [actualType].
-void _checkType(
+void checkType(
   FileSystemEntityType expectedType,
   FileSystemEntityType actualType,
-  _PathGenerator path,
+  PathGenerator path,
 ) {
   if (expectedType != actualType) {
     switch (expectedType) {
@@ -62,20 +56,20 @@ void _checkType(
 }
 
 /// Tells if the specified file mode represents a write mode.
-bool _isWriteMode(io.FileMode mode) =>
+bool isWriteMode(io.FileMode mode) =>
     mode == io.FileMode.WRITE ||
     mode == io.FileMode.APPEND ||
     mode == io.FileMode.WRITE_ONLY ||
     mode == io.FileMode.WRITE_ONLY_APPEND;
 
-/// Returns a [_PathGenerator] that generates a subpath of the constituent
+/// Returns a [PathGenerator] that generates a subpath of the constituent
 /// [parts] (from [start]..[end], inclusive).
-_PathGenerator _subpath(List<String> parts, int start, int end) {
-  return () => parts.sublist(start, end + 1).join(_separator);
+PathGenerator subpath(List<String> parts, int start, int end) {
+  return () => parts.sublist(start, end + 1).join(separator);
 }
 
 /// Tells whether the given string is empty.
-bool _isEmpty(String str) => str.isEmpty;
+bool isEmpty(String str) => str.isEmpty;
 
 /// Returns the node ultimately referred to by [link]. This will resolve
 /// the link references (following chains of links as necessary) and return
@@ -93,32 +87,32 @@ bool _isEmpty(String str) => str.isEmpty;
 /// the last link in the symbolic link chain, and its return value will be the
 /// return value of this method (thus allowing callers to create the entity
 /// at the end of the chain on demand).
-_Node _resolveLinks(
-  _LinkNode link,
-  _PathGenerator path, {
+Node resolveLinks(
+  LinkNode link,
+  PathGenerator path, {
   List<String> ledger,
-  _Node tailVisitor(_DirectoryNode parent, String childName, _Node child),
+  Node tailVisitor(DirectoryNode parent, String childName, Node child),
 }) {
   // Record a breadcrumb trail to guard against symlink loops.
-  Set<_LinkNode> breadcrumbs = new Set<_LinkNode>();
+  Set<LinkNode> breadcrumbs = new Set<LinkNode>();
 
-  _Node node = link;
-  while (_isLink(node)) {
+  Node node = link;
+  while (isLink(node)) {
     link = node;
     if (!breadcrumbs.add(node)) {
       throw common.tooManyLevelsOfSymbolicLinks(path());
     }
     if (ledger != null) {
-      if (_isAbsolute(link.target)) {
+      if (isAbsolute(link.target)) {
         ledger.clear();
       } else if (ledger.isNotEmpty) {
         ledger.removeLast();
       }
-      ledger.addAll(link.target.split(_separator));
+      ledger.addAll(link.target.split(separator));
     }
     node = link.getReferent(
-      tailVisitor: (_DirectoryNode parent, String childName, _Node child) {
-        if (tailVisitor != null && !_isLink(child)) {
+      tailVisitor: (DirectoryNode parent, String childName, Node child) {
+        if (tailVisitor != null && !isLink(child)) {
           // Only invoke [tailListener] on the final resolution pass.
           child = tailVisitor(parent, childName, child);
         }

@@ -2,11 +2,18 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-part of file.src.backends.local;
+import 'package:file/src/forwarding.dart';
+import 'package:file/src/io.dart' as io;
+import 'package:file/file.dart';
 
-class _LocalFile extends _LocalFileSystemEntity<File, io.File>
+import 'local_file_system_entity.dart';
+
+/// [File] implementation that forwards all calls to `dart:io`.
+class LocalFile extends LocalFileSystemEntity<File, io.File>
     with ForwardingFile {
-  _LocalFile(FileSystem fs, io.File delegate) : super(fs, delegate);
+  /// Instantiates a new [LocalFile] tied to the specified file system
+  /// and delegating to the specified [delegate].
+  LocalFile(FileSystem fs, io.File delegate) : super(fs, delegate);
 
   @override
   String toString() => "LocalFile: '$path'";

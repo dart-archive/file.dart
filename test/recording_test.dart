@@ -194,7 +194,7 @@ void main() {
         rc.basicMethod('bar', namedArg: 'baz');
         await rc.futureProperty;
         await rc.futureMethod('qux', namedArg: 'quz');
-        await rc.streamMethod('quux', namedArg: 'quuz').drain();
+        await rc.streamMethod('quux', namedArg: 'quuz').drain<void>();
         List<Map<String, dynamic>> manifest = await encode(recording.events);
         expect(manifest[0], <String, dynamic>{
           'type': 'set',
@@ -562,7 +562,7 @@ void main() {
           await delegate.directory('/bar').create();
           await delegate.file('/baz').create();
           Stream<FileSystemEntity> stream = fs.directory('/').list();
-          await stream.drain();
+          await stream.drain<void>();
           expect(
             recording.events,
             contains(invokesMethod('list')
@@ -605,7 +605,7 @@ void main() {
           String content = 'Hello\nWorld';
           await delegate.file('/foo').writeAsString(content, flush: true);
           Stream<List<int>> stream = fs.file('/foo').openRead();
-          await stream.drain();
+          await stream.drain<void>();
           expect(
               recording.events,
               contains(invokesMethod('openRead')
@@ -693,13 +693,13 @@ void main() {
           String content = 'Hello\nWorld';
           await delegate
               .file('/foo')
-              .writeAsString(content, encoding: LATIN1, flush: true);
-          await fs.file('/foo').readAsString(encoding: LATIN1);
+              .writeAsString(content, encoding: latin1, flush: true);
+          await fs.file('/foo').readAsString(encoding: latin1);
           expect(
               recording.events,
               contains(invokesMethod('readAsString')
                   .on(isFile)
-                  .withNamedArgument('encoding', LATIN1)
+                  .withNamedArgument('encoding', latin1)
                   .withResult(content)));
           await recording.flush();
           List<Map<String, dynamic>> manifest = _loadManifest(recording);
@@ -728,13 +728,13 @@ void main() {
           String content = 'Hello\nWorld';
           await delegate
               .file('/foo')
-              .writeAsString(content, encoding: LATIN1, flush: true);
-          fs.file('/foo').readAsStringSync(encoding: LATIN1);
+              .writeAsString(content, encoding: latin1, flush: true);
+          fs.file('/foo').readAsStringSync(encoding: latin1);
           expect(
               recording.events,
               contains(invokesMethod('readAsStringSync')
                   .on(isFile)
-                  .withNamedArgument('encoding', LATIN1)
+                  .withNamedArgument('encoding', latin1)
                   .withResult(content)));
           await recording.flush();
           List<Map<String, dynamic>> manifest = _loadManifest(recording);
@@ -888,8 +888,7 @@ class _RecordingClass extends Object
     this.delegate,
     this.stopwatch,
     Directory destination,
-  })
-      : recording = new MutableRecording(destination) {
+  }) : recording = new MutableRecording(destination) {
     methods.addAll(<Symbol, Function>{
       #basicMethod: delegate.basicMethod,
       #futureMethod: delegate.futureMethod,

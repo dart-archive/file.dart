@@ -25,6 +25,9 @@ class ReplayDirectory extends ReplayFileSystemEntity implements Directory {
         new ReviveFileSystemEntity(fileSystem);
     Converter<List<String>, List<FileSystemEntity>> reviveEntities =
         new ConvertElements<String, FileSystemEntity>(reviveEntity);
+    Converter<List<String>, Stream<FileSystemEntity>> reviveEntitiesAsStream =
+        reviveEntities
+            .fuse<Stream<FileSystemEntity>>(const ToStream<FileSystemEntity>());
 
     methods.addAll(<Symbol, Converter<dynamic, dynamic>>{
       #rename: reviveFutureDirectory,
@@ -34,7 +37,7 @@ class ReplayDirectory extends ReplayFileSystemEntity implements Directory {
       #createSync: const Passthrough<Null>(),
       #createTemp: reviveFutureDirectory,
       #createTempSync: reviveDirectory,
-      #list: reviveEntities.fuse(const ToStream<FileSystemEntity>()),
+      #list: reviveEntitiesAsStream,
       #listSync: reviveEntities,
       #childDirectory: reviveDirectory,
       #childFile: new ReviveFile(fileSystem),

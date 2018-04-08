@@ -36,6 +36,6 @@ abstract class File implements FileSystemEntity, io.File {
   @override
   Future<File> writeAsString(String contents,
       {io.FileMode mode: io.FileMode.WRITE,
-      Encoding encoding: UTF8,
+      Encoding encoding: utf8,
       bool flush: false});
 }
