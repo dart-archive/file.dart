@@ -194,8 +194,7 @@ class _BlobReference<T> extends ResultReference<T> {
     @required File file,
     @required T value,
     @required _BlobDataSyncWriter<T> writer,
-  })
-      : _file = file,
+  })  : _file = file,
         _value = value,
         _writer = writer;
 
@@ -221,8 +220,7 @@ class _BlobFutureReference<T> extends FutureReference<T> {
     @required File file,
     @required Future<T> future,
     @required _BlobDataAsyncWriter<T> writer,
-  })
-      : _file = file,
+  })  : _file = file,
         _writer = writer,
         super(future);
 
@@ -247,8 +245,7 @@ class _BlobStreamReference<T> extends StreamReference<T> {
     @required File file,
     @required Stream<T> stream,
     @required _BlobDataSyncWriter<T> writer,
-  })
-      : _file = file,
+  })  : _file = file,
         _writer = writer,
         super(stream);
 
