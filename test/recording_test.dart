@@ -888,8 +888,7 @@ class _RecordingClass extends Object
     this.delegate,
     this.stopwatch,
     Directory destination,
-  })
-      : recording = new MutableRecording(destination) {
+  }) : recording = new MutableRecording(destination) {
     methods.addAll(<Symbol, Function>{
       #basicMethod: delegate.basicMethod,
       #futureMethod: delegate.futureMethod,
