@@ -35,7 +35,7 @@ abstract class MemoryFileSystem implements FileSystem {
   ///
   /// The file system will be empty, and the current directory will be the
   /// root directory.
-  factory MemoryFileSystem() => new _MemoryFileSystem();
+  factory MemoryFileSystem() = _MemoryFileSystem;
 }
 
 /// Internal implementation of [MemoryFileSystem].
