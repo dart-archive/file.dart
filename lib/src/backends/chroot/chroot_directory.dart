@@ -5,7 +5,7 @@
 part of file.src.backends.chroot;
 
 class _ChrootDirectory extends _ChrootFileSystemEntity<Directory, io.Directory>
-    with ForwardingDirectory, common.DirectoryAddOnsMixin {
+    with ForwardingDirectory<Directory>, common.DirectoryAddOnsMixin {
   _ChrootDirectory(ChrootFileSystem fs, String path) : super(fs, path);
 
   factory _ChrootDirectory.wrapped(

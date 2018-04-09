@@ -2,37 +2,22 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-part of file.src.backends.memory;
+import 'dart:async';
 
-const String _separator = '/';
+import 'package:file/file.dart';
+import 'package:file/src/io.dart' as io;
+import 'package:path/path.dart' as p;
+
+import 'common.dart';
+import 'memory_directory.dart';
+import 'memory_file.dart';
+import 'memory_file_stat.dart';
+import 'memory_link.dart';
+import 'node.dart';
+import 'utils.dart' as utils;
+
 const String _thisDir = '.';
 const String _parentDir = '..';
-
-/// Visitor callback for use with `_findNode`.
-///
-/// [parent] is the parent node of the current path segment and is guaranteed
-/// to be non-null.
-///
-/// [childName] is the basename of the entity at the current path segment. It
-/// is guaranteed to be non-null.
-///
-/// [childNode] is the node at the current path segment. It will be
-/// non-null only if such an entity exists. The return value of this callback
-/// will be used as the value of this node, which allows this callback to
-/// do things like recursively create or delete folders.
-///
-/// [currentSegment] is the index of the current segment within the overall
-/// path that's being walked by `_findNode`.
-///
-/// [finalSegment] is the index of the final segment that will be walked by
-/// `_findNode`.
-typedef _Node _SegmentVisitor(
-  _DirectoryNode parent,
-  String childName,
-  _Node childNode,
-  int currentSegment,
-  int finalSegment,
-);
 
 /// An implementation of [FileSystem] that exists entirely in memory with an
 /// internal representation loosely based on the Filesystem Hierarchy Standard.
@@ -43,31 +28,45 @@ typedef _Node _SegmentVisitor(
 /// caching or staging before writing or reading to a live system.
 ///
 /// This implementation of the [FileSystem] interface does not directly use
-/// any `dart:io` APIs; it merely uses the library's enum values and deals in
-/// the library types. As such, it is suitable for use in the browser as soon
-/// as [#28078](https://github.com/dart-lang/sdk/issues/28078) is resolved.
-class MemoryFileSystem extends FileSystem {
-  _RootNode _root;
+/// any `dart:io` APIs; it merely uses the library's enum values and interfaces.
+/// As such, it is suitable for use in the browser.
+abstract class MemoryFileSystem implements FileSystem {
+  /// Creates a new `MemoryFileSystem`.
+  ///
+  /// The file system will be empty, and the current directory will be the
+  /// root directory.
+  factory MemoryFileSystem() = _MemoryFileSystem;
+}
+
+/// Internal implementation of [MemoryFileSystem].
+class _MemoryFileSystem extends FileSystem
+    implements MemoryFileSystem, NodeBasedFileSystem {
+  RootNode _root;
   String _systemTemp;
-  String _cwd = _separator;
+  String _cwd = separator;
 
   /// Creates a new `MemoryFileSystem`.
   ///
   /// The file system will be empty, and the current directory will be the
   /// root directory.
-  MemoryFileSystem() {
-    _root = new _RootNode(this);
+  _MemoryFileSystem() {
+    _root = new RootNode(this);
   }
 
   @override
-  Directory directory(dynamic path) =>
-      new _MemoryDirectory(this, getPath(path));
+  RootNode get root => _root;
 
   @override
-  File file(dynamic path) => new _MemoryFile(this, getPath(path));
+  String get cwd => _cwd;
 
   @override
-  Link link(dynamic path) => new _MemoryLink(this, getPath(path));
+  Directory directory(dynamic path) => new MemoryDirectory(this, getPath(path));
+
+  @override
+  File file(dynamic path) => new MemoryFile(this, getPath(path));
+
+  @override
+  Link link(dynamic path) => new MemoryLink(this, getPath(path));
 
   @override
   p.Context get path => new p.Context(style: p.Style.posix, current: _cwd);
@@ -77,7 +76,7 @@ class MemoryFileSystem extends FileSystem {
   /// the life of the process.
   @override
   Directory get systemTempDirectory {
-    _systemTemp ??= directory(_separator).createTempSync('.tmp_').path;
+    _systemTemp ??= directory(separator).createTempSync('.tmp_').path;
     return directory(_systemTemp)..createSync();
   }
 
@@ -96,10 +95,10 @@ class MemoryFileSystem extends FileSystem {
     }
 
     value = directory(value).resolveSymbolicLinksSync();
-    _Node node = _findNode(value);
-    _checkExists(node, () => value);
-    _checkIsDir(node, () => value);
-    assert(_isAbsolute(value));
+    Node node = findNode(value);
+    checkExists(node, () => value);
+    utils.checkIsDir(node, () => value);
+    assert(utils.isAbsolute(value));
     _cwd = value;
   }
 
@@ -109,9 +108,9 @@ class MemoryFileSystem extends FileSystem {
   @override
   io.FileStat statSync(String path) {
     try {
-      return _findNode(path)?.stat ?? _MemoryFileStat._notFound;
+      return findNode(path)?.stat ?? MemoryFileStat.notFound;
     } on io.FileSystemException {
-      return _MemoryFileStat._notFound;
+      return MemoryFileStat.notFound;
     }
   }
 
@@ -121,10 +120,10 @@ class MemoryFileSystem extends FileSystem {
 
   @override
   bool identicalSync(String path1, String path2) {
-    _Node node1 = _findNode(path1);
-    _checkExists(node1, () => path1);
-    _Node node2 = _findNode(path2);
-    _checkExists(node2, () => path2);
+    Node node1 = findNode(path1);
+    checkExists(node1, () => path1);
+    Node node2 = findNode(path2);
+    checkExists(node2, () => path2);
     return node1 != null && node1 == node2;
   }
 
@@ -140,9 +139,9 @@ class MemoryFileSystem extends FileSystem {
 
   @override
   io.FileSystemEntityType typeSync(String path, {bool followLinks: true}) {
-    _Node node;
+    Node node;
     try {
-      node = _findNode(path, followTailLink: followLinks);
+      node = findNode(path, followTailLink: followLinks);
     } on io.FileSystemException {
       node = null;
     }
@@ -155,41 +154,13 @@ class MemoryFileSystem extends FileSystem {
   /// Gets the node backing for the current working directory. Note that this
   /// can return null if the directory has been deleted or moved from under our
   /// feet.
-  _DirectoryNode get _current => _findNode(_cwd);
+  DirectoryNode get _current => findNode(_cwd);
 
-  /// Gets the backing node of the entity at the specified path. If the tail
-  /// element of the path does not exist, this will return null. If the tail
-  /// element cannot be reached because its directory does not exist, a
-  /// [io.FileSystemException] will be thrown.
-  ///
-  /// If [path] is a relative path, it will be resolved relative to
-  /// [reference], or the current working directory if [reference] is null.
-  /// If [path] is an absolute path, [reference] will be ignored.
-  ///
-  /// If the last element in [path] represents a symbolic link, this will
-  /// return the [_LinkNode] node for the link (it will not return the
-  /// node to which the link points), unless [followTailLink] is true.
-  /// Directory links in the middle of the path will be followed in order to
-  /// find the node regardless of the value of [followTailLink].
-  ///
-  /// If [segmentVisitor] is specified, it will be invoked for every path
-  /// segment visited along the way starting where the reference (root folder
-  /// if the path is absolute) is the parent. For each segment, the return value
-  /// of [segmentVisitor] will be used as the backing node of that path
-  /// segment, thus allowing callers to create nodes on demand in the
-  /// specified path. Note that `..` and `.` segments may cause the visitor to
-  /// get invoked with the same node multiple times. When [segmentVisitor] is
-  /// invoked, for each path segment that resolves to a link node, the visitor
-  /// will visit the actual link node if [visitLinks] is true; otherwise it
-  /// will visit the target of the link node.
-  ///
-  /// If [pathWithSymlinks] is specified, the path to the node with symbolic
-  /// links explicitly broken out will be appended to the buffer. `..` and `.`
-  /// path segments will *not* be resolved and are left to the caller.
-  _Node _findNode(
+  @override
+  Node findNode(
     String path, {
-    _Node reference,
-    _SegmentVisitor segmentVisitor,
+    Node reference,
+    SegmentVisitor segmentVisitor,
     bool visitLinks: false,
     List<String> pathWithSymlinks,
     bool followTailLink: false,
@@ -198,15 +169,15 @@ class MemoryFileSystem extends FileSystem {
       throw new ArgumentError.notNull('path');
     }
 
-    if (_isAbsolute(path)) {
+    if (utils.isAbsolute(path)) {
       reference = _root;
     } else {
       reference ??= _current;
     }
 
-    List<String> parts = path.split(_separator)..removeWhere(_isEmpty);
-    _DirectoryNode directory = reference.directory;
-    _Node child = directory;
+    List<String> parts = path.split(separator)..removeWhere(utils.isEmpty);
+    DirectoryNode directory = reference.directory;
+    Node child = directory;
 
     int finalSegment = parts.length - 1;
     for (int i = 0; i <= finalSegment; i++) {
@@ -229,20 +200,19 @@ class MemoryFileSystem extends FileSystem {
         pathWithSymlinks.add(basename);
       }
 
-      _PathGenerator subpath = _subpath(parts, 0, i);
-      if (_isLink(child) && (i < finalSegment || followTailLink)) {
+      PathGenerator subpath = utils.subpath(parts, 0, i);
+      if (utils.isLink(child) && (i < finalSegment || followTailLink)) {
         if (visitLinks || segmentVisitor == null) {
           if (segmentVisitor != null) {
             child = segmentVisitor(directory, basename, child, i, finalSegment);
           }
-          child = _resolveLinks(child, subpath, ledger: pathWithSymlinks);
+          child = utils.resolveLinks(child, subpath, ledger: pathWithSymlinks);
         } else {
-          child = _resolveLinks(
+          child = utils.resolveLinks(
             child,
             subpath,
             ledger: pathWithSymlinks,
-            tailVisitor:
-                (_DirectoryNode parent, String childName, _Node child) {
+            tailVisitor: (DirectoryNode parent, String childName, Node child) {
               return segmentVisitor(parent, childName, child, i, finalSegment);
             },
           );
@@ -252,8 +222,8 @@ class MemoryFileSystem extends FileSystem {
       }
 
       if (i < finalSegment) {
-        _checkExists(child, subpath);
-        _checkIsDir(child, subpath);
+        checkExists(child, subpath);
+        utils.checkIsDir(child, subpath);
         directory = child;
       }
     }

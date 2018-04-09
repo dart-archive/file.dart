@@ -2,25 +2,36 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-part of file.src.backends.memory;
+import 'dart:async';
 
-class _MemoryLink extends _MemoryFileSystemEntity implements Link {
-  _MemoryLink(MemoryFileSystem fileSystem, String path)
+import 'package:file/file.dart';
+import 'package:file/src/common.dart' as common;
+import 'package:file/src/io.dart' as io;
+import 'package:meta/meta.dart';
+
+import 'memory_file_system_entity.dart';
+import 'node.dart';
+import 'utils.dart' as utils;
+
+/// Internal implementation of [Link].
+class MemoryLink extends MemoryFileSystemEntity implements Link {
+  /// Instantiates a new [MemoryLink].
+  const MemoryLink(NodeBasedFileSystem fileSystem, String path)
       : super(fileSystem, path);
 
   @override
   io.FileSystemEntityType get expectedType => io.FileSystemEntityType.LINK;
 
   @override
-  bool existsSync() => _backingOrNull?.type == expectedType;
+  bool existsSync() => backingOrNull?.type == expectedType;
 
   @override
   Future<Link> rename(String newPath) async => renameSync(newPath);
 
   @override
-  Link renameSync(String newPath) => _renameSync(
+  Link renameSync(String newPath) => internalRenameSync(
         newPath,
-        checkType: (_Node node) {
+        checkType: (Node node) {
           if (node.type != expectedType) {
             throw node.type == FileSystemEntityType.DIRECTORY
                 ? common.isADirectory(newPath)
@@ -38,12 +49,13 @@ class _MemoryLink extends _MemoryFileSystemEntity implements Link {
   @override
   void createSync(String target, {bool recursive: false}) {
     bool preexisting = true;
-    _createSync(createChild: (_DirectoryNode parent, bool isFinalSegment) {
+    internalCreateSync(
+        createChild: (DirectoryNode parent, bool isFinalSegment) {
       if (isFinalSegment) {
         preexisting = false;
-        return new _LinkNode(parent, target);
+        return new LinkNode(parent, target);
       } else if (recursive) {
-        return new _DirectoryNode(parent);
+        return new DirectoryNode(parent);
       }
       return null;
     });
@@ -61,16 +73,16 @@ class _MemoryLink extends _MemoryFileSystemEntity implements Link {
 
   @override
   void updateSync(String target) {
-    _Node node = _backing;
-    _checkType(expectedType, node.type, () => path);
-    (node as _LinkNode).target = target;
+    Node node = backing;
+    utils.checkType(expectedType, node.type, () => path);
+    (node as LinkNode).target = target;
   }
 
   @override
-  void deleteSync({bool recursive: false}) => _deleteSync(
+  void deleteSync({bool recursive: false}) => internalDeleteSync(
         recursive: recursive,
-        checkType: (_Node node) =>
-            _checkType(expectedType, node.type, () => path),
+        checkType: (Node node) =>
+            utils.checkType(expectedType, node.type, () => path),
       );
 
   @override
@@ -78,19 +90,20 @@ class _MemoryLink extends _MemoryFileSystemEntity implements Link {
 
   @override
   String targetSync() {
-    _Node node = _backing;
+    Node node = backing;
     if (node.type != expectedType) {
       // Note: this may change; https://github.com/dart-lang/sdk/issues/28204
       throw common.noSuchFileOrDirectory(path);
     }
-    return (node as _LinkNode).target;
+    return (node as LinkNode).target;
   }
 
   @override
   Link get absolute => super.absolute;
 
   @override
-  Link _clone(String path) => new _MemoryLink(fileSystem, path);
+  @protected
+  Link clone(String path) => new MemoryLink(fileSystem, path);
 
   @override
   String toString() => "MemoryLink: '$path'";

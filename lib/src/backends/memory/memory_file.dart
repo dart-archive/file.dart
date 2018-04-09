@@ -2,19 +2,33 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-part of file.src.backends.memory;
+import 'dart:async';
+import 'dart:convert';
+import 'dart:math' show min;
 
-class _MemoryFile extends _MemoryFileSystemEntity implements File {
-  _MemoryFile(MemoryFileSystem fileSystem, String path)
+import 'package:file/file.dart';
+import 'package:file/src/common.dart' as common;
+import 'package:file/src/io.dart' as io;
+import 'package:meta/meta.dart';
+
+import 'common.dart';
+import 'memory_file_system_entity.dart';
+import 'node.dart';
+import 'utils.dart' as utils;
+
+/// Internal implementation of [File].
+class MemoryFile extends MemoryFileSystemEntity implements File {
+  /// Instantiates a new [MemoryFile].
+  const MemoryFile(NodeBasedFileSystem fileSystem, String path)
       : super(fileSystem, path);
 
-  _FileNode get _resolvedBackingOrCreate {
-    _Node node = _backingOrNull;
+  FileNode get _resolvedBackingOrCreate {
+    Node node = backingOrNull;
     if (node == null) {
       node = _doCreate();
     } else {
-      node = _isLink(node) ? _resolveLinks(node, () => path) : node;
-      _checkType(expectedType, node.type, () => path);
+      node = utils.isLink(node) ? utils.resolveLinks(node, () => path) : node;
+      utils.checkType(expectedType, node.type, () => path);
     }
     return node;
   }
@@ -23,7 +37,7 @@ class _MemoryFile extends _MemoryFileSystemEntity implements File {
   io.FileSystemEntityType get expectedType => io.FileSystemEntityType.FILE;
 
   @override
-  bool existsSync() => _backingOrNull?.stat?.type == expectedType;
+  bool existsSync() => backingOrNull?.stat?.type == expectedType;
 
   @override
   Future<File> create({bool recursive: false}) async {
@@ -36,14 +50,14 @@ class _MemoryFile extends _MemoryFileSystemEntity implements File {
     _doCreate(recursive: recursive);
   }
 
-  _Node _doCreate({bool recursive: false}) {
-    _Node node = _createSync(
+  Node _doCreate({bool recursive: false}) {
+    Node node = internalCreateSync(
       followTailLink: true,
-      createChild: (_DirectoryNode parent, bool isFinalSegment) {
+      createChild: (DirectoryNode parent, bool isFinalSegment) {
         if (isFinalSegment) {
-          return new _FileNode(parent);
+          return new FileNode(parent);
         } else if (recursive) {
-          return new _DirectoryNode(parent);
+          return new DirectoryNode(parent);
         }
         return null;
       },
@@ -60,10 +74,10 @@ class _MemoryFile extends _MemoryFileSystemEntity implements File {
   Future<File> rename(String newPath) async => renameSync(newPath);
 
   @override
-  File renameSync(String newPath) => _renameSync(
+  File renameSync(String newPath) => internalRenameSync(
         newPath,
         followTailLink: true,
-        checkType: (_Node node) {
+        checkType: (Node node) {
           FileSystemEntityType actualType = node.stat.type;
           if (actualType != expectedType) {
             throw actualType == FileSystemEntityType.NOT_FOUND
@@ -78,44 +92,44 @@ class _MemoryFile extends _MemoryFileSystemEntity implements File {
 
   @override
   File copySync(String newPath) {
-    _FileNode sourceNode = _resolvedBacking;
-    fileSystem._findNode(
+    FileNode sourceNode = resolvedBacking;
+    fileSystem.findNode(
       newPath,
       segmentVisitor: (
-        _DirectoryNode parent,
+        DirectoryNode parent,
         String childName,
-        _Node child,
+        Node child,
         int currentSegment,
         int finalSegment,
       ) {
         if (currentSegment == finalSegment) {
           if (child != null) {
-            if (_isLink(child)) {
+            if (utils.isLink(child)) {
               List<String> ledger = <String>[];
-              child = _resolveLinks(child, () => newPath, ledger: ledger);
-              _checkExists(child, () => newPath);
+              child = utils.resolveLinks(child, () => newPath, ledger: ledger);
+              checkExists(child, () => newPath);
               parent = child.parent;
               childName = ledger.last;
               assert(parent.children.containsKey(childName));
             }
-            _checkType(expectedType, child.type, () => newPath);
+            utils.checkType(expectedType, child.type, () => newPath);
             parent.children.remove(childName);
           }
-          _FileNode newNode = new _FileNode(parent);
+          FileNode newNode = new FileNode(parent);
           newNode.copyFrom(sourceNode);
           parent.children[childName] = newNode;
         }
         return child;
       },
     );
-    return _clone(newPath);
+    return clone(newPath);
   }
 
   @override
   Future<int> length() async => lengthSync();
 
   @override
-  int lengthSync() => (_resolvedBacking as _FileNode).size;
+  int lengthSync() => (resolvedBacking as FileNode).size;
 
   @override
   File get absolute => super.absolute;
@@ -124,7 +138,7 @@ class _MemoryFile extends _MemoryFileSystemEntity implements File {
   Future<DateTime> lastAccessed() async => lastAccessedSync();
 
   @override
-  DateTime lastAccessedSync() => (_resolvedBacking as _FileNode).stat.accessed;
+  DateTime lastAccessedSync() => (resolvedBacking as FileNode).stat.accessed;
 
   @override
   Future<dynamic> setLastAccessed(DateTime time) async =>
@@ -132,7 +146,7 @@ class _MemoryFile extends _MemoryFileSystemEntity implements File {
 
   @override
   void setLastAccessedSync(DateTime time) {
-    _FileNode node = _resolvedBacking;
+    FileNode node = resolvedBacking;
     node.accessed = time.millisecondsSinceEpoch;
   }
 
@@ -140,7 +154,7 @@ class _MemoryFile extends _MemoryFileSystemEntity implements File {
   Future<DateTime> lastModified() async => lastModifiedSync();
 
   @override
-  DateTime lastModifiedSync() => (_resolvedBacking as _FileNode).stat.modified;
+  DateTime lastModifiedSync() => (resolvedBacking as FileNode).stat.modified;
 
   @override
   Future<dynamic> setLastModified(DateTime time) async =>
@@ -148,7 +162,7 @@ class _MemoryFile extends _MemoryFileSystemEntity implements File {
 
   @override
   void setLastModifiedSync(DateTime time) {
-    _FileNode node = _resolvedBacking;
+    FileNode node = resolvedBacking;
     node.modified = time.millisecondsSinceEpoch;
   }
 
@@ -164,7 +178,7 @@ class _MemoryFile extends _MemoryFileSystemEntity implements File {
   @override
   Stream<List<int>> openRead([int start, int end]) {
     try {
-      _FileNode node = _resolvedBacking;
+      FileNode node = resolvedBacking;
       List<int> content = node.content;
       if (start != null) {
         content = end == null
@@ -180,9 +194,9 @@ class _MemoryFile extends _MemoryFileSystemEntity implements File {
   @override
   io.IOSink openWrite({
     io.FileMode mode: io.FileMode.WRITE,
-    Encoding encoding: UTF8,
+    Encoding encoding: utf8,
   }) {
-    if (!_isWriteMode(mode)) {
+    if (!utils.isWriteMode(mode)) {
       throw new ArgumentError.value(mode, 'mode',
           'Must be either WRITE, APPEND, WRITE_ONLY, or WRITE_ONLY_APPEND');
     }
@@ -193,22 +207,22 @@ class _MemoryFile extends _MemoryFileSystemEntity implements File {
   Future<List<int>> readAsBytes() async => readAsBytesSync();
 
   @override
-  List<int> readAsBytesSync() => (_resolvedBacking as _FileNode).content;
+  List<int> readAsBytesSync() => (resolvedBacking as FileNode).content;
 
   @override
-  Future<String> readAsString({Encoding encoding: UTF8}) async =>
+  Future<String> readAsString({Encoding encoding: utf8}) async =>
       readAsStringSync(encoding: encoding);
 
   @override
-  String readAsStringSync({Encoding encoding: UTF8}) =>
+  String readAsStringSync({Encoding encoding: utf8}) =>
       encoding.decode(readAsBytesSync());
 
   @override
-  Future<List<String>> readAsLines({Encoding encoding: UTF8}) async =>
+  Future<List<String>> readAsLines({Encoding encoding: utf8}) async =>
       readAsLinesSync(encoding: encoding);
 
   @override
-  List<String> readAsLinesSync({Encoding encoding: UTF8}) {
+  List<String> readAsLinesSync({Encoding encoding: utf8}) {
     String str = readAsStringSync(encoding: encoding);
     return str.isEmpty ? <String>[] : str.split('\n');
   }
@@ -229,10 +243,10 @@ class _MemoryFile extends _MemoryFileSystemEntity implements File {
     io.FileMode mode: io.FileMode.WRITE,
     bool flush: false,
   }) {
-    if (!_isWriteMode(mode)) {
+    if (!utils.isWriteMode(mode)) {
       throw common.badFileDescriptor(path);
     }
-    _FileNode node = _resolvedBackingOrCreate;
+    FileNode node = _resolvedBackingOrCreate;
     _truncateIfNecessary(node, mode);
     node.content.addAll(bytes);
     node.touch();
@@ -242,7 +256,7 @@ class _MemoryFile extends _MemoryFileSystemEntity implements File {
   Future<File> writeAsString(
     String contents, {
     io.FileMode mode: io.FileMode.WRITE,
-    Encoding encoding: UTF8,
+    Encoding encoding: utf8,
     bool flush: false,
   }) async {
     writeAsStringSync(contents, mode: mode, encoding: encoding, flush: flush);
@@ -253,15 +267,16 @@ class _MemoryFile extends _MemoryFileSystemEntity implements File {
   void writeAsStringSync(
     String contents, {
     io.FileMode mode: io.FileMode.WRITE,
-    Encoding encoding: UTF8,
+    Encoding encoding: utf8,
     bool flush: false,
   }) =>
       writeAsBytesSync(encoding.encode(contents), mode: mode, flush: flush);
 
   @override
-  File _clone(String path) => new _MemoryFile(fileSystem, path);
+  @protected
+  File clone(String path) => new MemoryFile(fileSystem, path);
 
-  void _truncateIfNecessary(_FileNode node, io.FileMode mode) {
+  void _truncateIfNecessary(FileNode node, io.FileMode mode) {
     if (mode == io.FileMode.WRITE || mode == io.FileMode.WRITE_ONLY) {
       node.content.clear();
     }
@@ -271,12 +286,12 @@ class _MemoryFile extends _MemoryFileSystemEntity implements File {
   String toString() => "MemoryFile: '$path'";
 }
 
-/// Implementation of an [io.IOSink] that's backed by a [_FileNode].
+/// Implementation of an [io.IOSink] that's backed by a [FileNode].
 class _FileSink implements io.IOSink {
-  final Future<_FileNode> _node;
+  final Future<FileNode> _node;
   final Completer<Null> _completer = new Completer<Null>();
 
-  Future<_FileNode> _pendingWrites;
+  Future<FileNode> _pendingWrites;
   Completer<Null> _streamCompleter;
   bool _isClosed = false;
 
@@ -284,12 +299,12 @@ class _FileSink implements io.IOSink {
   Encoding encoding;
 
   factory _FileSink.fromFile(
-    _MemoryFile file,
+    MemoryFile file,
     io.FileMode mode,
     Encoding encoding,
   ) {
-    Future<_FileNode> node = new Future<_FileNode>.microtask(() {
-      _FileNode node = file._resolvedBackingOrCreate;
+    Future<FileNode> node = new Future<FileNode>.microtask(() {
+      FileNode node = file._resolvedBackingOrCreate;
       file._truncateIfNecessary(node, mode);
       return node;
     });
@@ -386,7 +401,7 @@ class _FileSink implements io.IOSink {
   Future<Null> get done => _completer.future;
 
   void _addData(List<int> data) {
-    _pendingWrites = _pendingWrites.then((_FileNode node) {
+    _pendingWrites = _pendingWrites.then((FileNode node) {
       node.content.addAll(data);
       return node;
     });

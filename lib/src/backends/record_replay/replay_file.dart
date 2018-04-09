@@ -21,16 +21,26 @@ class ReplayFile extends ReplayFileSystemEntity implements File {
     Converter<String, Future<File>> reviveFileAsFuture =
         reviveFile.fuse(const ToFuture<File>());
     Converter<String, List<int>> blobToBytes = new BlobToBytes(fileSystem);
-    Converter<String, String> blobToString = blobToBytes.fuse(UTF8.decoder);
+    Converter<String, Future<List<int>>> blobToBytesFuture =
+        blobToBytes.fuse(const ToFuture<List<int>>());
+    Converter<String, String> blobToString = blobToBytes.fuse(utf8.decoder);
+    Converter<String, Future<String>> blobToStringFuture =
+        blobToString.fuse(const ToFuture<String>());
     Converter<String, RandomAccessFile> reviveRandomAccessFile =
         new ReviveRandomAccessFile(fileSystem);
+    Converter<String, Future<RandomAccessFile>> reviveRandomAccessFileFuture =
+        reviveRandomAccessFile.fuse(const ToFuture<RandomAccessFile>());
     Converter<String, List<String>> lineSplitter =
         const LineSplitterConverter();
     Converter<String, List<String>> blobToLines =
         blobToString.fuse(lineSplitter);
+    Converter<String, Future<List<String>>> blobToLinesFuture =
+        blobToLines.fuse(const ToFuture<List<String>>());
     Converter<String, Stream<List<int>>> blobToByteStream = blobToBytes
         .fuse(const Listify<List<int>>())
         .fuse(const ToStream<List<int>>());
+    Converter<int, Future<DateTime>> reviveDateTime =
+        DateTimeCodec.deserialize.fuse(const ToFuture<DateTime>());
 
     methods.addAll(<Symbol, Converter<dynamic, dynamic>>{
       #rename: reviveFileAsFuture,
@@ -42,23 +52,23 @@ class ReplayFile extends ReplayFileSystemEntity implements File {
       #copySync: reviveFile,
       #length: const ToFuture<int>(),
       #lengthSync: const Passthrough<int>(),
-      #lastAccessed: DateTimeCodec.deserialize.fuse(const ToFuture<DateTime>()),
+      #lastAccessed: reviveDateTime,
       #lastAccessedSync: DateTimeCodec.deserialize,
       #setLastAccessed: const ToFuture<dynamic>(),
       #setLastAccessedSync: const Passthrough<Null>(),
-      #lastModified: DateTimeCodec.deserialize.fuse(const ToFuture<DateTime>()),
+      #lastModified: reviveDateTime,
       #lastModifiedSync: DateTimeCodec.deserialize,
       #setLastModified: const ToFuture<dynamic>(),
       #setLastModifiedSync: const Passthrough<Null>(),
-      #open: reviveRandomAccessFile.fuse(const ToFuture<RandomAccessFile>()),
+      #open: reviveRandomAccessFileFuture,
       #openSync: reviveRandomAccessFile,
       #openRead: blobToByteStream,
       #openWrite: new ReviveIOSink(fileSystem),
-      #readAsBytes: blobToBytes.fuse(const ToFuture<List<int>>()),
+      #readAsBytes: blobToBytesFuture,
       #readAsBytesSync: blobToBytes,
-      #readAsString: blobToString.fuse(const ToFuture<String>()),
+      #readAsString: blobToStringFuture,
       #readAsStringSync: blobToString,
-      #readAsLines: blobToLines.fuse(const ToFuture<List<String>>()),
+      #readAsLines: blobToLinesFuture,
       #readAsLinesSync: blobToLines,
       #writeAsBytes: reviveFileAsFuture,
       #writeAsBytesSync: const Passthrough<Null>(),

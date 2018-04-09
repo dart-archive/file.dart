@@ -33,7 +33,7 @@ class ReplayIOSink extends ReplayProxyMixin implements IOSink {
     properties.addAll(<Symbol, Converter<dynamic, dynamic>>{
       #encoding: EncodingCodec.deserialize,
       const Symbol('encoding='): const Passthrough<Null>(),
-      #done: const Passthrough<dynamic>().fuse(const ToFuture<dynamic>()),
+      #done: const ToFuture<dynamic>(),
     });
   }
 
@@ -48,7 +48,7 @@ class ReplayIOSink extends ReplayProxyMixin implements IOSink {
     if (invocation.memberName == #addStream) {
       Stream<List<int>> stream = invocation.positionalArguments.first;
       Future<dynamic> future = result;
-      return future.then((_) => stream.drain());
+      return future.then<void>(stream.drain);
     }
     return result;
   }

@@ -2,7 +2,15 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-part of file.src.backends.local;
+import 'dart:async';
+
+import 'package:file/src/io.dart' as io;
+import 'package:file/file.dart';
+import 'package:path/path.dart' as p;
+
+import 'local_directory.dart';
+import 'local_file.dart';
+import 'local_link.dart';
 
 /// A wrapper implementation around `dart:io`'s implementation.
 ///
@@ -14,13 +22,13 @@ class LocalFileSystem extends FileSystem {
 
   @override
   Directory directory(dynamic path) =>
-      new _LocalDirectory(this, new io.Directory(getPath(path)));
+      new LocalDirectory(this, new io.Directory(getPath(path)));
 
   @override
-  File file(dynamic path) => new _LocalFile(this, new io.File(getPath(path)));
+  File file(dynamic path) => new LocalFile(this, new io.File(getPath(path)));
 
   @override
-  Link link(dynamic path) => new _LocalLink(this, new io.Link(getPath(path)));
+  Link link(dynamic path) => new LocalLink(this, new io.Link(getPath(path)));
 
   @override
   p.Context get path => new p.Context();
@@ -30,7 +38,7 @@ class LocalFileSystem extends FileSystem {
   /// platform-dependent, and may be set by an environment variable.
   @override
   Directory get systemTempDirectory =>
-      new _LocalDirectory(this, io.Directory.systemTemp);
+      new LocalDirectory(this, io.Directory.systemTemp);
 
   @override
   Directory get currentDirectory => directory(io.Directory.current.path);

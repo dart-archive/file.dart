@@ -127,9 +127,9 @@ bool deeplyEqual(dynamic object1, dynamic object2) {
   if (object1.runtimeType != object2.runtimeType) {
     return false;
   } else if (object1 is List) {
-    return _areListsEqual(object1, object2);
+    return _areListsEqual<dynamic>(object1, object2);
   } else if (object1 is Map) {
-    return _areMapsEqual(object1, object2);
+    return _areMapsEqual<dynamic, dynamic>(object1, object2);
   } else {
     return object1 == object2;
   }

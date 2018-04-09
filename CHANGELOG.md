@@ -1,7 +1,11 @@
-#### 4.0.0 
+#### 4.0.1
 
-* Change method signature for `RecordingRandomAccessFile._close` to return a 
-  `Future<void>` instead of `Future<RandomAccessFile>`. This follows a change in 
+* General library cleanup
+
+#### 4.0.0
+
+* Change method signature for `RecordingRandomAccessFile._close` to return a
+  `Future<void>` instead of `Future<RandomAccessFile>`. This follows a change in
   dart:io, Dart SDK `2.0.0-dev.40`.
 
 #### 3.0.0

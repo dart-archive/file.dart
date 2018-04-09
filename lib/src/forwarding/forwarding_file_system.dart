@@ -2,7 +2,12 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-part of file.src.forwarding;
+import 'dart:async';
+
+import 'package:file/src/io.dart' as io;
+import 'package:file/file.dart';
+import 'package:meta/meta.dart';
+import 'package:path/path.dart' as p;
 
 /// A file system that forwards all methods and properties to a delegate.
 abstract class ForwardingFileSystem extends FileSystem {

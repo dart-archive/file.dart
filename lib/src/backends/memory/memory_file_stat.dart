@@ -2,11 +2,13 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-part of file.src.backends.memory;
+import 'package:file/src/io.dart' as io;
 
-class _MemoryFileStat implements io.FileStat {
-  static const _MemoryFileStat _notFound =
-      const _MemoryFileStat._internalNotFound();
+/// Internal implementation of [io.FileStat].
+class MemoryFileStat implements io.FileStat {
+  /// Shared instance representing a non-existent entity.
+  static const MemoryFileStat notFound =
+      const MemoryFileStat._internalNotFound();
 
   @override
   final DateTime changed;
@@ -26,7 +28,8 @@ class _MemoryFileStat implements io.FileStat {
   @override
   final int size;
 
-  _MemoryFileStat(
+  /// Creates a new [MemoryFileStat] with the specified properties.
+  const MemoryFileStat(
     this.changed,
     this.modified,
     this.accessed,
@@ -35,7 +38,7 @@ class _MemoryFileStat implements io.FileStat {
     this.size,
   );
 
-  const _MemoryFileStat._internalNotFound()
+  const MemoryFileStat._internalNotFound()
       : changed = null,
         modified = null,
         accessed = null,

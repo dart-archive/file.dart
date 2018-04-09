@@ -87,7 +87,7 @@ class RecordingRandomAccessFile extends Object
       delegate.writeFrom(buffer, start, end).then(_wrap);
 
   Future<RandomAccessFile> _writeString(String string,
-          {Encoding encoding: UTF8}) =>
+          {Encoding encoding: utf8}) =>
       delegate.writeString(string, encoding: encoding).then(_wrap);
 
   Future<RandomAccessFile> _setPosition(int position) =>

@@ -191,8 +191,7 @@ class LiveMethodEvent<T> extends LiveInvocationEvent<T>
     T result,
     dynamic error,
     int timestamp,
-  )
-      : this.positionalArguments =
+  )   : this.positionalArguments =
             new List<dynamic>.unmodifiable(positionalArguments),
         this.namedArguments =
             new Map<Symbol, dynamic>.unmodifiable(namedArguments),

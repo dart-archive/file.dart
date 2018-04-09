@@ -23,13 +23,15 @@ abstract class ReplayFileSystemEntity extends Object
             FileSystemEventCodec.deserialize);
     Converter<List<Map<String, Object>>, Stream<FileSystemEvent>>
         toEventStream = toEvents.fuse(const ToStream<FileSystemEvent>());
+    Converter<Map<String, Object>, Future<FileStat>> reviveFileStatFuture =
+        FileStatCodec.deserialize.fuse(const ToFuture<FileStat>());
 
     methods.addAll(<Symbol, Converter<dynamic, dynamic>>{
       #exists: const ToFuture<bool>(),
       #existsSync: const Passthrough<bool>(),
       #resolveSymbolicLinks: const ToFuture<String>(),
       #resolveSymbolicLinksSync: const Passthrough<String>(),
-      #stat: FileStatCodec.deserialize.fuse(const ToFuture<FileStat>()),
+      #stat: reviveFileStatFuture,
       #statSync: FileStatCodec.deserialize,
       #deleteSync: const Passthrough<Null>(),
       #watch: toEventStream,

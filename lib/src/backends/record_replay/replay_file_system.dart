@@ -2,6 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:file/file.dart';
@@ -87,18 +88,21 @@ class ReplayFileSystemImpl extends FileSystem
   /// Creates a new `ReplayFileSystemImpl`.
   ReplayFileSystemImpl(this.recording, this.manifest) {
     Converter<String, Directory> reviveDirectory = new ReviveDirectory(this);
-    ToFuture<FileSystemEntityType> toFutureType =
-        const ToFuture<FileSystemEntityType>();
+    Converter<String, Future<FileSystemEntityType>> reviveEntityFuture =
+        EntityTypeCodec.deserialize
+            .fuse(const ToFuture<FileSystemEntityType>());
+    Converter<Map<String, Object>, Future<FileStat>> reviveFileStatFuture =
+        FileStatCodec.deserialize.fuse(const ToFuture<FileStat>());
 
     methods.addAll(<Symbol, Converter<dynamic, dynamic>>{
       #directory: reviveDirectory,
       #file: new ReviveFile(this),
       #link: new ReviveLink(this),
-      #stat: FileStatCodec.deserialize.fuse(const ToFuture<FileStat>()),
+      #stat: reviveFileStatFuture,
       #statSync: FileStatCodec.deserialize,
-      #identical: const Passthrough<bool>().fuse(const ToFuture<bool>()),
+      #identical: const ToFuture<bool>(),
       #identicalSync: const Passthrough<bool>(),
-      #type: EntityTypeCodec.deserialize.fuse(toFutureType),
+      #type: reviveEntityFuture,
       #typeSync: EntityTypeCodec.deserialize,
     });
 

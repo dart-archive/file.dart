@@ -2,24 +2,35 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-part of file.src.backends.memory;
+import 'dart:async';
+
+import 'package:file/file.dart';
+import 'package:file/src/common.dart' as common;
+import 'package:file/src/io.dart' as io;
+import 'package:meta/meta.dart';
+
+import 'common.dart';
+import 'memory_directory.dart';
+import 'node.dart';
+import 'utils.dart' as utils;
 
 /// Validator function for use with `_renameSync`. This will be invoked if the
 /// rename would overwrite an existing entity at the new path. If this operation
 /// should not be allowed, this function is expected to throw a
 /// [io.FileSystemException]. The lack of such an exception will be interpreted
 /// as the overwrite being permissible.
-typedef void _RenameOverwriteValidator<T extends _Node>(T existingNode);
+typedef void RenameOverwriteValidator<T extends Node>(T existingNode);
 
 /// Base class for all in-memory file system entity types.
-abstract class _MemoryFileSystemEntity implements FileSystemEntity {
+abstract class MemoryFileSystemEntity implements FileSystemEntity {
   @override
-  final MemoryFileSystem fileSystem;
+  final NodeBasedFileSystem fileSystem;
 
   @override
   final String path;
 
-  _MemoryFileSystemEntity(this.fileSystem, this.path);
+  /// Constructor for subclasses.
+  const MemoryFileSystemEntity(this.fileSystem, this.path);
 
   @override
   String get dirname => fileSystem.path.dirname(path);
@@ -33,9 +44,10 @@ abstract class _MemoryFileSystemEntity implements FileSystemEntity {
 
   /// Gets the node that backs this file system entity, or null if this
   /// entity does not exist.
-  _Node get _backingOrNull {
+  @protected
+  Node get backingOrNull {
     try {
-      return fileSystem._findNode(path);
+      return fileSystem.findNode(path);
     } on io.FileSystemException {
       return null;
     }
@@ -45,9 +57,10 @@ abstract class _MemoryFileSystemEntity implements FileSystemEntity {
   /// [io.FileSystemException] if this entity doesn't exist.
   ///
   /// The type of the node is not guaranteed to match [expectedType].
-  _Node get _backing {
-    _Node node = fileSystem._findNode(path);
-    _checkExists(node, () => path);
+  @protected
+  Node get backing {
+    Node node = fileSystem.findNode(path);
+    checkExists(node, () => path);
     return node;
   }
 
@@ -55,10 +68,11 @@ abstract class _MemoryFileSystemEntity implements FileSystemEntity {
   /// a symbolic link, the target node. This also will check that the type of
   /// the node (after symlink resolution) matches [expectedType]. If the type
   /// doesn't match, this will throw a [io.FileSystemException].
-  _Node get _resolvedBacking {
-    _Node node = _backing;
-    node = _isLink(node) ? _resolveLinks(node, () => path) : node;
-    _checkType(expectedType, node.type, () => path);
+  @protected
+  Node get resolvedBacking {
+    Node node = backing;
+    node = utils.isLink(node) ? utils.resolveLinks(node, () => path) : node;
+    utils.checkType(expectedType, node.type, () => path);
     return node;
   }
 
@@ -69,8 +83,9 @@ abstract class _MemoryFileSystemEntity implements FileSystemEntity {
   ///
   /// Protected methods that accept a `checkType` argument will default to this
   /// method if the `checkType` argument is unspecified.
-  void _defaultCheckType(_Node node) {
-    _checkType(expectedType, node.stat.type, () => path);
+  @protected
+  void defaultCheckType(Node node) {
+    utils.checkType(expectedType, node.stat.type, () => path);
   }
 
   @override
@@ -88,12 +103,12 @@ abstract class _MemoryFileSystemEntity implements FileSystemEntity {
     if (isAbsolute) {
       ledger.add('');
     }
-    _Node node = fileSystem._findNode(path,
+    Node node = fileSystem.findNode(path,
         pathWithSymlinks: ledger, followTailLink: true);
-    _checkExists(node, () => path);
-    String resolved = ledger.join(_separator);
-    if (!_isAbsolute(resolved)) {
-      resolved = fileSystem._cwd + _separator + resolved;
+    checkExists(node, () => path);
+    String resolved = ledger.join(separator);
+    if (!utils.isAbsolute(resolved)) {
+      resolved = fileSystem.cwd + separator + resolved;
     }
     return fileSystem.path.normalize(resolved);
   }
@@ -111,7 +126,8 @@ abstract class _MemoryFileSystemEntity implements FileSystemEntity {
   }
 
   @override
-  void deleteSync({bool recursive: false}) => _deleteSync(recursive: recursive);
+  void deleteSync({bool recursive: false}) =>
+      internalDeleteSync(recursive: recursive);
 
   @override
   Stream<io.FileSystemEvent> watch({
@@ -121,19 +137,19 @@ abstract class _MemoryFileSystemEntity implements FileSystemEntity {
       throw new UnsupportedError('Watching not supported in MemoryFileSystem');
 
   @override
-  bool get isAbsolute => _isAbsolute(path);
+  bool get isAbsolute => utils.isAbsolute(path);
 
   @override
   FileSystemEntity get absolute {
     String absolutePath = path;
-    if (!_isAbsolute(absolutePath)) {
-      absolutePath = fileSystem.path.join(fileSystem._cwd, absolutePath);
+    if (!utils.isAbsolute(absolutePath)) {
+      absolutePath = fileSystem.path.join(fileSystem.cwd, absolutePath);
     }
-    return _clone(absolutePath);
+    return clone(absolutePath);
   }
 
   @override
-  Directory get parent => new _MemoryDirectory(fileSystem, dirname);
+  Directory get parent => new MemoryDirectory(fileSystem, dirname);
 
   /// Helper method for subclasses wishing to synchronously create this entity.
   /// This method will traverse the path to this entity one segment at a time,
@@ -153,19 +169,20 @@ abstract class _MemoryFileSystemEntity implements FileSystemEntity {
   ///
   /// If [followTailLink] is true and the result node is a link, this will
   /// resolve it to its target prior to returning it.
-  _Node _createSync({
-    _Node createChild(_DirectoryNode parent, bool isFinalSegment),
+  @protected
+  Node internalCreateSync({
+    Node createChild(DirectoryNode parent, bool isFinalSegment),
     bool followTailLink: false,
     bool visitLinks: false,
   }) {
-    return fileSystem._findNode(
+    return fileSystem.findNode(
       path,
       followTailLink: followTailLink,
       visitLinks: visitLinks,
       segmentVisitor: (
-        _DirectoryNode parent,
+        DirectoryNode parent,
         String childName,
-        _Node child,
+        Node child,
         int currentSegment,
         int finalSegment,
       ) {
@@ -206,21 +223,22 @@ abstract class _MemoryFileSystemEntity implements FileSystemEntity {
   ///
   /// If [checkType] is specified, it will be used to validate that the file
   /// system entity that exists at [path] is of the expected type. By default,
-  /// [_defaultCheckType] is used to perform this validation.
-  FileSystemEntity _renameSync<T extends _Node>(
+  /// [defaultCheckType] is used to perform this validation.
+  @protected
+  FileSystemEntity internalRenameSync<T extends Node>(
     String newPath, {
-    _RenameOverwriteValidator<T> validateOverwriteExistingEntity,
+    RenameOverwriteValidator<T> validateOverwriteExistingEntity,
     bool followTailLink: false,
-    _TypeChecker checkType,
+    utils.TypeChecker checkType,
   }) {
-    _Node node = _backing;
-    (checkType ?? _defaultCheckType)(node);
-    fileSystem._findNode(
+    Node node = backing;
+    (checkType ?? defaultCheckType)(node);
+    fileSystem.findNode(
       newPath,
       segmentVisitor: (
-        _DirectoryNode parent,
+        DirectoryNode parent,
         String childName,
-        _Node child,
+        Node child,
         int currentSegment,
         int finalSegment,
       ) {
@@ -229,10 +247,10 @@ abstract class _MemoryFileSystemEntity implements FileSystemEntity {
             if (followTailLink) {
               FileSystemEntityType childType = child.stat.type;
               if (childType != FileSystemEntityType.NOT_FOUND) {
-                _checkType(expectedType, child.stat.type, () => newPath);
+                utils.checkType(expectedType, child.stat.type, () => newPath);
               }
             } else {
-              _checkType(expectedType, child.type, () => newPath);
+              utils.checkType(expectedType, child.type, () => newPath);
             }
             if (validateOverwriteExistingEntity != null) {
               validateOverwriteExistingEntity(child);
@@ -246,24 +264,25 @@ abstract class _MemoryFileSystemEntity implements FileSystemEntity {
         return child;
       },
     );
-    return _clone(newPath);
+    return clone(newPath);
   }
 
   /// Deletes this entity from the node tree.
   ///
   /// If [checkType] is specified, it will be used to validate that the file
   /// system entity that exists at [path] is of the expected type. By default,
-  /// [_defaultCheckType] is used to perform this validation.
-  void _deleteSync({
+  /// [defaultCheckType] is used to perform this validation.
+  @protected
+  void internalDeleteSync({
     bool recursive: false,
-    _TypeChecker checkType,
+    utils.TypeChecker checkType,
   }) {
-    _Node node = _backing;
+    Node node = backing;
     if (!recursive) {
-      if (node is _DirectoryNode && node.children.isNotEmpty) {
+      if (node is DirectoryNode && node.children.isNotEmpty) {
         throw common.directoryNotEmpty(path);
       }
-      (checkType ?? _defaultCheckType)(node);
+      (checkType ?? defaultCheckType)(node);
     }
     // Once we remove this reference, the node and all its children will be
     // garbage collected; we don't need to explicitly delete all children in
@@ -273,5 +292,6 @@ abstract class _MemoryFileSystemEntity implements FileSystemEntity {
 
   /// Creates a new entity with the same type as this entity but with the
   /// specified path.
-  FileSystemEntity _clone(String path);
+  @protected
+  FileSystemEntity clone(String path);
 }
