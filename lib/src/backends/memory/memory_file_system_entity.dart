@@ -12,6 +12,7 @@ import 'package:meta/meta.dart';
 import 'common.dart';
 import 'memory_directory.dart';
 import 'node.dart';
+import 'style.dart';
 import 'utils.dart' as utils;
 
 /// Validator function for use with `_renameSync`. This will be invoked if the
@@ -89,7 +90,10 @@ abstract class MemoryFileSystemEntity implements FileSystemEntity {
   }
 
   @override
-  Uri get uri => new Uri.file(path);
+  Uri get uri {
+    return new Uri.file(path,
+        windows: fileSystem.style == FileSystemStyle.windows);
+  }
 
   @override
   Future<bool> exists() async => existsSync();
@@ -99,16 +103,21 @@ abstract class MemoryFileSystemEntity implements FileSystemEntity {
 
   @override
   String resolveSymbolicLinksSync() {
+    if (path.isEmpty) {
+      throw common.noSuchFileOrDirectory(path);
+    }
     List<String> ledger = <String>[];
     if (isAbsolute) {
-      ledger.add('');
+      ledger.add(fileSystem.style.drive);
     }
     Node node = fileSystem.findNode(path,
         pathWithSymlinks: ledger, followTailLink: true);
     checkExists(node, () => path);
-    String resolved = ledger.join(separator);
-    if (!utils.isAbsolute(resolved)) {
-      resolved = fileSystem.cwd + separator + resolved;
+    String resolved = ledger.join(fileSystem.path.separator);
+    if (resolved == fileSystem.style.drive) {
+      resolved = fileSystem.style.root;
+    } else if (!fileSystem.path.isAbsolute(resolved)) {
+      resolved = fileSystem.cwd + fileSystem.path.separator + resolved;
     }
     return fileSystem.path.normalize(resolved);
   }
@@ -137,12 +146,12 @@ abstract class MemoryFileSystemEntity implements FileSystemEntity {
       throw new UnsupportedError('Watching not supported in MemoryFileSystem');
 
   @override
-  bool get isAbsolute => utils.isAbsolute(path);
+  bool get isAbsolute => fileSystem.path.isAbsolute(path);
 
   @override
   FileSystemEntity get absolute {
     String absolutePath = path;
-    if (!utils.isAbsolute(absolutePath)) {
+    if (!fileSystem.path.isAbsolute(absolutePath)) {
       absolutePath = fileSystem.path.join(fileSystem.cwd, absolutePath);
     }
     return clone(absolutePath);

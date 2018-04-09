@@ -130,6 +130,7 @@ void runCommonTests(
     String ns(String path) {
       p.Context posix = new p.Context(style: p.Style.posix);
       List<String> parts = posix.split(path);
+      parts[0] = root;
       path = fs.path.joinAll(parts);
       String rootPrefix = fs.path.rootPrefix(path);
       assert(rootPrefix.isNotEmpty);
@@ -161,7 +162,7 @@ void runCommonTests(
 
         test('succeedsWithUriArgument', () {
           fs.directory(ns('/foo')).createSync();
-          Uri uri = Uri.parse('file://${ns('/foo')}${fs.path.separator}');
+          Uri uri = fs.path.toUri(ns('/foo'));
           expect(fs.directory(uri), exists);
         });
 
@@ -185,7 +186,7 @@ void runCommonTests(
 
         test('succeedsWithUriArgument', () {
           fs.file(ns('/foo')).createSync();
-          Uri uri = Uri.parse('file://${ns('/foo')}');
+          Uri uri = fs.path.toUri(ns('/foo'));
           expect(fs.file(uri), exists);
         });
 
@@ -210,7 +211,7 @@ void runCommonTests(
         test('succeedsWithUriArgument', () {
           fs.file(ns('/foo')).createSync();
           fs.link(ns('/bar')).createSync(ns('/foo'));
-          Uri uri = Uri.parse('file://${ns('/bar')}');
+          Uri uri = fs.path.toUri(ns('/bar'));
           expect(fs.link(uri), exists);
         });
 
@@ -303,8 +304,10 @@ void runCommonTests(
         });
 
         test('staysAtRootIfSetToParentOfRoot', () {
-          fs.currentDirectory = '../../../../../../../../../..';
-          expect(fs.currentDirectory.path, '/');
+          fs.currentDirectory =
+              new List<String>.filled(20, '..').join(fs.path.separator);
+          String cwd = fs.currentDirectory.path;
+          expect(cwd, fs.path.rootPrefix(cwd));
         });
 
         test('removesTrailingSlashIfSet', () {
@@ -445,7 +448,8 @@ void runCommonTests(
         });
 
         test('isDirectoryForAncestorOfRoot', () {
-          FileSystemEntityType type = fs.typeSync('../../../../../../../..');
+          FileSystemEntityType type = fs.typeSync(
+              new List<String>.filled(20, '..').join(fs.path.separator));
           expect(type, FileSystemEntityType.DIRECTORY);
         });
 
@@ -486,8 +490,7 @@ void runCommonTests(
 
     group('Directory', () {
       test('uri', () {
-        expect(fs.directory(ns('/foo')).uri.toString(),
-            'file://${ns('/foo')}${fs.path.separator}');
+        expect(fs.directory(ns('/foo')).uri, fs.path.toUri(ns('/foo') + '/'));
         expect(fs.directory('foo').uri.toString(), 'foo/');
       });
 
@@ -843,6 +846,12 @@ void runCommonTests(
           expect(fs.directory(ns('/')).resolveSymbolicLinksSync(), ns('/'));
         });
 
+        test('throwsIfPathIsEmpty', () {
+          expectFileSystemException(ErrorCodes.ENOENT, () {
+            fs.directory('').resolveSymbolicLinksSync();
+          });
+        });
+
         test('throwsIfLoopInLinkChain', () {
           fs.link(ns('/foo')).createSync(ns('/bar'));
           fs.link(ns('/bar')).createSync(ns('/baz'));
@@ -891,11 +900,15 @@ void runCommonTests(
 
         test('handlesRelativeLinks', () {
           fs.directory(ns('/foo/bar/baz')).createSync(recursive: true);
-          fs.link(ns('/foo/qux')).createSync('bar/baz');
-          expect(fs.directory(ns('/foo/qux')).resolveSymbolicLinksSync(),
-              ns('/foo/bar/baz'));
-          expect(fs.directory('foo/qux').resolveSymbolicLinksSync(),
-              ns('/foo/bar/baz'));
+          fs.link(ns('/foo/qux')).createSync(fs.path.join('bar', 'baz'));
+          expect(
+            fs.directory(ns('/foo/qux')).resolveSymbolicLinksSync(),
+            ns('/foo/bar/baz'),
+          );
+          expect(
+            fs.directory(fs.path.join('foo', 'qux')).resolveSymbolicLinksSync(),
+            ns('/foo/bar/baz'),
+          );
         });
 
         test('handlesAbsoluteLinks', () {
@@ -921,7 +934,7 @@ void runCommonTests(
 
         test('handlesParentAndThisFolderReferences', () {
           fs.directory(ns('/foo/bar/baz')).createSync(recursive: true);
-          fs.link(ns('/foo/bar/baz/qux')).createSync('../..');
+          fs.link(ns('/foo/bar/baz/qux')).createSync(fs.path.join('..', '..'));
           String resolved = fs
               .directory(ns('/foo/./bar/baz/../baz/qux/bar'))
               .resolveSymbolicLinksSync();
@@ -935,7 +948,9 @@ void runCommonTests(
         });
 
         test('handlesComplexPathWithMultipleLinks', () {
-          fs.link(ns('/foo/bar/baz')).createSync('../../qux', recursive: true);
+          fs
+              .link(ns('/foo/bar/baz'))
+              .createSync(fs.path.join('..', '..', 'qux'), recursive: true);
           fs.link(ns('/qux')).createSync('quux');
           fs.link(ns('/quux/quuz')).createSync(ns('/foo'), recursive: true);
           String resolved = fs
@@ -960,16 +975,22 @@ void runCommonTests(
       });
 
       group('parent', () {
+        String root;
+
+        setUp(() {
+          root = fs.path.style.name == 'windows' ? r'C:\' : '/';
+        });
+
         test('returnsCovariantType', () {
-          expect(fs.directory('/').parent, isDirectory);
+          expect(fs.directory(root).parent, isDirectory);
         });
 
         test('returnsRootForRoot', () {
-          expect(fs.directory('/').parent.path, '/');
+          expect(fs.directory(root).parent.path, root);
         });
 
         test('succeedsForNonRoot', () {
-          expect(fs.directory('/foo/bar').parent.path, '/foo');
+          expect(fs.directory(ns('/foo/bar')).parent.path, ns('/foo'));
         });
       });
 
@@ -1021,10 +1042,12 @@ void runCommonTests(
         setUp(() {
           dir = fs.currentDirectory = fs.directory(ns('/foo'))..createSync();
           fs.file('bar').createSync();
-          fs.file('baz/qux').createSync(recursive: true);
-          fs.link('quux').createSync('baz/qux');
-          fs.link('baz/quuz').createSync('../quux');
-          fs.link('baz/grault').createSync('.');
+          fs.file(fs.path.join('baz', 'qux')).createSync(recursive: true);
+          fs.link('quux').createSync(fs.path.join('baz', 'qux'));
+          fs
+              .link(fs.path.join('baz', 'quuz'))
+              .createSync(fs.path.join('..', 'quux'));
+          fs.link(fs.path.join('baz', 'grault')).createSync('.');
           fs.currentDirectory = ns('/');
         });
 
@@ -1135,7 +1158,7 @@ void runCommonTests(
 
     group('File', () {
       test('uri', () {
-        expect(fs.file(ns('/foo')).uri.toString(), 'file://${ns('/foo')}');
+        expect(fs.file(ns('/foo')).uri, fs.path.toUri(ns('/foo')));
         expect(fs.file('foo').uri.toString(), 'foo');
       });
 
@@ -2745,19 +2768,19 @@ void runCommonTests(
         test('whenTargetIsDirectory', () {
           fs.directory(ns('/foo')).createSync();
           Link l = fs.link(ns('/bar'))..createSync(ns('/foo'));
-          expect(l.uri.toString(), 'file://${ns('/bar')}');
+          expect(l.uri, fs.path.toUri(ns('/bar')));
           expect(fs.link('bar').uri.toString(), 'bar');
         });
 
         test('whenTargetIsFile', () {
           fs.file(ns('/foo')).createSync();
           Link l = fs.link(ns('/bar'))..createSync(ns('/foo'));
-          expect(l.uri.toString(), 'file://${ns('/bar')}');
+          expect(l.uri, fs.path.toUri(ns('/bar')));
           expect(fs.link('bar').uri.toString(), 'bar');
         });
 
         test('whenLinkDoesntExist', () {
-          expect(fs.link(ns('/foo')).uri.toString(), 'file://${ns('/foo')}');
+          expect(fs.link(ns('/foo')).uri, fs.path.toUri(ns('/foo')));
           expect(fs.link('foo').uri.toString(), 'foo');
         });
       });

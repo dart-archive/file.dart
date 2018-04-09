@@ -262,6 +262,10 @@ class ChrootFileSystem extends FileSystem {
     bool followLinks: true,
     _NotFoundBehavior notFound: _NotFoundBehavior.allow,
   }) {
+    if (path.isEmpty) {
+      throw common.noSuchFileOrDirectory(path);
+    }
+
     p.Context ctx = this.path;
     String root = _localRoot;
     List<String> parts, ledger;
