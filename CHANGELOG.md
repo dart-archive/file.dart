@@ -1,6 +1,9 @@
 #### 4.0.1
 
 * General library cleanup
+* Add `style` support in `MemoryFileSystem`, so that callers can choose to
+  have a memory file system with windows-like paths. [#68]
+  (https://github.com/google/file.dart/issues/68)
 
 #### 4.0.0
 

@@ -18,9 +18,6 @@ bool isDirectory(Node node) => node?.type == io.FileSystemEntityType.DIRECTORY;
 /// Checks if `node.type` returns [io.FileSystemEntityType.LINK].
 bool isLink(Node node) => node?.type == io.FileSystemEntityType.LINK;
 
-/// Tells whether the specified path represents an absolute path.
-bool isAbsolute(String path) => path.startsWith(separator);
-
 /// Validator function that is expected to throw a [FileSystemException] if
 /// the node does not represent the type that is expected in any given context.
 typedef void TypeChecker(Node node);
@@ -62,12 +59,6 @@ bool isWriteMode(io.FileMode mode) =>
     mode == io.FileMode.WRITE_ONLY ||
     mode == io.FileMode.WRITE_ONLY_APPEND;
 
-/// Returns a [PathGenerator] that generates a subpath of the constituent
-/// [parts] (from [start]..[end], inclusive).
-PathGenerator subpath(List<String> parts, int start, int end) {
-  return () => parts.sublist(start, end + 1).join(separator);
-}
-
 /// Tells whether the given string is empty.
 bool isEmpty(String str) => str.isEmpty;
 
@@ -103,12 +94,12 @@ Node resolveLinks(
       throw common.tooManyLevelsOfSymbolicLinks(path());
     }
     if (ledger != null) {
-      if (isAbsolute(link.target)) {
+      if (link.fs.path.isAbsolute(link.target)) {
         ledger.clear();
       } else if (ledger.isNotEmpty) {
         ledger.removeLast();
       }
-      ledger.addAll(link.target.split(separator));
+      ledger.addAll(link.target.split(link.fs.path.separator));
     }
     node = link.getReferent(
       tailVisitor: (DirectoryNode parent, String childName, Node child) {

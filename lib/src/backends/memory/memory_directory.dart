@@ -14,6 +14,7 @@ import 'memory_file.dart';
 import 'memory_file_system_entity.dart';
 import 'memory_link.dart';
 import 'node.dart';
+import 'style.dart';
 import 'utils.dart' as utils;
 
 /// Internal implementation of [Directory].
@@ -30,7 +31,10 @@ class MemoryDirectory extends MemoryFileSystemEntity
   io.FileSystemEntityType get expectedType => io.FileSystemEntityType.DIRECTORY;
 
   @override
-  Uri get uri => new Uri.directory(path);
+  Uri get uri {
+    return new Uri.directory(path,
+        windows: fileSystem.style == FileSystemStyle.windows);
+  }
 
   @override
   bool existsSync() => backingOrNull?.stat?.type == expectedType;
@@ -121,7 +125,9 @@ class MemoryDirectory extends MemoryFileSystemEntity
     List<_PendingListTask> tasks = <_PendingListTask>[
       new _PendingListTask(
         node,
-        path.endsWith(separator) ? path.substring(0, path.length - 1) : path,
+        path.endsWith(fileSystem.path.separator)
+            ? path.substring(0, path.length - 1)
+            : path,
         new Set<LinkNode>(),
       ),
     ];

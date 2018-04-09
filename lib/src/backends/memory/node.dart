@@ -7,6 +7,7 @@ import 'package:file/src/io.dart' as io;
 
 import 'common.dart';
 import 'memory_file_stat.dart';
+import 'style.dart';
 
 /// Visitor callback for use with [NodeBasedFileSystem.findNode].
 ///
@@ -36,7 +37,7 @@ typedef Node SegmentVisitor(
 
 /// A [FileSystem] whose internal structure is made up of a tree of [Node]
 /// instances, rooted at a single node.
-abstract class NodeBasedFileSystem implements FileSystem {
+abstract class NodeBasedFileSystem implements StyleableFileSystem {
   /// The root node.
   RootNode get root;
 

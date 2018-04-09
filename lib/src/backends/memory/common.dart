@@ -4,9 +4,6 @@
 
 import 'package:file/src/common.dart' as common;
 
-/// The file separator.
-const String separator = '/';
-
 /// Generates a path to use in error messages.
 typedef dynamic PathGenerator();
 

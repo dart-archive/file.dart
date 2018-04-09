@@ -14,6 +14,7 @@ import 'memory_file.dart';
 import 'memory_file_stat.dart';
 import 'memory_link.dart';
 import 'node.dart';
+import 'style.dart';
 import 'utils.dart' as utils;
 
 const String _thisDir = '.';
@@ -21,8 +22,6 @@ const String _parentDir = '..';
 
 /// An implementation of [FileSystem] that exists entirely in memory with an
 /// internal representation loosely based on the Filesystem Hierarchy Standard.
-/// Notably, this means that this implementation will not look like a Windows
-/// file system even if it's being run on a Windows host operating system.
 ///
 /// [MemoryFileSystem] is suitable for mocking and tests, as well as for
 /// caching or staging before writing or reading to a live system.
@@ -30,12 +29,15 @@ const String _parentDir = '..';
 /// This implementation of the [FileSystem] interface does not directly use
 /// any `dart:io` APIs; it merely uses the library's enum values and interfaces.
 /// As such, it is suitable for use in the browser.
-abstract class MemoryFileSystem implements FileSystem {
+abstract class MemoryFileSystem implements StyleableFileSystem {
   /// Creates a new `MemoryFileSystem`.
   ///
   /// The file system will be empty, and the current directory will be the
   /// root directory.
-  factory MemoryFileSystem() = _MemoryFileSystem;
+  ///
+  /// If [style] is specified, the file system will use the specified path
+  /// style. The default is [FileSystemStyle.posix].
+  factory MemoryFileSystem({FileSystemStyle style}) = _MemoryFileSystem;
 }
 
 /// Internal implementation of [MemoryFileSystem].
@@ -43,21 +45,22 @@ class _MemoryFileSystem extends FileSystem
     implements MemoryFileSystem, NodeBasedFileSystem {
   RootNode _root;
   String _systemTemp;
-  String _cwd = separator;
+  p.Context _context;
 
-  /// Creates a new `MemoryFileSystem`.
-  ///
-  /// The file system will be empty, and the current directory will be the
-  /// root directory.
-  _MemoryFileSystem() {
+  _MemoryFileSystem({this.style: FileSystemStyle.posix})
+      : assert(style != null) {
     _root = new RootNode(this);
+    _context = style.contextFor(style.root);
   }
+
+  @override
+  final FileSystemStyle style;
 
   @override
   RootNode get root => _root;
 
   @override
-  String get cwd => _cwd;
+  String get cwd => _context.current;
 
   @override
   Directory directory(dynamic path) => new MemoryDirectory(this, getPath(path));
@@ -69,19 +72,19 @@ class _MemoryFileSystem extends FileSystem
   Link link(dynamic path) => new MemoryLink(this, getPath(path));
 
   @override
-  p.Context get path => new p.Context(style: p.Style.posix, current: _cwd);
+  p.Context get path => _context;
 
   /// Gets the system temp directory. This directory will be created on-demand
   /// in the root of the file system. Once created, its location is fixed for
   /// the life of the process.
   @override
   Directory get systemTempDirectory {
-    _systemTemp ??= directory(separator).createTempSync('.tmp_').path;
+    _systemTemp ??= directory(style.root).createTempSync('.tmp_').path;
     return directory(_systemTemp)..createSync();
   }
 
   @override
-  Directory get currentDirectory => directory(_cwd);
+  Directory get currentDirectory => directory(cwd);
 
   @override
   set currentDirectory(dynamic path) {
@@ -98,8 +101,8 @@ class _MemoryFileSystem extends FileSystem
     Node node = findNode(value);
     checkExists(node, () => value);
     utils.checkIsDir(node, () => value);
-    assert(utils.isAbsolute(value));
-    _cwd = value;
+    assert(_context.isAbsolute(value));
+    _context = style.contextFor(value);
   }
 
   @override
@@ -154,7 +157,7 @@ class _MemoryFileSystem extends FileSystem
   /// Gets the node backing for the current working directory. Note that this
   /// can return null if the directory has been deleted or moved from under our
   /// feet.
-  DirectoryNode get _current => findNode(_cwd);
+  DirectoryNode get _current => findNode(cwd);
 
   @override
   Node findNode(
@@ -169,13 +172,15 @@ class _MemoryFileSystem extends FileSystem
       throw new ArgumentError.notNull('path');
     }
 
-    if (utils.isAbsolute(path)) {
+    if (_context.isAbsolute(path)) {
       reference = _root;
+      path = path.substring(style.drive.length);
     } else {
       reference ??= _current;
     }
 
-    List<String> parts = path.split(separator)..removeWhere(utils.isEmpty);
+    List<String> parts = path.split(style.separator)
+      ..removeWhere(utils.isEmpty);
     DirectoryNode directory = reference.directory;
     Node child = directory;
 
@@ -200,7 +205,9 @@ class _MemoryFileSystem extends FileSystem
         pathWithSymlinks.add(basename);
       }
 
-      PathGenerator subpath = utils.subpath(parts, 0, i);
+      // Generates a subpath for the current segment.
+      String subpath() => parts.sublist(0, i + 1).join(_context.separator);
+
       if (utils.isLink(child) && (i < finalSegment || followTailLink)) {
         if (visitLinks || segmentVisitor == null) {
           if (segmentVisitor != null) {

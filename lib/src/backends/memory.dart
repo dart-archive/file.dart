@@ -3,3 +3,4 @@
 // BSD-style license that can be found in the LICENSE file.
 
 export 'memory/memory_file_system.dart' show MemoryFileSystem;
+export 'memory/style.dart' show FileSystemStyle, StyleableFileSystem;
