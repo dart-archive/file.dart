@@ -7,11 +7,12 @@ import 'dart:async';
 import 'package:file/file.dart';
 import 'package:file/memory.dart';
 import 'package:file/record_replay.dart';
-import 'package:file/testing.dart';
+import 'package:file_testing/file_testing.dart';
 import 'package:path/path.dart' as path;
 import 'package:test/test.dart';
 
 import 'common_tests.dart';
+import 'record_replay_matchers.dart';
 
 void main() {
   group('Replay', () {

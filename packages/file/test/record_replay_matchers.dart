@@ -3,7 +3,8 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'package:file/record_replay.dart';
-import 'package:file/src/backends/record_replay/common.dart' hide TypeMatcher;
+import 'package:file/src/backends/record_replay/common.dart'
+    show getSymbolName; // ignore: implementation_imports
 import 'package:test/test.dart';
 
 const Map<Type, String> _kTypeDescriptions = const <Type, String>{

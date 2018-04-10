@@ -4,6 +4,8 @@
 
 A generic file system abstraction for Dart.
 
+## Features
+
 Like `dart:io`, `package:file` supplies a rich Dart-idiomatic API for accessing
 a file system.
 

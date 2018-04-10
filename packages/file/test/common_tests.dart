@@ -8,7 +8,7 @@ import 'dart:convert';
 import 'dart:io' as io;
 
 import 'package:file/file.dart';
-import 'package:file/testing.dart';
+import 'package:file_testing/file_testing.dart';
 import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 import 'package:test/test.dart' as testpkg show group, setUp, tearDown, test;
