@@ -6,7 +6,7 @@
 import 'dart:io' as io;
 
 import 'package:file/local.dart';
-import 'package:file/src/testing/internal.dart';
+import 'package:file_testing/src/testing/internal.dart';
 import 'package:test/test.dart';
 
 import 'common_tests.dart';

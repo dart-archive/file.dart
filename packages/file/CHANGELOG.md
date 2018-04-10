@@ -1,3 +1,9 @@
+#### 5.0.0
+
+* Moved `testing` library into a dedicated `package:file_testing` so that
+  libraries don't need to take on a transitive dependency on `package:test`
+  in order to use `package:file`.
+
 #### 4.0.1
 
 * General library cleanup

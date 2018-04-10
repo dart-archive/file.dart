@@ -8,16 +8,17 @@ import 'dart:convert';
 import 'package:file/file.dart';
 import 'package:file/memory.dart';
 import 'package:file/record_replay.dart';
-import 'package:file/testing.dart';
 import 'package:file/src/backends/record_replay/codecs.dart';
 import 'package:file/src/backends/record_replay/common.dart';
 import 'package:file/src/backends/record_replay/events.dart';
 import 'package:file/src/backends/record_replay/mutable_recording.dart';
 import 'package:file/src/backends/record_replay/recording_proxy_mixin.dart';
+import 'package:file_testing/file_testing.dart';
 import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 
 import 'common_tests.dart';
+import 'record_replay_matchers.dart';
 
 void main() {
   group('SupportingCode', () {
