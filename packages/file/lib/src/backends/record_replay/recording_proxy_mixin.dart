@@ -142,13 +142,19 @@ abstract class RecordingProxyMixin implements ProxyObject, ReplayAware {
     // We have to instantiate the correct type of StreamReference or
     // FutureReference, so that types are not lost when we unwrap the references
     // afterward.
-    if (value is Stream<FileSystemEntity>) {
+    if (value is Stream<dynamic>) {
+      // This one is here for Dart 1 runtime mode.
+      value = new StreamReference<dynamic>(value);
+    } else if (value is Stream<FileSystemEntity>) {
       value = new StreamReference<FileSystemEntity>(value);
     } else if (value is Stream<String>) {
       value = new StreamReference<String>(value);
     } else if (value is Stream) {
       throw new UnimplementedError(
           'Cannot record method with return type ${value.runtimeType}');
+    } else if (value is Future<dynamic>) {
+      // This one is here for Dart 1 runtime mode.
+      value = new FutureReference<dynamic>(value);
     } else if (value is Future<bool>) {
       value = new FutureReference<bool>(value);
     } else if (value is Future<Directory>) {
