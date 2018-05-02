@@ -57,7 +57,7 @@ abstract class ResultReference<T> {
   /// completed. If [value] is a [Stream], this future will complete when the
   /// stream sends a "done" event. If value is neither a future nor a stream,
   /// this future will complete immediately.
-  Future<Null> get complete => new Future<Null>.value();
+  Future<void> get complete => new Future<void>.value();
 }
 
 /// Wraps a future result.
@@ -90,7 +90,7 @@ class FutureReference<T> extends ResultReference<Future<T>> {
   T get recordedValue => _value;
 
   @override
-  Future<Null> get complete => value.catchError((dynamic _) {});
+  Future<void> get complete => value.catchError((dynamic _) {});
 }
 
 /// Wraps a stream result.
