@@ -3,6 +3,8 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
+import 'package:file/file.dart';
+import 'package:file/src/backends/memory/node.dart';
 
 import 'package:meta/meta.dart';
 
@@ -137,10 +139,43 @@ abstract class RecordingProxyMixin implements ProxyObject, ReplayAware {
 
     // Wrap Future and Stream results so that we record their values as they
     // become available.
-    if (value is Stream) {
+    // We have to instantiate the correct type of StreamReference or
+    // FutureReference, so that types are not lost when we unwrap the references
+    // afterward.
+    if (value is Stream<dynamic>) {
+      // This one is here for Dart 1 runtime mode.
       value = new StreamReference<dynamic>(value);
-    } else if (value is Future) {
+    } else if (value is Stream<FileSystemEntity>) {
+      value = new StreamReference<FileSystemEntity>(value);
+    } else if (value is Stream<String>) {
+      value = new StreamReference<String>(value);
+    } else if (value is Stream) {
+      throw new UnimplementedError(
+          'Cannot record method with return type ${value.runtimeType}');
+    } else if (value is Future<dynamic>) {
+      // This one is here for Dart 1 runtime mode.
       value = new FutureReference<dynamic>(value);
+    } else if (value is Future<bool>) {
+      value = new FutureReference<bool>(value);
+    } else if (value is Future<Directory>) {
+      value = new FutureReference<Directory>(value);
+    } else if (value is Future<File>) {
+      value = new FutureReference<File>(value);
+    } else if (value is Future<FileNode>) {
+      value = new FutureReference<FileNode>(value);
+    } else if (value is Future<FileStat>) {
+      value = new FutureReference<FileStat>(value);
+    } else if (value is Future<Link>) {
+      value = new FutureReference<Link>(value);
+    } else if (value is Future<FileSystemEntity>) {
+      value = new FutureReference<FileSystemEntity>(value);
+    } else if (value is Future<FileSystemEntityType>) {
+      value = new FutureReference<FileSystemEntityType>(value);
+    } else if (value is Future<String>) {
+      value = new FutureReference<String>(value);
+    } else if (value is Future) {
+      throw new UnimplementedError(
+          'Cannot record method with return type ${value.runtimeType}');
     }
 
     // Record the invocation event associated with this invocation.
