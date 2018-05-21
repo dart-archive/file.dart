@@ -75,8 +75,9 @@ abstract class ReplayFileSystem extends FileSystem {
     if (!manifestFile.existsSync()) {
       throw new ArgumentError('Not a valid recording directory: $dirname');
     }
-    List<Map<String, dynamic>> manifest =
-        new JsonDecoder().convert(manifestFile.readAsStringSync());
+    List<Map<String, dynamic>> manifest = new JsonDecoder()
+        .convert(manifestFile.readAsStringSync())
+        .cast<Map<String, dynamic>>();
     return new ReplayFileSystemImpl(recording, manifest);
   }
 }
