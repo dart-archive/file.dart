@@ -62,12 +62,12 @@ abstract class ForwardingFile extends ForwardingFileSystemEntity<File, io.File>
 
   @override
   Future<RandomAccessFile> open({
-    FileMode mode: FileMode.READ,
+    FileMode mode: FileMode.read,
   }) async =>
       delegate.open(mode: mode);
 
   @override
-  RandomAccessFile openSync({FileMode mode: FileMode.READ}) =>
+  RandomAccessFile openSync({FileMode mode: FileMode.read}) =>
       delegate.openSync(mode: mode);
 
   @override
@@ -76,7 +76,7 @@ abstract class ForwardingFile extends ForwardingFileSystemEntity<File, io.File>
 
   @override
   IOSink openWrite({
-    FileMode mode: FileMode.WRITE,
+    FileMode mode: FileMode.write,
     Encoding encoding: utf8,
   }) =>
       delegate.openWrite(mode: mode, encoding: encoding);
@@ -106,7 +106,7 @@ abstract class ForwardingFile extends ForwardingFileSystemEntity<File, io.File>
   @override
   Future<File> writeAsBytes(
     List<int> bytes, {
-    FileMode mode: FileMode.WRITE,
+    FileMode mode: FileMode.write,
     bool flush: false,
   }) async =>
       wrap(await delegate.writeAsBytes(
@@ -118,7 +118,7 @@ abstract class ForwardingFile extends ForwardingFileSystemEntity<File, io.File>
   @override
   void writeAsBytesSync(
     List<int> bytes, {
-    FileMode mode: FileMode.WRITE,
+    FileMode mode: FileMode.write,
     bool flush: false,
   }) =>
       delegate.writeAsBytesSync(bytes, mode: mode, flush: flush);
@@ -126,7 +126,7 @@ abstract class ForwardingFile extends ForwardingFileSystemEntity<File, io.File>
   @override
   Future<File> writeAsString(
     String contents, {
-    FileMode mode: FileMode.WRITE,
+    FileMode mode: FileMode.write,
     Encoding encoding: utf8,
     bool flush: false,
   }) async =>
@@ -140,7 +140,7 @@ abstract class ForwardingFile extends ForwardingFileSystemEntity<File, io.File>
   @override
   void writeAsStringSync(
     String contents, {
-    FileMode mode: FileMode.WRITE,
+    FileMode mode: FileMode.write,
     Encoding encoding: utf8,
     bool flush: false,
   }) =>

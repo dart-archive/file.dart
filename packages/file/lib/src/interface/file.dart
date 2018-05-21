@@ -31,11 +31,11 @@ abstract class File implements FileSystemEntity, io.File {
 
   @override
   Future<File> writeAsBytes(List<int> bytes,
-      {io.FileMode mode: io.FileMode.WRITE, bool flush: false});
+      {io.FileMode mode: io.FileMode.write, bool flush: false});
 
   @override
   Future<File> writeAsString(String contents,
-      {io.FileMode mode: io.FileMode.WRITE,
+      {io.FileMode mode: io.FileMode.write,
       Encoding encoding: utf8,
       bool flush: false});
 }

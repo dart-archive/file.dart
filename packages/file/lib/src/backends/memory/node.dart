@@ -188,7 +188,7 @@ class DirectoryNode extends RealNode {
   DirectoryNode(DirectoryNode parent) : super(parent);
 
   @override
-  io.FileSystemEntityType get type => io.FileSystemEntityType.DIRECTORY;
+  io.FileSystemEntityType get type => io.FileSystemEntityType.directory;
 
   @override
   DirectoryNode get directory => this;
@@ -228,7 +228,7 @@ class FileNode extends RealNode {
   FileNode(DirectoryNode parent) : super(parent);
 
   @override
-  io.FileSystemEntityType get type => io.FileSystemEntityType.FILE;
+  io.FileSystemEntityType get type => io.FileSystemEntityType.file;
 
   @override
   int get size => content.length;
@@ -301,7 +301,7 @@ class LinkNode extends Node {
   }
 
   @override
-  io.FileSystemEntityType get type => io.FileSystemEntityType.LINK;
+  io.FileSystemEntityType get type => io.FileSystemEntityType.link;
 
   @override
   io.FileStat get stat {

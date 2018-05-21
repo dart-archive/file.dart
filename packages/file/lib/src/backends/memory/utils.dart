@@ -10,13 +10,13 @@ import 'common.dart';
 import 'node.dart';
 
 /// Checks if `node.type` returns [io.FileSystemEntityType.FILE].
-bool isFile(Node node) => node?.type == io.FileSystemEntityType.FILE;
+bool isFile(Node node) => node?.type == io.FileSystemEntityType.file;
 
 /// Checks if `node.type` returns [io.FileSystemEntityType.DIRECTORY].
-bool isDirectory(Node node) => node?.type == io.FileSystemEntityType.DIRECTORY;
+bool isDirectory(Node node) => node?.type == io.FileSystemEntityType.directory;
 
 /// Checks if `node.type` returns [io.FileSystemEntityType.LINK].
-bool isLink(Node node) => node?.type == io.FileSystemEntityType.LINK;
+bool isLink(Node node) => node?.type == io.FileSystemEntityType.link;
 
 /// Validator function that is expected to throw a [FileSystemException] if
 /// the node does not represent the type that is expected in any given context.
@@ -38,12 +38,12 @@ void checkType(
 ) {
   if (expectedType != actualType) {
     switch (expectedType) {
-      case FileSystemEntityType.DIRECTORY:
+      case FileSystemEntityType.directory:
         throw common.notADirectory(path());
-      case FileSystemEntityType.FILE:
-        assert(actualType == FileSystemEntityType.DIRECTORY);
+      case FileSystemEntityType.file:
+        assert(actualType == FileSystemEntityType.directory);
         throw common.isADirectory(path());
-      case FileSystemEntityType.LINK:
+      case FileSystemEntityType.link:
         throw common.invalidArgument(path());
       default:
         // Should not happen
@@ -54,10 +54,10 @@ void checkType(
 
 /// Tells if the specified file mode represents a write mode.
 bool isWriteMode(io.FileMode mode) =>
-    mode == io.FileMode.WRITE ||
-    mode == io.FileMode.APPEND ||
-    mode == io.FileMode.WRITE_ONLY ||
-    mode == io.FileMode.WRITE_ONLY_APPEND;
+    mode == io.FileMode.write ||
+    mode == io.FileMode.append ||
+    mode == io.FileMode.writeOnly ||
+    mode == io.FileMode.writeOnlyAppend;
 
 /// Tells whether the given string is empty.
 bool isEmpty(String str) => str.isEmpty;

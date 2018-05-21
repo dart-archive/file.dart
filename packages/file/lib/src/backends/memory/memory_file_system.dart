@@ -149,7 +149,7 @@ class _MemoryFileSystem extends FileSystem
       node = null;
     }
     if (node == null) {
-      return io.FileSystemEntityType.NOT_FOUND;
+      return io.FileSystemEntityType.notFound;
     }
     return node.type;
   }

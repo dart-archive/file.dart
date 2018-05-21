@@ -34,7 +34,7 @@ class MemoryFile extends MemoryFileSystemEntity implements File {
   }
 
   @override
-  io.FileSystemEntityType get expectedType => io.FileSystemEntityType.FILE;
+  io.FileSystemEntityType get expectedType => io.FileSystemEntityType.file;
 
   @override
   bool existsSync() => backingOrNull?.stat?.type == expectedType;
@@ -64,7 +64,7 @@ class MemoryFile extends MemoryFileSystemEntity implements File {
     );
     if (node.type != expectedType) {
       // There was an existing non-file entity at this object's path
-      assert(node.type == FileSystemEntityType.DIRECTORY);
+      assert(node.type == FileSystemEntityType.directory);
       throw common.isADirectory(path);
     }
     return node;
@@ -80,7 +80,7 @@ class MemoryFile extends MemoryFileSystemEntity implements File {
         checkType: (Node node) {
           FileSystemEntityType actualType = node.stat.type;
           if (actualType != expectedType) {
-            throw actualType == FileSystemEntityType.NOT_FOUND
+            throw actualType == FileSystemEntityType.notFound
                 ? common.noSuchFileOrDirectory(path)
                 : common.isADirectory(path);
           }
@@ -168,11 +168,11 @@ class MemoryFile extends MemoryFileSystemEntity implements File {
 
   @override
   Future<io.RandomAccessFile> open(
-          {io.FileMode mode: io.FileMode.READ}) async =>
+          {io.FileMode mode: io.FileMode.read}) async =>
       openSync(mode: mode);
 
   @override
-  io.RandomAccessFile openSync({io.FileMode mode: io.FileMode.READ}) =>
+  io.RandomAccessFile openSync({io.FileMode mode: io.FileMode.read}) =>
       throw new UnimplementedError('TODO');
 
   @override
@@ -193,7 +193,7 @@ class MemoryFile extends MemoryFileSystemEntity implements File {
 
   @override
   io.IOSink openWrite({
-    io.FileMode mode: io.FileMode.WRITE,
+    io.FileMode mode: io.FileMode.write,
     Encoding encoding: utf8,
   }) {
     if (!utils.isWriteMode(mode)) {
@@ -230,7 +230,7 @@ class MemoryFile extends MemoryFileSystemEntity implements File {
   @override
   Future<File> writeAsBytes(
     List<int> bytes, {
-    io.FileMode mode: io.FileMode.WRITE,
+    io.FileMode mode: io.FileMode.write,
     bool flush: false,
   }) async {
     writeAsBytesSync(bytes, mode: mode, flush: flush);
@@ -240,7 +240,7 @@ class MemoryFile extends MemoryFileSystemEntity implements File {
   @override
   void writeAsBytesSync(
     List<int> bytes, {
-    io.FileMode mode: io.FileMode.WRITE,
+    io.FileMode mode: io.FileMode.write,
     bool flush: false,
   }) {
     if (!utils.isWriteMode(mode)) {
@@ -255,7 +255,7 @@ class MemoryFile extends MemoryFileSystemEntity implements File {
   @override
   Future<File> writeAsString(
     String contents, {
-    io.FileMode mode: io.FileMode.WRITE,
+    io.FileMode mode: io.FileMode.write,
     Encoding encoding: utf8,
     bool flush: false,
   }) async {
@@ -266,7 +266,7 @@ class MemoryFile extends MemoryFileSystemEntity implements File {
   @override
   void writeAsStringSync(
     String contents, {
-    io.FileMode mode: io.FileMode.WRITE,
+    io.FileMode mode: io.FileMode.write,
     Encoding encoding: utf8,
     bool flush: false,
   }) =>
@@ -277,7 +277,7 @@ class MemoryFile extends MemoryFileSystemEntity implements File {
   File clone(String path) => new MemoryFile(fileSystem, path);
 
   void _truncateIfNecessary(FileNode node, io.FileMode mode) {
-    if (mode == io.FileMode.WRITE || mode == io.FileMode.WRITE_ONLY) {
+    if (mode == io.FileMode.write || mode == io.FileMode.writeOnly) {
       node.content.clear();
     }
   }

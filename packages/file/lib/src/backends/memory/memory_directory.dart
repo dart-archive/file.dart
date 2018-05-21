@@ -28,7 +28,7 @@ class MemoryDirectory extends MemoryFileSystemEntity
       : super(fileSystem, path);
 
   @override
-  io.FileSystemEntityType get expectedType => io.FileSystemEntityType.DIRECTORY;
+  io.FileSystemEntityType get expectedType => io.FileSystemEntityType.directory;
 
   @override
   Uri get uri {

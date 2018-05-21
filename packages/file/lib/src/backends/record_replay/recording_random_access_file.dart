@@ -99,7 +99,7 @@ class RecordingRandomAccessFile extends Object
   Future<RandomAccessFile> _flush() => delegate.flush().then(_wrap);
 
   Future<RandomAccessFile> _lock(
-          [FileLock mode = FileLock.EXCLUSIVE, int start = 0, int end = -1]) =>
+          [FileLock mode = FileLock.exclusive, int start = 0, int end = -1]) =>
       delegate.lock(mode, start, end).then(_wrap);
 
   Future<RandomAccessFile> _unlock([int start = 0, int end = -1]) =>

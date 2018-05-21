@@ -18,7 +18,7 @@ class _ChrootDirectory extends _ChrootFileSystemEntity<Directory, io.Directory>
   }
 
   @override
-  FileSystemEntityType get expectedType => FileSystemEntityType.DIRECTORY;
+  FileSystemEntityType get expectedType => FileSystemEntityType.directory;
 
   @override
   io.Directory _rawDelegate(String path) => fileSystem.delegate.directory(path);
@@ -33,7 +33,7 @@ class _ChrootDirectory extends _ChrootFileSystemEntity<Directory, io.Directory>
         throw common.notADirectory(path);
       }
       FileSystemEntityType type = await fileSystem.type(newPath);
-      if (type != FileSystemEntityType.NOT_FOUND) {
+      if (type != FileSystemEntityType.notFound) {
         if (type != expectedType) {
           throw common.notADirectory(newPath);
         }
@@ -61,7 +61,7 @@ class _ChrootDirectory extends _ChrootFileSystemEntity<Directory, io.Directory>
         throw common.notADirectory(path);
       }
       FileSystemEntityType type = fileSystem.typeSync(newPath);
-      if (type != FileSystemEntityType.NOT_FOUND) {
+      if (type != FileSystemEntityType.notFound) {
         if (type != expectedType) {
           throw common.notADirectory(newPath);
         }
@@ -98,11 +98,11 @@ class _ChrootDirectory extends _ChrootFileSystemEntity<Directory, io.Directory>
   Future<Directory> create({bool recursive: false}) async {
     if (_isLink) {
       switch (await fileSystem.type(path)) {
-        case FileSystemEntityType.NOT_FOUND:
+        case FileSystemEntityType.notFound:
           throw common.noSuchFileOrDirectory(path);
-        case FileSystemEntityType.FILE:
+        case FileSystemEntityType.file:
           throw common.fileExists(path);
-        case FileSystemEntityType.DIRECTORY:
+        case FileSystemEntityType.directory:
           // Nothing to do.
           return this;
         default:
@@ -117,11 +117,11 @@ class _ChrootDirectory extends _ChrootFileSystemEntity<Directory, io.Directory>
   void createSync({bool recursive: false}) {
     if (_isLink) {
       switch (fileSystem.typeSync(path)) {
-        case FileSystemEntityType.NOT_FOUND:
+        case FileSystemEntityType.notFound:
           throw common.noSuchFileOrDirectory(path);
-        case FileSystemEntityType.FILE:
+        case FileSystemEntityType.file:
           throw common.fileExists(path);
-        case FileSystemEntityType.DIRECTORY:
+        case FileSystemEntityType.directory:
           // Nothing to do.
           return;
         default:

@@ -48,7 +48,7 @@ abstract class _ChrootFileSystemEntity<T extends FileSystemEntity,
   /// Tells whether this entity's path references a symbolic link.
   bool get _isLink =>
       fileSystem.typeSync(path, followLinks: false) ==
-      FileSystemEntityType.LINK;
+      FileSystemEntityType.link;
 
   @override
   Directory wrapDirectory(io.Directory delegate) =>
@@ -109,14 +109,14 @@ abstract class _ChrootFileSystemEntity<T extends FileSystemEntity,
     Future<FileSystemEntityType> type(String path) =>
         fileSystem.delegate.type(real(path), followLinks: false);
 
-    if (await type(path) == FileSystemEntityType.LINK) {
-      if (expectedType == FileSystemEntityType.LINK) {
+    if (await type(path) == FileSystemEntityType.link) {
+      if (expectedType == FileSystemEntityType.link) {
         await fileSystem.delegate.link(real(path)).delete();
       } else {
         String resolvedPath = fileSystem._resolve(p.basename(path),
             from: p.dirname(path), notFound: _NotFoundBehavior.allowAtTail);
         if (!recursive && await type(resolvedPath) != expectedType) {
-          throw expectedType == FileSystemEntityType.FILE
+          throw expectedType == FileSystemEntityType.file
               ? common.isADirectory(path)
               : common.notADirectory(path);
         }
@@ -138,14 +138,14 @@ abstract class _ChrootFileSystemEntity<T extends FileSystemEntity,
     FileSystemEntityType type(String path) =>
         fileSystem.delegate.typeSync(real(path), followLinks: false);
 
-    if (type(path) == FileSystemEntityType.LINK) {
-      if (expectedType == FileSystemEntityType.LINK) {
+    if (type(path) == FileSystemEntityType.link) {
+      if (expectedType == FileSystemEntityType.link) {
         fileSystem.delegate.link(real(path)).deleteSync();
       } else {
         String resolvedPath = fileSystem._resolve(p.basename(path),
             from: p.dirname(path), notFound: _NotFoundBehavior.allowAtTail);
         if (!recursive && type(resolvedPath) != expectedType) {
-          throw expectedType == FileSystemEntityType.FILE
+          throw expectedType == FileSystemEntityType.file
               ? common.isADirectory(path)
               : common.notADirectory(path);
         }
@@ -158,7 +158,7 @@ abstract class _ChrootFileSystemEntity<T extends FileSystemEntity,
 
   @override
   Stream<FileSystemEvent> watch({
-    int events: FileSystemEvent.ALL,
+    int events: FileSystemEvent.all,
     bool recursive: false,
   }) =>
       throw new UnsupportedError('watch is not supported on ChrootFileSystem');
