@@ -197,7 +197,7 @@ void main() {
         await rc.futureMethod('qux', namedArg: 'quz');
         await rc.streamMethod('quux', namedArg: 'quuz').drain<void>();
         List<Map<String, dynamic>> manifest =
-            await encode(recording.events).retype<Map<String, dynamic>>();
+            await encode(recording.events).cast<Map<String, dynamic>>();
         expect(manifest[0], <String, dynamic>{
           'type': 'set',
           'property': 'basicProperty=',
@@ -837,7 +837,7 @@ List<Map<String, dynamic>> _loadManifest(LiveRecording recording) {
       (FileSystemEntity entity) => entity.basename == kManifestName);
   return new JsonDecoder()
       .convert(manifestFile.readAsStringSync())
-      .retype<Map<String, dynamic>>();
+      .cast<Map<String, dynamic>>();
 }
 
 File _getRecordingFile(LiveRecording recording, String manifestReference) {
