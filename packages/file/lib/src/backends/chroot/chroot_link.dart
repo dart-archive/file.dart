@@ -34,7 +34,7 @@ class _ChrootLink extends _ChrootFileSystemEntity<Link, io.Link>
   }
 
   @override
-  FileSystemEntityType get expectedType => FileSystemEntityType.LINK;
+  FileSystemEntityType get expectedType => FileSystemEntityType.link;
 
   @override
   io.Link _rawDelegate(String path) => fileSystem.delegate.link(path);

@@ -111,9 +111,9 @@ class ChrootFileSystem extends FileSystem {
     value = _resolve(value, notFound: _NotFoundBehavior.throwError);
     String realPath = _real(value, resolve: false);
     switch (delegate.typeSync(realPath, followLinks: false)) {
-      case FileSystemEntityType.DIRECTORY:
+      case FileSystemEntityType.directory:
         break;
-      case FileSystemEntityType.NOT_FOUND:
+      case FileSystemEntityType.notFound:
         throw common.noSuchFileOrDirectory(path);
       default:
         throw common.notADirectory(path);
@@ -167,7 +167,7 @@ class ChrootFileSystem extends FileSystem {
       realPath = _real(path, followLinks: followLinks);
     } on FileSystemException {
       return new Future<FileSystemEntityType>.value(
-          FileSystemEntityType.NOT_FOUND);
+          FileSystemEntityType.notFound);
     }
     return delegate.type(realPath, followLinks: false);
   }
@@ -178,7 +178,7 @@ class ChrootFileSystem extends FileSystem {
     try {
       realPath = _real(path, followLinks: followLinks);
     } on FileSystemException {
-      return FileSystemEntityType.NOT_FOUND;
+      return FileSystemEntityType.notFound;
     }
     return delegate.typeSync(realPath, followLinks: false);
   }
@@ -297,16 +297,16 @@ class ChrootFileSystem extends FileSystem {
       String realPath = _real(currentPath, resolve: false);
 
       switch (delegate.typeSync(realPath, followLinks: false)) {
-        case FileSystemEntityType.DIRECTORY:
+        case FileSystemEntityType.directory:
           breadcrumbs.clear();
           break;
-        case FileSystemEntityType.FILE:
+        case FileSystemEntityType.file:
           breadcrumbs.clear();
           if (parts.isNotEmpty) {
             throw common.notADirectory(currentPath);
           }
           break;
-        case FileSystemEntityType.NOT_FOUND:
+        case FileSystemEntityType.notFound:
           String returnEarly() {
             ledger.addAll(parts);
             return getCurrentPath();
@@ -329,7 +329,7 @@ class ChrootFileSystem extends FileSystem {
               throw common.noSuchFileOrDirectory(path);
           }
           break;
-        case FileSystemEntityType.LINK:
+        case FileSystemEntityType.link:
           if (parts.isEmpty && !followLinks) {
             break;
           }
@@ -379,7 +379,7 @@ class _NotFoundFileStat implements FileStat {
   DateTime get accessed => null;
 
   @override
-  FileSystemEntityType get type => FileSystemEntityType.NOT_FOUND;
+  FileSystemEntityType get type => FileSystemEntityType.notFound;
 
   @override
   int get mode => 0;

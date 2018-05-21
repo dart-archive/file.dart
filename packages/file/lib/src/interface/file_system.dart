@@ -121,30 +121,30 @@ abstract class FileSystem {
 
   /// Checks if [`type(path)`](type) returns [io.FileSystemEntityType.FILE].
   Future<bool> isFile(String path) async =>
-      await type(path) == io.FileSystemEntityType.FILE;
+      await type(path) == io.FileSystemEntityType.file;
 
   /// Synchronously checks if [`type(path)`](type) returns
   /// [io.FileSystemEntityType.FILE].
   bool isFileSync(String path) =>
-      typeSync(path) == io.FileSystemEntityType.FILE;
+      typeSync(path) == io.FileSystemEntityType.file;
 
   /// Checks if [`type(path)`](type) returns [io.FileSystemEntityType.DIRECTORY].
   Future<bool> isDirectory(String path) async =>
-      await type(path) == io.FileSystemEntityType.DIRECTORY;
+      await type(path) == io.FileSystemEntityType.directory;
 
   /// Synchronously checks if [`type(path)`](type) returns
   /// [io.FileSystemEntityType.DIRECTORY].
   bool isDirectorySync(String path) =>
-      typeSync(path) == io.FileSystemEntityType.DIRECTORY;
+      typeSync(path) == io.FileSystemEntityType.directory;
 
   /// Checks if [`type(path)`](type) returns [io.FileSystemEntityType.LINK].
   Future<bool> isLink(String path) async =>
-      await type(path) == io.FileSystemEntityType.LINK;
+      await type(path) == io.FileSystemEntityType.link;
 
   /// Synchronously checks if [`type(path)`](type) returns
   /// [io.FileSystemEntityType.LINK].
   bool isLinkSync(String path) =>
-      typeSync(path) == io.FileSystemEntityType.LINK;
+      typeSync(path) == io.FileSystemEntityType.link;
 
   /// Gets the string path represented by the specified generic [path].
   ///

@@ -113,44 +113,44 @@ void main() {
         group('stat', () {
           test('isNotFoundForJailbreakPath', () {
             mem.file('/foo').createSync();
-            expect(fs.statSync('../foo').type, FileSystemEntityType.NOT_FOUND);
+            expect(fs.statSync('../foo').type, FileSystemEntityType.notFound);
           });
 
           test('isNotFoundForSymlinkWithJailbreakTarget', () {
             mem.file('/foo').createSync();
             mem.link('/tmp/bar').createSync('/foo');
-            expect(mem.statSync('/tmp/bar').type, FileSystemEntityType.FILE);
-            expect(fs.statSync('/bar').type, FileSystemEntityType.NOT_FOUND);
+            expect(mem.statSync('/tmp/bar').type, FileSystemEntityType.file);
+            expect(fs.statSync('/bar').type, FileSystemEntityType.notFound);
           });
 
           test('isNotFoundForSymlinkToOutsideAndBackInsideJail', () {
             mem.file('/tmp/bar').createSync();
             mem.link('/foo').createSync('/tmp/bar');
             mem.link('/tmp/baz').createSync('/foo');
-            expect(mem.statSync('/tmp/baz').type, FileSystemEntityType.FILE);
-            expect(fs.statSync('/baz').type, FileSystemEntityType.NOT_FOUND);
+            expect(mem.statSync('/tmp/baz').type, FileSystemEntityType.file);
+            expect(fs.statSync('/baz').type, FileSystemEntityType.notFound);
           });
         });
 
         group('type', () {
           test('isNotFoundForJailbreakPath', () {
             mem.file('/foo').createSync();
-            expect(fs.typeSync('../foo'), FileSystemEntityType.NOT_FOUND);
+            expect(fs.typeSync('../foo'), FileSystemEntityType.notFound);
           });
 
           test('isNotFoundForSymlinkWithJailbreakTarget', () {
             mem.file('/foo').createSync();
             mem.link('/tmp/bar').createSync('/foo');
-            expect(mem.typeSync('/tmp/bar'), FileSystemEntityType.FILE);
-            expect(fs.typeSync('/bar'), FileSystemEntityType.NOT_FOUND);
+            expect(mem.typeSync('/tmp/bar'), FileSystemEntityType.file);
+            expect(fs.typeSync('/bar'), FileSystemEntityType.notFound);
           });
 
           test('isNotFoundForSymlinkToOutsideAndBackInsideJail', () {
             mem.file('/tmp/bar').createSync();
             mem.link('/foo').createSync('/tmp/bar');
             mem.link('/tmp/baz').createSync('/foo');
-            expect(mem.typeSync('/tmp/baz'), FileSystemEntityType.FILE);
-            expect(fs.typeSync('/baz'), FileSystemEntityType.NOT_FOUND);
+            expect(mem.typeSync('/tmp/baz'), FileSystemEntityType.file);
+            expect(fs.typeSync('/baz'), FileSystemEntityType.notFound);
           });
         });
       });

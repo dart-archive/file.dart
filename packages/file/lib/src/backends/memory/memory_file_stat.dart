@@ -42,7 +42,7 @@ class MemoryFileStat implements io.FileStat {
       : changed = null,
         modified = null,
         accessed = null,
-        type = io.FileSystemEntityType.NOT_FOUND,
+        type = io.FileSystemEntityType.notFound,
         mode = 0,
         size = -1;
 

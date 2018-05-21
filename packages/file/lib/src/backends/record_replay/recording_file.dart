@@ -83,10 +83,10 @@ class RecordingFile extends RecordingFileSystemEntity<File> implements File {
 
   File _copySync(String newPath) => wrap(delegate.copySync(newPath));
 
-  Future<RandomAccessFile> _open({FileMode mode: FileMode.READ}) =>
+  Future<RandomAccessFile> _open({FileMode mode: FileMode.read}) =>
       delegate.open(mode: mode).then(_wrapRandomAccessFile);
 
-  RandomAccessFile _openSync({FileMode mode: FileMode.READ}) =>
+  RandomAccessFile _openSync({FileMode mode: FileMode.read}) =>
       _wrapRandomAccessFile(delegate.openSync(mode: mode));
 
   StreamReference<List<int>> _openRead([int start, int end]) {
@@ -94,12 +94,12 @@ class RecordingFile extends RecordingFileSystemEntity<File> implements File {
       file: _newRecordingFile(),
       stream: delegate.openRead(start, end),
       writer: (File file, List<int> bytes) {
-        file.writeAsBytesSync(bytes, mode: FileMode.APPEND, flush: true);
+        file.writeAsBytesSync(bytes, mode: FileMode.append, flush: true);
       },
     );
   }
 
-  IOSink _openWrite({FileMode mode: FileMode.WRITE, Encoding encoding: utf8}) {
+  IOSink _openWrite({FileMode mode: FileMode.write, Encoding encoding: utf8}) {
     return new RecordingIOSink(
       fileSystem,
       delegate.openWrite(mode: mode, encoding: encoding),
@@ -168,14 +168,14 @@ class RecordingFile extends RecordingFileSystemEntity<File> implements File {
 
   Future<File> _writeAsBytes(
     List<int> bytes, {
-    FileMode mode: FileMode.WRITE,
+    FileMode mode: FileMode.write,
     bool flush: false,
   }) =>
       delegate.writeAsBytes(bytes, mode: mode, flush: flush).then(wrap);
 
   Future<File> _writeAsString(
     String contents, {
-    FileMode mode: FileMode.WRITE,
+    FileMode mode: FileMode.write,
     Encoding encoding: utf8,
     bool flush: false,
   }) =>

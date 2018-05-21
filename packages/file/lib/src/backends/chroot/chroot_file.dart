@@ -20,7 +20,7 @@ class _ChrootFile extends _ChrootFileSystemEntity<File, io.File>
   }
 
   @override
-  FileSystemEntityType get expectedType => FileSystemEntityType.FILE;
+  FileSystemEntityType get expectedType => FileSystemEntityType.file;
 
   @override
   io.File _rawDelegate(String path) => fileSystem.delegate.file(path);
@@ -30,21 +30,21 @@ class _ChrootFile extends _ChrootFileSystemEntity<File, io.File>
     _SetupCallback setUp = () async {};
 
     if (await fileSystem.type(newPath, followLinks: false) ==
-        FileSystemEntityType.LINK) {
+        FileSystemEntityType.link) {
       // The delegate file system will ensure that the link target references
       // an actual file before allowing the rename, but we want the link target
       // to be resolved with respect to this file system. Thus, we perform that
       // validation here instead.
       switch (await fileSystem.type(newPath)) {
-        case FileSystemEntityType.FILE:
-        case FileSystemEntityType.NOT_FOUND:
+        case FileSystemEntityType.file:
+        case FileSystemEntityType.notFound:
           // Validation passed; delete the link to keep the delegate file
           // system's validation from getting in the way.
           setUp = () async {
             await fileSystem.link(newPath).delete();
           };
           break;
-        case FileSystemEntityType.DIRECTORY:
+        case FileSystemEntityType.directory:
           throw common.isADirectory(newPath);
         default:
           // Should never happen.
@@ -54,11 +54,11 @@ class _ChrootFile extends _ChrootFileSystemEntity<File, io.File>
 
     if (_isLink) {
       switch (await fileSystem.type(path)) {
-        case FileSystemEntityType.NOT_FOUND:
+        case FileSystemEntityType.notFound:
           throw common.noSuchFileOrDirectory(path);
-        case FileSystemEntityType.DIRECTORY:
+        case FileSystemEntityType.directory:
           throw common.isADirectory(path);
-        case FileSystemEntityType.FILE:
+        case FileSystemEntityType.file:
           await setUp();
           await fileSystem.delegate
               .link(fileSystem._real(path))
@@ -79,21 +79,21 @@ class _ChrootFile extends _ChrootFileSystemEntity<File, io.File>
     _SetupCallback setUp = () {};
 
     if (fileSystem.typeSync(newPath, followLinks: false) ==
-        FileSystemEntityType.LINK) {
+        FileSystemEntityType.link) {
       // The delegate file system will ensure that the link target references
       // an actual file before allowing the rename, but we want the link target
       // to be resolved with respect to this file system. Thus, we perform that
       // validation here instead.
       switch (fileSystem.typeSync(newPath)) {
-        case FileSystemEntityType.FILE:
-        case FileSystemEntityType.NOT_FOUND:
+        case FileSystemEntityType.file:
+        case FileSystemEntityType.notFound:
           // Validation passed; delete the link to keep the delegate file
           // system's validation from getting in the way.
           setUp = () {
             fileSystem.link(newPath).deleteSync();
           };
           break;
-        case FileSystemEntityType.DIRECTORY:
+        case FileSystemEntityType.directory:
           throw common.isADirectory(newPath);
         default:
           // Should never happen.
@@ -103,11 +103,11 @@ class _ChrootFile extends _ChrootFileSystemEntity<File, io.File>
 
     if (_isLink) {
       switch (fileSystem.typeSync(path)) {
-        case FileSystemEntityType.NOT_FOUND:
+        case FileSystemEntityType.notFound:
           throw common.noSuchFileOrDirectory(path);
-        case FileSystemEntityType.DIRECTORY:
+        case FileSystemEntityType.directory:
           throw common.isADirectory(path);
-        case FileSystemEntityType.FILE:
+        case FileSystemEntityType.file:
           setUp();
           fileSystem.delegate
               .link(fileSystem._real(path))
@@ -138,17 +138,17 @@ class _ChrootFile extends _ChrootFileSystemEntity<File, io.File>
     Future<FileSystemEntityType> type() =>
         fileSystem.delegate.type(real(), followLinks: false);
 
-    if (await type() == FileSystemEntityType.LINK) {
+    if (await type() == FileSystemEntityType.link) {
       path = fileSystem._resolve(p.basename(path),
           from: p.dirname(path), notFound: _NotFoundBehavior.allowAtTail);
       switch (await type()) {
-        case FileSystemEntityType.NOT_FOUND:
+        case FileSystemEntityType.notFound:
           await _rawDelegate(real()).create();
           return this;
-        case FileSystemEntityType.FILE:
+        case FileSystemEntityType.file:
           // Nothing to do.
           return this;
-        case FileSystemEntityType.DIRECTORY:
+        case FileSystemEntityType.directory:
           throw common.isADirectory(path);
         default:
           throw new AssertionError();
@@ -170,17 +170,17 @@ class _ChrootFile extends _ChrootFileSystemEntity<File, io.File>
     FileSystemEntityType type() =>
         fileSystem.delegate.typeSync(real(), followLinks: false);
 
-    if (type() == FileSystemEntityType.LINK) {
+    if (type() == FileSystemEntityType.link) {
       path = fileSystem._resolve(p.basename(path),
           from: p.dirname(path), notFound: _NotFoundBehavior.allowAtTail);
       switch (type()) {
-        case FileSystemEntityType.NOT_FOUND:
+        case FileSystemEntityType.notFound:
           _rawDelegate(real()).createSync();
           return;
-        case FileSystemEntityType.FILE:
+        case FileSystemEntityType.file:
           // Nothing to do.
           return;
-        case FileSystemEntityType.DIRECTORY:
+        case FileSystemEntityType.directory:
           throw common.isADirectory(path);
         default:
           throw new AssertionError();
@@ -242,12 +242,12 @@ class _ChrootFile extends _ChrootFileSystemEntity<File, io.File>
 
   @override
   Future<RandomAccessFile> open({
-    FileMode mode: FileMode.READ,
+    FileMode mode: FileMode.read,
   }) async =>
       getDelegate(followLinks: true).open(mode: mode);
 
   @override
-  RandomAccessFile openSync({FileMode mode: FileMode.READ}) =>
+  RandomAccessFile openSync({FileMode mode: FileMode.read}) =>
       getDelegate(followLinks: true).openSync(mode: mode);
 
   @override
@@ -256,7 +256,7 @@ class _ChrootFile extends _ChrootFileSystemEntity<File, io.File>
 
   @override
   IOSink openWrite({
-    FileMode mode: FileMode.WRITE,
+    FileMode mode: FileMode.write,
     Encoding encoding: utf8,
   }) =>
       getDelegate(followLinks: true).openWrite(mode: mode, encoding: encoding);
@@ -288,7 +288,7 @@ class _ChrootFile extends _ChrootFileSystemEntity<File, io.File>
   @override
   Future<File> writeAsBytes(
     List<int> bytes, {
-    FileMode mode: FileMode.WRITE,
+    FileMode mode: FileMode.write,
     bool flush: false,
   }) async =>
       wrap(await getDelegate(followLinks: true).writeAsBytes(
@@ -300,7 +300,7 @@ class _ChrootFile extends _ChrootFileSystemEntity<File, io.File>
   @override
   void writeAsBytesSync(
     List<int> bytes, {
-    FileMode mode: FileMode.WRITE,
+    FileMode mode: FileMode.write,
     bool flush: false,
   }) =>
       getDelegate(followLinks: true)
@@ -309,7 +309,7 @@ class _ChrootFile extends _ChrootFileSystemEntity<File, io.File>
   @override
   Future<File> writeAsString(
     String contents, {
-    FileMode mode: FileMode.WRITE,
+    FileMode mode: FileMode.write,
     Encoding encoding: utf8,
     bool flush: false,
   }) async =>
@@ -323,7 +323,7 @@ class _ChrootFile extends _ChrootFileSystemEntity<File, io.File>
   @override
   void writeAsStringSync(
     String contents, {
-    FileMode mode: FileMode.WRITE,
+    FileMode mode: FileMode.write,
     Encoding encoding: utf8,
     bool flush: false,
   }) =>

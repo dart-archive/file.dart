@@ -1,3 +1,8 @@
+#### 5.0.1
+
+* Remove upper case constants
+* Update SDK constraint to 2.0.0-dev.54.0. 
+
 #### 5.0.0
 
 * Moved `testing` library into a dedicated `package:file_testing` so that

@@ -4,7 +4,7 @@
 
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io' show SYSTEM_ENCODING;
+import 'dart:io' show systemEncoding;
 
 import 'package:file/file.dart';
 import 'package:path/path.dart' as path;
@@ -280,7 +280,7 @@ class EncodingCodec extends Codec<Encoding, String> {
 
   static Encoding _decode(String input) {
     if (input == 'system') {
-      return SYSTEM_ENCODING;
+      return systemEncoding;
     } else if (input != null) {
       return Encoding.getByName(input);
     }
@@ -308,15 +308,15 @@ class _FileModeEncoder extends Converter<FileMode, String> {
   @override
   String convert(FileMode input) {
     switch (input) {
-      case FileMode.READ:
+      case FileMode.read:
         return 'READ';
-      case FileMode.WRITE:
+      case FileMode.write:
         return 'WRITE';
-      case FileMode.APPEND:
+      case FileMode.append:
         return 'APPEND';
-      case FileMode.WRITE_ONLY:
+      case FileMode.writeOnly:
         return 'WRITE_ONLY';
-      case FileMode.WRITE_ONLY_APPEND:
+      case FileMode.writeOnlyAppend:
         return 'WRITE_ONLY_APPEND';
     }
     throw new ArgumentError('Invalid value: $input');
@@ -368,10 +368,10 @@ class EntityTypeCodec extends Codec<FileSystemEntityType, String> {
 
   static FileSystemEntityType _decode(String input) {
     return const <String, FileSystemEntityType>{
-      'FILE': FileSystemEntityType.FILE,
-      'DIRECTORY': FileSystemEntityType.DIRECTORY,
-      'LINK': FileSystemEntityType.LINK,
-      'NOT_FOUND': FileSystemEntityType.NOT_FOUND,
+      'file': FileSystemEntityType.file,
+      'directory': FileSystemEntityType.directory,
+      'link': FileSystemEntityType.link,
+      'notFound': FileSystemEntityType.notFound,
     }[input];
   }
 

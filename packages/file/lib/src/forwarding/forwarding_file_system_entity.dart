@@ -73,7 +73,7 @@ abstract class ForwardingFileSystemEntity<T extends FileSystemEntity,
 
   @override
   Stream<FileSystemEvent> watch({
-    int events: FileSystemEvent.ALL,
+    int events: FileSystemEvent.all,
     bool recursive: false,
   }) =>
       delegate.watch(events: events, recursive: recursive);

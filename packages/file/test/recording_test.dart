@@ -523,7 +523,7 @@ void main() {
           expect(
               events[0],
               invokesMethod('type').on(fs).withPositionalArguments(
-                  <String>['/foo']).withResult(FileSystemEntityType.FILE));
+                  <String>['/foo']).withResult(FileSystemEntityType.file));
         });
 
         test('typeSync', () {
@@ -534,7 +534,7 @@ void main() {
           expect(
               events[0],
               invokesMethod('typeSync').on(fs).withPositionalArguments(
-                  <String>['/foo']).withResult(FileSystemEntityType.FILE));
+                  <String>['/foo']).withResult(FileSystemEntityType.file));
         });
       });
 

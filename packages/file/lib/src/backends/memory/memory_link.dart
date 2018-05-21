@@ -20,7 +20,7 @@ class MemoryLink extends MemoryFileSystemEntity implements Link {
       : super(fileSystem, path);
 
   @override
-  io.FileSystemEntityType get expectedType => io.FileSystemEntityType.LINK;
+  io.FileSystemEntityType get expectedType => io.FileSystemEntityType.link;
 
   @override
   bool existsSync() => backingOrNull?.type == expectedType;
@@ -33,7 +33,7 @@ class MemoryLink extends MemoryFileSystemEntity implements Link {
         newPath,
         checkType: (Node node) {
           if (node.type != expectedType) {
-            throw node.type == FileSystemEntityType.DIRECTORY
+            throw node.type == FileSystemEntityType.directory
                 ? common.isADirectory(newPath)
                 : common.invalidArgument(newPath);
           }

@@ -140,7 +140,7 @@ abstract class MemoryFileSystemEntity implements FileSystemEntity {
 
   @override
   Stream<io.FileSystemEvent> watch({
-    int events: io.FileSystemEvent.ALL,
+    int events: io.FileSystemEvent.all,
     bool recursive: false,
   }) =>
       throw new UnsupportedError('Watching not supported in MemoryFileSystem');
@@ -255,7 +255,7 @@ abstract class MemoryFileSystemEntity implements FileSystemEntity {
           if (child != null) {
             if (followTailLink) {
               FileSystemEntityType childType = child.stat.type;
-              if (childType != FileSystemEntityType.NOT_FOUND) {
+              if (childType != FileSystemEntityType.notFound) {
                 utils.checkType(expectedType, child.stat.type, () => newPath);
               }
             } else {
