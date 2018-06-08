@@ -2,6 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:async';
+
 import 'package:file/src/common.dart' as common;
 import 'package:file/src/forwarding.dart';
 import 'package:file/src/io.dart' as io;
@@ -18,4 +20,20 @@ class LocalDirectory extends LocalFileSystemEntity<LocalDirectory, io.Directory>
 
   @override
   String toString() => "LocalDirectory: '$path'";
+
+  @override
+  Future<LocalDirectory> create({bool recursive: false}) async =>
+      wrap(await delegate.create(recursive: recursive));
+
+  @override
+  Future<LocalDirectory> delete({bool recursive: false}) async =>
+      wrap(await delegate.delete(recursive: recursive));
+
+  @override
+  Future<LocalDirectory> rename(String newPath) async =>
+      wrap(await delegate.rename(newPath));
+
+  @override
+  Future<LocalDirectory> createTemp([String prefix]) async =>
+      wrap(await delegate.createTemp(prefix));
 }

@@ -173,4 +173,12 @@ class _ChrootDirectory extends _ChrootFileSystemEntity<Directory, io.Directory>
 
   @override
   String toString() => "ChrootDirectory: '$path'";
+
+  @override
+  Future<_ChrootDirectory> delete({bool recursive: false}) async =>
+      wrap(await delegate.delete(recursive: recursive));
+
+  @override
+  Future<_ChrootDirectory> createTemp([String prefix]) async =>
+      wrap(await delegate.createTemp(prefix));
 }
