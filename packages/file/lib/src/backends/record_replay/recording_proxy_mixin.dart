@@ -90,6 +90,10 @@ abstract class RecordingProxyMixin implements ProxyObject, ReplayAware {
   @protected
   Stopwatch get stopwatch;
 
+  // This check is used in noSuchMethod to detect if this code is running in a
+  // Dart 1 runtime, or Dart 2.
+  bool get _runningDart1Runtime => <dynamic>[] is List<String>;
+
   /// Handles invocations for which there is no concrete implementation
   /// function.
   ///
@@ -142,7 +146,7 @@ abstract class RecordingProxyMixin implements ProxyObject, ReplayAware {
     // We have to instantiate the correct type of StreamReference or
     // FutureReference, so that types are not lost when we unwrap the references
     // afterward.
-    if (value is Stream<dynamic>) {
+    if (_runningDart1Runtime && value is Stream<dynamic>) {
       // This one is here for Dart 1 runtime mode.
       value = new StreamReference<dynamic>(value);
     } else if (value is Stream<FileSystemEntity>) {
@@ -152,7 +156,7 @@ abstract class RecordingProxyMixin implements ProxyObject, ReplayAware {
     } else if (value is Stream) {
       throw new UnimplementedError(
           'Cannot record method with return type ${value.runtimeType}');
-    } else if (value is Future<dynamic>) {
+    } else if (_runningDart1Runtime && value is Future<dynamic>) {
       // This one is here for Dart 1 runtime mode.
       value = new FutureReference<dynamic>(value);
     } else if (value is Future<bool>) {
