@@ -194,4 +194,25 @@ abstract class RecordingProxyMixin implements ProxyObject, ReplayAware {
     }
     return result;
   }
+
+  // These four abstract methods, [delete], [deleteSync], [typeSync], and
+  // [watch], are implemented by [noSuchMethod], but their presence here works
+  // around https://github.com/dart-lang/sdk/issues/33459, allowing these
+  // methods to be called within a Dart 2 runtime.
+  // TODO(srawlins): Remove these when the minimum SDK version in
+  // `pubspec.yaml` contains a fix for
+  // https://github.com/dart-lang/sdk/issues/33459.
+
+  @override
+  Future<FileSystemEntity> delete({bool recursive: false});
+
+  @override
+  void deleteSync({bool recursive: false});
+
+  @override
+  FileSystemEntityType typeSync(String path, {bool followLinks: true});
+
+  @override
+  Stream<FileSystemEvent> watch(
+      {int events: FileSystemEvent.all, bool recursive: false});
 }
