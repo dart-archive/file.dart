@@ -92,6 +92,8 @@ abstract class RecordingProxyMixin implements ProxyObject, ReplayAware {
 
   // This check is used in noSuchMethod to detect if this code is running in a
   // Dart 1 runtime, or Dart 2.
+  // TODO(srawlins): Remove this after the minimum SDK constraint is such that
+  // there is no "Dart 1" runtime mode. 2.0.0 or something.
   bool get _runningDart1Runtime => <dynamic>[] is List<String>;
 
   /// Handles invocations for which there is no concrete implementation
