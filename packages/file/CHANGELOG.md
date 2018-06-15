@@ -1,3 +1,7 @@
+#### dev
+
+* Fix usage within Dart 2 runtime mode in Dart 2.0.0-dev.61.0 and later.
+
 #### 5.0.1
 
 * Remove upper case constants
