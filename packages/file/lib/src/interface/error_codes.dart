@@ -168,7 +168,7 @@ class ErrorCodes {
   static int get EXDEV => _platform((_Codes codes) => codes.exdev);
 
   static int _platform(int getCode(_Codes codes)) {
-    _Codes codes = _platforms[operatingSystem];
+    _Codes codes = _platforms[operatingSystem] ?? _platforms['linux'];
     return getCode(codes);
   }
 }
