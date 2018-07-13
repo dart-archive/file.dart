@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/google/file.dart.svg?branch=master)](https://travis-ci.org/google/file.dart)
+[![pub package](https://img.shields.io/pub/v/file.svg)](https://pub.dartlang.org/packages/file)
 
 # File
 
