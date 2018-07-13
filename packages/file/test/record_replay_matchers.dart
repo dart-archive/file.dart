@@ -584,7 +584,7 @@ class _SetValue extends Matcher {
   }
 }
 
-class _NoMatchingInvocationError extends TypeMatcher {
+class _NoMatchingInvocationError extends TypeMatcher<dynamic> {
   const _NoMatchingInvocationError() : super("NoMatchingInvocationError");
 
   @override
