@@ -1,5 +1,5 @@
 name: file_testing
-version: 2.0.0
+version: 2.0.1
 authors:
 - Todd Volkert <tvolkert@google.com>
 description: Testing utilities for package:file
@@ -10,4 +10,4 @@ dependencies:
   test: ^0.12.33
 
 environment:
-  sdk: '>=2.0.0-dev.28.0 <2.0.0'
+  sdk: '>=2.0.0-dev.28.0 <3.0.0'
