@@ -1,5 +1,5 @@
 name: file_testing
-version: 2.0.0
+version: 2.0.1
 authors:
 - Todd Volkert <tvolkert@google.com>
 description: Testing utilities for package:file
