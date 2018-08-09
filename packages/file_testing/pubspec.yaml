@@ -1,5 +1,5 @@
 name: file_testing
-version: 2.0.1
+version: 2.0.2
 authors:
 - Todd Volkert <tvolkert@google.com>
 description: Testing utilities for package:file
@@ -7,7 +7,7 @@ homepage: https://github.com/google/file.dart/packages/file_testing
 
 dependencies:
   meta: ^1.1.2
-  test: ^0.12.33
+  test: ^1.0.0
 
 environment:
   sdk: '>=2.0.0-dev.28.0 <3.0.0'
