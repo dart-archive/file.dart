@@ -221,7 +221,7 @@ class PathContextCodec extends Codec<path.Context, Map<String, String>> {
     };
   }
 
-  static path.Context _decode(Map<String, String> input) {
+  static path.Context _decode(Map<String, dynamic> input) {
     return new path.Context(
       style: <String, path.Style>{
         'posix': path.Style.posix,
@@ -237,8 +237,8 @@ class PathContextCodec extends Codec<path.Context, Map<String, String>> {
       const _ForwardingConverter<path.Context, Map<String, String>>(_encode);
 
   /// Converter that deserializes [path.Context] instances.
-  static const Converter<Map<String, String>, path.Context> deserialize =
-      const _ForwardingConverter<Map<String, String>, path.Context>(_decode);
+  static const Converter<Map<String, dynamic>, path.Context> deserialize =
+      const _ForwardingConverter<Map<String, dynamic>, path.Context>(_decode);
 
   @override
   Converter<path.Context, Map<String, String>> get encoder => serialize;
