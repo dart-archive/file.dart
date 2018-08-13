@@ -42,7 +42,9 @@ class MutableRecording implements LiveRecording {
           _events.map((LiveInvocationEvent<dynamic> event) => event.done);
       Future<List<Null>> results = Future.wait<Null>(futures);
       if (pendingResultTimeout != null) {
-        results = results.timeout(pendingResultTimeout, onTimeout: () {});
+        results = results.timeout(pendingResultTimeout, onTimeout: () {
+          return null;
+        });
       }
       await results;
       Directory dir = destination;
