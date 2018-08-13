@@ -2,10 +2,18 @@
 
 * Fix usage within Dart 2 runtime mode in Dart 2.0.0-dev.61.0 and later.
 
+#### 5.0.3
+
+* Update `package:test` dependency to 1.0
+
+#### 5.0.2
+
+* Declare compatibility with Dart 2 stable
+
 #### 5.0.1
 
 * Remove upper case constants
-* Update SDK constraint to 2.0.0-dev.54.0. 
+* Update SDK constraint to 2.0.0-dev.54.0.
 
 #### 5.0.0
 
