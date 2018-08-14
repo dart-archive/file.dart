@@ -1,3 +1,15 @@
+#### 2.0.3
+
+* Relaxed constraints on `package:test`
+
+#### 2.0.2
+
+* Bumped dependency on `package:test` to version 1.0
+
+#### 2.0.1
+
+* Bumped Dart SDK constraint to allow for Dart 2 stable
+
 #### 2.0.0
 
 * Removed `record_replay_matchers.dart` from API
