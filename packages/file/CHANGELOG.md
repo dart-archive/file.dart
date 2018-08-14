@@ -1,8 +1,9 @@
-#### dev
+#### 5.0.4
 
-* Update SDK constraint to 2.0.0-dev.67.0, remove workaround in 
+* Update SDK constraint to 2.0.0-dev.67.0, remove workaround in
   recording_proxy_mixin.dart.
 * Fix usage within Dart 2 runtime mode in Dart 2.0.0-dev.61.0 and later.
+* Relax constraints on `package:test`
 
 #### 5.0.3
 
