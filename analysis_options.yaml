@@ -2,7 +2,6 @@ analyzer:
   strong-mode:
     implicit-dynamic: false
   language:
-    enablePreviewDart2: true
     enableSuperMixins: true
   errors:
     # treat missing required parameters as a warning (not a hint)
