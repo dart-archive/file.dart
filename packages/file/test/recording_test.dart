@@ -545,7 +545,7 @@ void main() {
               recording.events,
               contains(invokesMethod('create')
                   .on(isDirectory)
-                  .withNoNamedArguments()
+                  .withNamedArgument('recursive', false)
                   .withResult(isDirectory)));
         });
 
@@ -555,7 +555,7 @@ void main() {
               recording.events,
               contains(invokesMethod('createSync')
                   .on(isDirectory)
-                  .withNoNamedArguments()
+                  .withNamedArgument('recursive', false)
                   .withResult(isNull)));
         });
 
@@ -569,7 +569,8 @@ void main() {
             recording.events,
             contains(invokesMethod('list')
                 .on(isDirectory)
-                .withNoNamedArguments()
+                .withNamedArgument('recursive', false)
+                .withNamedArgument('followLinks', true)
                 .withResult(hasLength(3))),
           );
         });
@@ -612,7 +613,7 @@ void main() {
               recording.events,
               contains(invokesMethod('openRead')
                   .on(isFile)
-                  .withPositionalArguments(isEmpty)
+                  .withPositionalArguments([null, null])
                   .withNoNamedArguments()
                   .withResult(isList)));
           await recording.flush();
@@ -624,7 +625,7 @@ void main() {
                 containsPair('type', 'invoke'),
                 containsPair('method', 'openRead'),
                 containsPair('object', matches(r'^RecordingFile@[0-9]+$')),
-                containsPair('positionalArguments', isEmpty),
+                containsPair('positionalArguments', [null, null]),
                 containsPair('namedArguments', isEmpty),
                 containsPair('result', matches(r'^![0-9]+.foo$')),
               ));
@@ -769,7 +770,7 @@ void main() {
               recording.events,
               contains(invokesMethod('readAsLines')
                   .on(isFile)
-                  .withNoNamedArguments()
+                  .withNamedArgument('encoding', utf8)
                   .withResult(<String>['Hello', 'World'])));
           await recording.flush();
           List<Map<String, dynamic>> manifest = _loadManifest(recording);
@@ -782,7 +783,7 @@ void main() {
                 containsPair('object', matches(r'^RecordingFile@[0-9]+$')),
                 containsPair('positionalArguments', isEmpty),
                 containsPair('result', matches(r'^![0-9]+.foo$')),
-                containsPair('namedArguments', isEmpty),
+                containsPair('namedArguments', {'encoding': 'utf-8'}),
               ));
           File file = _getRecordingFile(recording, manifest[1]['result']);
           expect(file, exists);
@@ -797,7 +798,7 @@ void main() {
               recording.events,
               contains(invokesMethod('readAsLinesSync')
                   .on(isFile)
-                  .withNoNamedArguments()
+                  .withNamedArgument('encoding', utf8)
                   .withResult(<String>['Hello', 'World'])));
           await recording.flush();
           List<Map<String, dynamic>> manifest = _loadManifest(recording);
@@ -810,7 +811,7 @@ void main() {
                 containsPair('object', matches(r'^RecordingFile@[0-9]+$')),
                 containsPair('positionalArguments', isEmpty),
                 containsPair('result', matches(r'^![0-9]+.foo$')),
-                containsPair('namedArguments', isEmpty),
+                containsPair('namedArguments', {'encoding': 'utf-8'}),
               ));
           File file = _getRecordingFile(recording, manifest[1]['result']);
           expect(file, exists);
