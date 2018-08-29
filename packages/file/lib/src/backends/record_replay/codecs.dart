@@ -549,6 +549,17 @@ class ConvertElements<S, T> extends Converter<List<S>, List<T>> {
   List<T> convert(List<S> input) => input.map(_delegate.convert).toList();
 }
 
+/// Converts a `List<S>` into a `List<T>` by casting it to the appropriate
+/// type. The list must contain only elements of type `T`, or a runtime error
+/// will be thrown.
+class CastList<S, T> extends Converter<List<S>, List<T>> {
+  /// Creates a new [CastList].
+  const CastList();
+
+  @override
+  List<T> convert(List<S> input) => input.cast<T>();
+}
+
 /// Converts a [List] of elements into a [Stream] of the same elements.
 class ToStream<T> extends Converter<List<T>, Stream<T>> {
   /// Creates a new [ToStream].

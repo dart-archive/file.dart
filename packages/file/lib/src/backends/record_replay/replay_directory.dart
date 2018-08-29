@@ -23,9 +23,12 @@ class ReplayDirectory extends ReplayFileSystemEntity implements Directory {
         reviveDirectory.fuse(const ToFuture<Directory>());
     Converter<String, FileSystemEntity> reviveEntity =
         new ReviveFileSystemEntity(fileSystem);
-    Converter<List<String>, List<FileSystemEntity>> reviveEntities =
-        new ConvertElements<String, FileSystemEntity>(reviveEntity);
-    Converter<List<String>, Stream<FileSystemEntity>> reviveEntitiesAsStream =
+    Converter<List<dynamic>, List<String>> dynamicToString =
+        const CastList<dynamic, String>();
+    Converter<List<dynamic>, List<FileSystemEntity>> reviveEntities =
+        dynamicToString.fuse<List<FileSystemEntity>>(
+            new ConvertElements<String, FileSystemEntity>(reviveEntity));
+    Converter<List<dynamic>, Stream<FileSystemEntity>> reviveEntitiesAsStream =
         reviveEntities
             .fuse<Stream<FileSystemEntity>>(const ToStream<FileSystemEntity>());
 
