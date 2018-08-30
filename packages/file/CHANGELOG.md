@@ -1,3 +1,7 @@
+#### 5.0.6
+
+* Dart 2 fixes for `RecordingFile.open()`
+
 #### 5.0.5
 
 * Dart 2 fixes

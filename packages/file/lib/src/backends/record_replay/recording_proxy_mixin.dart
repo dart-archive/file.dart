@@ -179,6 +179,8 @@ abstract class RecordingProxyMixin implements ProxyObject, ReplayAware {
       value = new FutureReference<FileSystemEntityType>(value);
     } else if (value is Future<String>) {
       value = new FutureReference<String>(value);
+    } else if (value is Future<RandomAccessFile>) {
+      value = new FutureReference<RandomAccessFile>(value);
     } else if (value is Future) {
       throw new UnimplementedError(
           'Cannot record method with return type ${value.runtimeType}');
