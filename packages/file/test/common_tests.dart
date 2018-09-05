@@ -173,6 +173,13 @@ void runCommonTests(
         test('disallowsOtherArgumentType', () {
           expect(() => fs.directory(123), throwsArgumentError);
         });
+
+        // Fails due to
+        // https://github.com/google/file.dart/issues/112
+        test('considersBothSlashesEquivalent', () {
+          fs.directory(r'foo\bar_dir').createSync(recursive: true);
+          expect(fs.directory(r'foo/bar_dir'), exists);
+        });
       });
 
       group('file', () {
@@ -196,6 +203,13 @@ void runCommonTests(
 
         test('disallowsOtherArgumentType', () {
           expect(() => fs.file(123), throwsArgumentError);
+        });
+
+        // Fails due to
+        // https://github.com/google/file.dart/issues/112
+        test('considersBothSlashesEquivalent', () {
+          fs.file(r'foo\bar_file').createSync(recursive: true);
+          expect(fs.file(r'foo/bar_file'), exists);
         });
       });
 
