@@ -43,7 +43,7 @@ int _nextOrdinal = 0;
 ///       Foo sampleParent;
 ///     }
 ///
-///     class ReplayFoo extends ReplayProxyMixin implements Foo {
+///     class ReplayFoo extends Object with ReplayProxyMixin implements Foo {
 ///       final List<Map<String, dynamic>> manifest;
 ///       final String identifier;
 ///
@@ -58,7 +58,7 @@ int _nextOrdinal = 0;
 ///         });
 ///       }
 ///     }
-abstract class ReplayProxyMixin implements ProxyObject, ReplayAware {
+mixin ReplayProxyMixin on Object implements ProxyObject, ReplayAware {
   /// Maps method names to [Converter]s that will revive result values.
   ///
   /// Invocations of methods listed in this map will be replayed by looking for
