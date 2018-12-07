@@ -19,7 +19,7 @@ import 'recording_proxy_mixin.dart';
 /// [FileSystemEntity] implementation that records all invocation activity to
 /// its file system's recording.
 abstract class RecordingFileSystemEntity<T extends FileSystemEntity>
-    extends RecordingProxyMixin implements FileSystemEntity {
+    extends Object with RecordingProxyMixin implements FileSystemEntity {
   /// Creates a new `RecordingFileSystemEntity`.
   RecordingFileSystemEntity(this.fileSystem, this.delegate) {
     methods.addAll(<Symbol, Function>{

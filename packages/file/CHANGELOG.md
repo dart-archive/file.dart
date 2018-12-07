@@ -1,3 +1,7 @@
+#### 5.0.7
+
+* Dart 2 fixes for `RecordingProxyMixin` and `ReplayProxyMixin`.
+
 #### 5.0.6
 
 * Dart 2 fixes for `RecordingFile.open()`

@@ -63,7 +63,7 @@ import 'result_reference.dart';
 /// Methods that return [Stream]s will be recorded immediately, but their
 /// return values will be recorded as a [List] that will grow as the stream
 /// produces data.
-abstract class RecordingProxyMixin implements ProxyObject, ReplayAware {
+mixin RecordingProxyMixin on Object implements ProxyObject, ReplayAware {
   /// Maps method names to delegate functions.
   ///
   /// Invocations of methods listed in this map will be recorded after
