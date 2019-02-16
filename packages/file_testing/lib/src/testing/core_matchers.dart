@@ -4,31 +4,31 @@
 
 import 'dart:io';
 
-import 'package:test/test.dart';
+import 'package:test_api/test_api.dart';
 
 import 'internal.dart';
 
 /// Matcher that successfully matches against any instance of [Directory].
-const Matcher isDirectory = const isInstanceOf<Directory>();
+const Matcher isDirectory = TypeMatcher<Directory>();
 
 /// Matcher that successfully matches against any instance of [File].
-const Matcher isFile = const isInstanceOf<File>();
+const Matcher isFile = TypeMatcher<File>();
 
 /// Matcher that successfully matches against any instance of [Link].
-const Matcher isLink = const isInstanceOf<Link>();
+const Matcher isLink = TypeMatcher<Link>();
 
 /// Matcher that successfully matches against any instance of
 /// [FileSystemEntity].
-const Matcher isFileSystemEntity = const isInstanceOf<FileSystemEntity>();
+const Matcher isFileSystemEntity = TypeMatcher<FileSystemEntity>();
 
 /// Matcher that successfully matches against any instance of [FileStat].
-const Matcher isFileStat = const isInstanceOf<FileStat>();
+const Matcher isFileStat = TypeMatcher<FileStat>();
 
 /// Returns a [Matcher] that matches [path] against an entity's path.
 ///
 /// [path] may be a String, a predicate function, or a [Matcher]. If it is
 /// a String, it will be wrapped in an equality matcher.
-Matcher hasPath(dynamic path) => new _HasPath(path);
+Matcher hasPath(dynamic path) => _HasPath(path);
 
 /// Returns a [Matcher] that successfully matches against an instance of
 /// [FileSystemException].
@@ -39,7 +39,7 @@ Matcher hasPath(dynamic path) => new _HasPath(path);
 /// [osErrorCode] may be an `int`, a predicate function, or a [Matcher]. If it
 /// is an `int`, it will be wrapped in an equality matcher.
 Matcher isFileSystemException([dynamic osErrorCode]) =>
-    new _FileSystemException(osErrorCode);
+    _FileSystemException(osErrorCode);
 
 /// Returns a matcher that successfully matches against a future or function
 /// that throws a [FileSystemException].
@@ -67,13 +67,13 @@ void expectFileSystemException(dynamic osErrorCode, void callback()) {
 
 /// Matcher that successfully matches against a [FileSystemEntity] that
 /// exists ([FileSystemEntity.existsSync] returns true).
-const Matcher exists = const _Exists();
+const Matcher exists = _Exists();
 
 class _FileSystemException extends Matcher {
-  final Matcher _matcher;
-
   _FileSystemException(dynamic osErrorCode)
       : _matcher = _wrapMatcher(osErrorCode);
+
+  final Matcher _matcher;
 
   static Matcher _wrapMatcher(dynamic osErrorCode) {
     if (osErrorCode == null) {
@@ -85,8 +85,8 @@ class _FileSystemException extends Matcher {
   @override
   bool matches(dynamic item, Map<dynamic, dynamic> matchState) {
     if (item is FileSystemException) {
-      return (_matcher == null ||
-          _matcher.matches(item.osError?.errorCode, matchState));
+      return _matcher == null ||
+          _matcher.matches(item.osError?.errorCode, matchState);
     }
     return false;
   }
@@ -103,9 +103,9 @@ class _FileSystemException extends Matcher {
 }
 
 class _HasPath extends Matcher {
-  final Matcher _matcher;
-
   _HasPath(dynamic path) : _matcher = wrapMatcher(path);
+
+  final Matcher _matcher;
 
   @override
   bool matches(dynamic item, Map<dynamic, dynamic> matchState) =>
@@ -125,7 +125,7 @@ class _HasPath extends Matcher {
     bool verbose,
   ) {
     desc.add('has path: \'${item.path}\'').add('\n   Which: ');
-    Description pathDesc = new StringDescription();
+    final Description pathDesc = StringDescription();
     _matcher.describeMismatch(item.path, pathDesc, matchState, verbose);
     desc.add(pathDesc.toString());
     return desc;

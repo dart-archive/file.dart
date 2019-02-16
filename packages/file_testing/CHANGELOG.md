@@ -1,3 +1,9 @@
+#### 2.1.0
+
+* Changed dependency on `package:test` to `package:test_api`
+* Bumped Dart SDK constraint to match `package:test_api`'s requirements
+* Updated style to match latest lint rules from Flutter repo.
+
 #### 2.0.3
 
 * Relaxed constraints on `package:test`
