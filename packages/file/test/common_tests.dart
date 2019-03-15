@@ -98,10 +98,10 @@ void runCommonTests(
     void group(String description, void body()) =>
         skipIfNecessary(description, () => testpkg.group(description, body));
 
-    void test(String description, FutureOr<void> body()) =>
+    void test(String description, FutureOr<void> body(), {dynamic skip}) =>
         skipIfNecessary(description, () {
           if (replay == null) {
-            testpkg.test(description, body);
+            testpkg.test(description, body, skip: skip);
           } else {
             group('rerun', () {
               testpkg.setUp(() async {
@@ -114,7 +114,7 @@ void runCommonTests(
                 await Future.forEach(setUps, (SetUpTearDown setUp) => setUp());
               });
 
-              testpkg.test(description, body);
+              testpkg.test(description, body, skip: skip);
 
               testpkg.tearDown(() async {
                 for (SetUpTearDown tearDown in tearDowns) {
@@ -179,7 +179,7 @@ void runCommonTests(
         test('considersBothSlashesEquivalent', () {
           fs.directory(r'foo\bar_dir').createSync(recursive: true);
           expect(fs.directory(r'foo/bar_dir'), exists);
-        });
+        }, skip: "Fails due to https://github.com/google/file.dart/issues/112");
       });
 
       group('file', () {
@@ -210,7 +210,7 @@ void runCommonTests(
         test('considersBothSlashesEquivalent', () {
           fs.file(r'foo\bar_file').createSync(recursive: true);
           expect(fs.file(r'foo/bar_file'), exists);
-        });
+        }, skip: "Fails due to https://github.com/google/file.dart/issues/112");
       });
 
       group('link', () {
