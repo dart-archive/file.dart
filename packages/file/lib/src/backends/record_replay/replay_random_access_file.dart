@@ -4,6 +4,7 @@
 
 import 'dart:async';
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:file/file.dart';
 
@@ -29,8 +30,8 @@ class ReplayRandomAccessFile extends Object
       #closeSync: const Passthrough<Null>(),
       #readByte: const ToFuture<int>(),
       #readByteSync: const Passthrough<int>(),
-      #read: const ToFuture<List<int>>(),
-      #readSync: const Passthrough<List<int>>(),
+      #read: const ToFuture<Uint8List>(),
+      #readSync: const Passthrough<Uint8List>(),
       #readInto: const ToFuture<int>(),
       #readIntoSync: const Passthrough<int>(),
       #writeByte: reviveRandomAccessFileAsFuture,

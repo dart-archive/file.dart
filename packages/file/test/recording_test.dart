@@ -9,7 +9,7 @@ import 'package:file/file.dart';
 import 'package:file/memory.dart';
 import 'package:file/record_replay.dart';
 import 'package:file/src/backends/record_replay/codecs.dart';
-import 'package:file/src/backends/record_replay/common.dart';
+import 'package:file/src/backends/record_replay/common.dart' hide TypeMatcher;
 import 'package:file/src/backends/record_replay/events.dart';
 import 'package:file/src/backends/record_replay/mutable_recording.dart';
 import 'package:file/src/backends/record_replay/recording_proxy_mixin.dart';
@@ -157,7 +157,7 @@ void main() {
         test('awaitsPendingResultsIndefinitelyByDefault', () async {
           rc.veryLongFutureMethod(); // ignore: unawaited_futures
           expect(recording.flush().timeout(const Duration(milliseconds: 50)),
-              throwsTimeoutException);
+              throwsA(const TypeMatcher<TimeoutException>()));
         });
 
         test('succeedsIfAwaitPendingResultsThatComplete', () async {
@@ -398,7 +398,7 @@ void main() {
             events[0],
             getsProperty('path')
                 .on(fs)
-                .withResult(const isInstanceOf<p.Context>()),
+                .withResult(const TypeMatcher<p.Context>()),
           );
         });
 
@@ -613,7 +613,7 @@ void main() {
               recording.events,
               contains(invokesMethod('openRead')
                   .on(isFile)
-                  .withPositionalArguments([null, null])
+                  .withPositionalArguments(<int>[null, null])
                   .withNoNamedArguments()
                   .withResult(isList)));
           await recording.flush();
@@ -625,7 +625,7 @@ void main() {
                 containsPair('type', 'invoke'),
                 containsPair('method', 'openRead'),
                 containsPair('object', matches(r'^RecordingFile@[0-9]+$')),
-                containsPair('positionalArguments', [null, null]),
+                containsPair('positionalArguments', <int>[null, null]),
                 containsPair('namedArguments', isEmpty),
                 containsPair('result', matches(r'^![0-9]+.foo$')),
               ));
@@ -783,7 +783,8 @@ void main() {
                 containsPair('object', matches(r'^RecordingFile@[0-9]+$')),
                 containsPair('positionalArguments', isEmpty),
                 containsPair('result', matches(r'^![0-9]+.foo$')),
-                containsPair('namedArguments', {'encoding': 'utf-8'}),
+                containsPair(
+                    'namedArguments', <String, String>{'encoding': 'utf-8'}),
               ));
           File file = _getRecordingFile(recording, manifest[1]['result']);
           expect(file, exists);
@@ -932,7 +933,3 @@ class _FakeStopwatch implements Stopwatch {
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
-
-/// Successfully matches against a function that throws a [TimeoutException].
-Matcher throwsTimeoutException =
-    throwsA(const isInstanceOf<TimeoutException>());

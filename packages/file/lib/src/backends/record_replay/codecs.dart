@@ -5,6 +5,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io' show systemEncoding;
+import 'dart:typed_data';
 
 import 'package:file/file.dart';
 import 'package:path/path.dart' as path;
@@ -455,6 +456,14 @@ class Listify<T> extends Converter<T, List<T>> {
   List<T> convert(T input) => <T>[input];
 }
 
+class Uint8ListToPlainList extends Converter<Uint8List, List<int>> {
+  /// Creates a new [Uint8ListToPlainList]
+  const Uint8ListToPlainList();
+
+  @override
+  List<int> convert(Uint8List list) => List<int>.from(list);
+}
+
 /// Revives a [Directory] entity reference into a [ReplayDirectory].
 class ReviveDirectory extends Converter<String, Directory> {
   final ReplayFileSystemImpl _fileSystem;
@@ -571,7 +580,7 @@ class ToStream<T> extends Converter<List<T>, Stream<T>> {
 
 /// Converts a blob reference (serialized as a [String] of the form
 /// `!<filename>`) into a byte list.
-class BlobToBytes extends Converter<String, List<int>> {
+class BlobToBytes extends Converter<String, Uint8List> {
   final ReplayFileSystemImpl _fileSystem;
 
   /// Creates a new [BlobToBytes] that will use the specified file system's
@@ -579,7 +588,7 @@ class BlobToBytes extends Converter<String, List<int>> {
   const BlobToBytes(this._fileSystem);
 
   @override
-  List<int> convert(String input) {
+  Uint8List convert(String input) {
     assert(input.startsWith('!'));
     String basename = input.substring(1);
     String dirname = _fileSystem.recording.path;

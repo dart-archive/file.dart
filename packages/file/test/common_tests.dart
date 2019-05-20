@@ -6,6 +6,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io' as io;
+import 'dart:typed_data';
 
 import 'package:file/file.dart';
 import 'package:file_testing/file_testing.dart';
@@ -2393,6 +2394,15 @@ void runCommonTests(
         test('returnsEmptyListForZeroByteFile', () {
           File f = fs.file(ns('/foo'))..createSync();
           expect(f.readAsBytesSync(), isEmpty);
+        });
+
+        test('returns a copy, not a view, of the file content', () {
+          File f = fs.file(ns('/foo'))..createSync();
+          f.writeAsBytesSync(<int>[1, 2, 3, 4]);
+          List<int> result = f.readAsBytesSync();
+          expect(result, <int>[1, 2, 3, 4]);
+          result[0] = 10;
+          expect(f.readAsBytesSync(), <int>[1, 2, 3, 4]);
         });
       });
 

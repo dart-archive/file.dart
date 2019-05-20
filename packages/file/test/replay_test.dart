@@ -204,4 +204,4 @@ void main() {
 }
 
 /// Successfully matches against an instance of [Future].
-const Matcher isFuture = const isInstanceOf<Future<dynamic>>();
+const Matcher isFuture = const TypeMatcher<Future<dynamic>>();
