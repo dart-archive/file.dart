@@ -1,3 +1,7 @@
+#### 5.0.8
+
+* Return Uint8List rather than List<int>.
+
 #### 5.0.7
 
 * Dart 2 fixes for `RecordingProxyMixin` and `ReplayProxyMixin`.

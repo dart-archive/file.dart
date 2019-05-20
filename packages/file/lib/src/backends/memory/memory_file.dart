@@ -5,6 +5,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math' show min;
+import 'dart:typed_data';
 
 import 'package:file/file.dart';
 import 'package:file/src/common.dart' as common;
@@ -176,18 +177,18 @@ class MemoryFile extends MemoryFileSystemEntity implements File {
       throw new UnimplementedError('TODO');
 
   @override
-  Stream<List<int>> openRead([int start, int end]) {
+  Stream<Uint8List> openRead([int start, int end]) {
     try {
       FileNode node = resolvedBacking;
-      List<int> content = node.content;
+      Uint8List content = node.content;
       if (start != null) {
         content = end == null
             ? content.sublist(start)
             : content.sublist(start, min(end, content.length));
       }
-      return new Stream<List<int>>.fromIterable(<List<int>>[content]);
+      return new Stream<Uint8List>.fromIterable(<Uint8List>[content]);
     } catch (e) {
-      return new Stream<List<int>>.fromFuture(new Future<List<int>>.error(e));
+      return new Stream<Uint8List>.fromFuture(new Future<Uint8List>.error(e));
     }
   }
 
@@ -204,10 +205,11 @@ class MemoryFile extends MemoryFileSystemEntity implements File {
   }
 
   @override
-  Future<List<int>> readAsBytes() async => readAsBytesSync();
+  Future<Uint8List> readAsBytes() async => readAsBytesSync();
 
   @override
-  List<int> readAsBytesSync() => (resolvedBacking as FileNode).content;
+  Uint8List readAsBytesSync() =>
+      Uint8List.fromList((resolvedBacking as FileNode).content);
 
   @override
   Future<String> readAsString({Encoding encoding: utf8}) async =>
@@ -248,7 +250,7 @@ class MemoryFile extends MemoryFileSystemEntity implements File {
     }
     FileNode node = _resolvedBackingOrCreate;
     _truncateIfNecessary(node, mode);
-    node.content.addAll(bytes);
+    node.write(bytes);
     node.touch();
   }
 
@@ -278,7 +280,7 @@ class MemoryFile extends MemoryFileSystemEntity implements File {
 
   void _truncateIfNecessary(FileNode node, io.FileMode mode) {
     if (mode == io.FileMode.write || mode == io.FileMode.writeOnly) {
-      node.content.clear();
+      node.clear();
     }
   }
 
@@ -402,7 +404,7 @@ class _FileSink implements io.IOSink {
 
   void _addData(List<int> data) {
     _pendingWrites = _pendingWrites.then((FileNode node) {
-      node.content.addAll(data);
+      node.write(data);
       return node;
     });
   }

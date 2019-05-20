@@ -4,6 +4,7 @@
 
 import 'dart:async';
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:meta/meta.dart';
 import 'package:file/file.dart';
@@ -89,11 +90,11 @@ class RecordingFile extends RecordingFileSystemEntity<File> implements File {
   RandomAccessFile _openSync({FileMode mode: FileMode.read}) =>
       _wrapRandomAccessFile(delegate.openSync(mode: mode));
 
-  StreamReference<List<int>> _openRead([int start, int end]) {
-    return new _BlobStreamReference<List<int>>(
+  StreamReference<Uint8List> _openRead([int start, int end]) {
+    return new _BlobStreamReference<Uint8List>(
       file: _newRecordingFile(),
       stream: delegate.openRead(start, end),
-      writer: (File file, List<int> bytes) {
+      writer: (File file, Uint8List bytes) {
         file.writeAsBytesSync(bytes, mode: FileMode.append, flush: true);
       },
     );
@@ -106,21 +107,21 @@ class RecordingFile extends RecordingFileSystemEntity<File> implements File {
     );
   }
 
-  FutureReference<List<int>> _readAsBytes() {
-    return new _BlobFutureReference<List<int>>(
+  FutureReference<Uint8List> _readAsBytes() {
+    return new _BlobFutureReference<Uint8List>(
       file: _newRecordingFile(),
       future: delegate.readAsBytes(),
-      writer: (File file, List<int> bytes) async {
+      writer: (File file, Uint8List bytes) async {
         await file.writeAsBytes(bytes, flush: true);
       },
     );
   }
 
-  ResultReference<List<int>> _readAsBytesSync() {
-    return new _BlobReference<List<int>>(
+  ResultReference<Uint8List> _readAsBytesSync() {
+    return new _BlobReference<Uint8List>(
       file: _newRecordingFile(),
       value: delegate.readAsBytesSync(),
-      writer: (File file, List<int> bytes) {
+      writer: (File file, Uint8List bytes) {
         file.writeAsBytesSync(bytes, flush: true);
       },
     );

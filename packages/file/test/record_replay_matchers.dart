@@ -14,9 +14,9 @@ const Map<Type, String> _kTypeDescriptions = const <Type, String>{
 };
 
 const Map<Type, Matcher> _kTypeMatchers = const <Type, Matcher>{
-  MethodEvent: const isInstanceOf<MethodEvent<dynamic>>(),
-  PropertyGetEvent: const isInstanceOf<PropertyGetEvent<dynamic>>(),
-  PropertySetEvent: const isInstanceOf<PropertySetEvent<dynamic>>(),
+  MethodEvent: const TypeMatcher<MethodEvent<dynamic>>(),
+  PropertyGetEvent: const TypeMatcher<PropertyGetEvent<dynamic>>(),
+  PropertySetEvent: const TypeMatcher<PropertySetEvent<dynamic>>(),
 };
 
 /// Returns a matcher that will match against a [MethodEvent].
@@ -49,13 +49,10 @@ PropertyGet getsProperty([dynamic name]) => new PropertyGet._(name);
 /// scope of the match (e.g. by property value, target object, etc).
 PropertySet setsProperty([dynamic name]) => new PropertySet._(name);
 
-/// A matcher that successfully matches against an instance of
-/// [NoMatchingInvocationError].
-const Matcher isNoMatchingInvocationError = const _NoMatchingInvocationError();
-
 /// A matcher that successfully matches against a future or function
 /// that throws a [NoMatchingInvocationError].
-Matcher throwsNoMatchingInvocationError = throwsA(isNoMatchingInvocationError);
+Matcher throwsNoMatchingInvocationError =
+    throwsA(const TypeMatcher<NoMatchingInvocationError>());
 
 /// Base class for matchers that match against generic [InvocationEvent]
 /// instances.
@@ -582,12 +579,4 @@ class _SetValue extends Matcher {
     description.add('to value: ');
     return _matcher.describe(description);
   }
-}
-
-class _NoMatchingInvocationError extends TypeMatcher<dynamic> {
-  const _NoMatchingInvocationError() : super("NoMatchingInvocationError");
-
-  @override
-  bool matches(dynamic item, Map<dynamic, dynamic> matchState) =>
-      item is NoMatchingInvocationError;
 }

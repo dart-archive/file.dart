@@ -4,6 +4,7 @@
 
 import 'dart:async';
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:file/src/io.dart' as io;
 import 'package:file/file.dart';
@@ -71,8 +72,8 @@ abstract class ForwardingFile
       delegate.openSync(mode: mode);
 
   @override
-  Stream<List<int>> openRead([int start, int end]) =>
-      delegate.openRead(start, end);
+  Stream<Uint8List> openRead([int start, int end]) =>
+      delegate.openRead(start, end).transform(const _ToUint8List());
 
   @override
   IOSink openWrite({
@@ -82,10 +83,14 @@ abstract class ForwardingFile
       delegate.openWrite(mode: mode, encoding: encoding);
 
   @override
-  Future<List<int>> readAsBytes() => delegate.readAsBytes();
+  Future<Uint8List> readAsBytes() {
+    return delegate.readAsBytes().then<Uint8List>((List<int> bytes) {
+      return Uint8List.fromList(bytes);
+    });
+  }
 
   @override
-  List<int> readAsBytesSync() => delegate.readAsBytesSync();
+  Uint8List readAsBytesSync() => Uint8List.fromList(delegate.readAsBytesSync());
 
   @override
   Future<String> readAsString({Encoding encoding: utf8}) =>
@@ -150,4 +155,32 @@ abstract class ForwardingFile
         encoding: encoding,
         flush: flush,
       );
+}
+
+class _ToUint8List extends Converter<List<int>, Uint8List> {
+  const _ToUint8List();
+
+  @override
+  Uint8List convert(List<int> input) => Uint8List.fromList(input);
+
+  @override
+  Sink<List<int>> startChunkedConversion(Sink<Uint8List> sink) {
+    return _Uint8ListConversionSink(sink);
+  }
+}
+
+class _Uint8ListConversionSink implements Sink<List<int>> {
+  const _Uint8ListConversionSink(this._target);
+
+  final Sink<Uint8List> _target;
+
+  @override
+  void add(List<int> data) {
+    _target.add(Uint8List.fromList(data));
+  }
+
+  @override
+  void close() {
+    _target.close();
+  }
 }

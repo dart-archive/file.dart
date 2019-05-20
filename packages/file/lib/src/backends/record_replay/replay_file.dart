@@ -4,6 +4,7 @@
 
 import 'dart:async';
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:file/file.dart';
 
@@ -20,10 +21,11 @@ class ReplayFile extends ReplayFileSystemEntity implements File {
     Converter<String, File> reviveFile = new ReviveFile(fileSystem);
     Converter<String, Future<File>> reviveFileAsFuture =
         reviveFile.fuse(const ToFuture<File>());
-    Converter<String, List<int>> blobToBytes = new BlobToBytes(fileSystem);
-    Converter<String, Future<List<int>>> blobToBytesFuture =
-        blobToBytes.fuse(const ToFuture<List<int>>());
-    Converter<String, String> blobToString = blobToBytes.fuse(utf8.decoder);
+    Converter<String, Uint8List> blobToBytes = new BlobToBytes(fileSystem);
+    Converter<String, Future<Uint8List>> blobToBytesFuture =
+        blobToBytes.fuse(const ToFuture<Uint8List>());
+    Converter<String, String> blobToString =
+        blobToBytes.fuse(const Uint8ListToPlainList()).fuse(utf8.decoder);
     Converter<String, Future<String>> blobToStringFuture =
         blobToString.fuse(const ToFuture<String>());
     Converter<String, RandomAccessFile> reviveRandomAccessFile =
@@ -36,9 +38,9 @@ class ReplayFile extends ReplayFileSystemEntity implements File {
         blobToString.fuse(lineSplitter);
     Converter<String, Future<List<String>>> blobToLinesFuture =
         blobToLines.fuse(const ToFuture<List<String>>());
-    Converter<String, Stream<List<int>>> blobToByteStream = blobToBytes
-        .fuse(const Listify<List<int>>())
-        .fuse(const ToStream<List<int>>());
+    Converter<String, Stream<Uint8List>> blobToByteStream = blobToBytes
+        .fuse(const Listify<Uint8List>())
+        .fuse(const ToStream<Uint8List>());
     Converter<int, Future<DateTime>> reviveDateTime =
         DateTimeCodec.deserialize.fuse(const ToFuture<DateTime>());
 

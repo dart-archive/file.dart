@@ -251,7 +251,7 @@ class _ChrootFile extends _ChrootFileSystemEntity<File, io.File>
       getDelegate(followLinks: true).openSync(mode: mode);
 
   @override
-  Stream<List<int>> openRead([int start, int end]) =>
+  Stream<Uint8List> openRead([int start, int end]) =>
       getDelegate(followLinks: true).openRead(start, end);
 
   @override
@@ -262,11 +262,11 @@ class _ChrootFile extends _ChrootFileSystemEntity<File, io.File>
       getDelegate(followLinks: true).openWrite(mode: mode, encoding: encoding);
 
   @override
-  Future<List<int>> readAsBytes() =>
+  Future<Uint8List> readAsBytes() =>
       getDelegate(followLinks: true).readAsBytes();
 
   @override
-  List<int> readAsBytesSync() =>
+  Uint8List readAsBytesSync() =>
       getDelegate(followLinks: true).readAsBytesSync();
 
   @override

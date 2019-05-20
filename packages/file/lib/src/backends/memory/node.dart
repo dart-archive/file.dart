@@ -2,6 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:typed_data';
+
 import 'package:file/file.dart';
 import 'package:file/src/io.dart' as io;
 
@@ -222,7 +224,8 @@ class RootNode extends DirectoryNode {
 /// Class that represents the backing for an in-memory regular file.
 class FileNode extends RealNode {
   /// File contents in bytes.
-  List<int> content = <int>[];
+  Uint8List get content => _content;
+  Uint8List _content = Uint8List(0);
 
   /// Constructs a new [FileNode] as a child of the specified [parent].
   FileNode(DirectoryNode parent) : super(parent);
@@ -231,7 +234,20 @@ class FileNode extends RealNode {
   io.FileSystemEntityType get type => io.FileSystemEntityType.file;
 
   @override
-  int get size => content.length;
+  int get size => _content.length;
+
+  /// Appends the specified bytes to the end of this node's [content].
+  void write(List<int> bytes) {
+    Uint8List existing = _content;
+    _content = Uint8List(existing.length + bytes.length);
+    _content.setRange(0, existing.length, existing);
+    _content.setRange(existing.length, _content.length, bytes);
+  }
+
+  /// Clears the [content] of the node.
+  void clear() {
+    _content = Uint8List(0);
+  }
 
   /// Copies data from [source] into this node. The [modified] and [changed]
   /// fields will be reset as opposed to copied to indicate that this file
@@ -240,7 +256,7 @@ class FileNode extends RealNode {
     modified = changed = new DateTime.now().millisecondsSinceEpoch;
     accessed = source.accessed;
     mode = source.mode;
-    content = new List<int>.from(source.content);
+    _content = Uint8List.fromList(source.content);
   }
 }
 
