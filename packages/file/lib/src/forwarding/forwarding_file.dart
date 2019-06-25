@@ -72,8 +72,10 @@ abstract class ForwardingFile
       delegate.openSync(mode: mode);
 
   @override
-  Stream<Uint8List> openRead([int start, int end]) =>
-      delegate.openRead(start, end).transform(const _ToUint8List());
+  Stream<Uint8List> openRead([int start, int end]) => delegate
+      .openRead(start, end)
+      .cast<List<int>>()
+      .transform(const _ToUint8List());
 
   @override
   IOSink openWrite({
