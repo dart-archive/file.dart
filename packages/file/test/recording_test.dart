@@ -27,11 +27,11 @@ void main() {
     MutableRecording recording;
 
     setUp(() {
-      delegate = new _BasicClass();
-      rc = new _RecordingClass(
+      delegate = _BasicClass();
+      rc = _RecordingClass(
         delegate: delegate,
-        stopwatch: new _FakeStopwatch(10),
-        destination: new MemoryFileSystem().directory('/tmp')..createSync(),
+        stopwatch: _FakeStopwatch(10),
+        destination: MemoryFileSystem().directory('/tmp')..createSync(),
       );
       recording = rc.recording;
     });
@@ -170,10 +170,10 @@ void main() {
 
         test('succeedsIfAwaitPendingResultsThatTimeout', () async {
           rc.veryLongFutureMethod(); // ignore: unawaited_futures
-          DateTime before = new DateTime.now();
+          DateTime before = DateTime.now();
           await recording.flush(
               pendingResultTimeout: const Duration(milliseconds: 250));
-          DateTime after = new DateTime.now();
+          DateTime after = DateTime.now();
           Duration delta = after.difference(before);
           List<Map<String, dynamic>> manifest = _loadManifest(recording);
           expect(manifest[0], containsPair('result', isNull));
@@ -191,7 +191,7 @@ void main() {
     group('encode', () {
       test('performsDeepEncoding', () async {
         rc.basicProperty = 'foo';
-        rc.basicProperty;
+        rc.basicProperty; // ignore: unnecessary_statements
         rc.basicMethod('bar', namedArg: 'baz');
         await rc.futureProperty;
         await rc.futureMethod('qux', namedArg: 'quz');
@@ -258,10 +258,10 @@ void main() {
 
     group('deeplyEqual', () {
       Map<String, dynamic> newMap({
-        String stringValue: 'foo',
-        bool boolValue: true,
-        String lastListValue: 'c',
-        int lastMapValue: 2,
+        String stringValue = 'foo',
+        bool boolValue = true,
+        String lastListValue = 'c',
+        int lastMapValue = 2,
       }) {
         return <String, dynamic>{
           'string': stringValue,
@@ -325,10 +325,10 @@ void main() {
     LiveRecording recording;
 
     setUp(() {
-      delegate = new MemoryFileSystem();
-      fs = new RecordingFileSystem(
+      delegate = MemoryFileSystem();
+      fs = RecordingFileSystem(
         delegate: delegate,
-        destination: new MemoryFileSystem().directory('/tmp')..createSync(),
+        destination: MemoryFileSystem().directory('/tmp')..createSync(),
       );
       recording = fs.recording;
     });
@@ -812,7 +812,8 @@ void main() {
                 containsPair('object', matches(r'^RecordingFile@[0-9]+$')),
                 containsPair('positionalArguments', isEmpty),
                 containsPair('result', matches(r'^![0-9]+.foo$')),
-                containsPair('namedArguments', {'encoding': 'utf-8'}),
+                containsPair(
+                    'namedArguments', <String, String>{'encoding': 'utf-8'}),
               ));
           File file = _getRecordingFile(recording, manifest[1]['result']);
           expect(file, exists);
@@ -837,7 +838,7 @@ List<Map<String, dynamic>> _loadManifest(LiveRecording recording) {
   List<FileSystemEntity> files = recording.destination.listSync();
   File manifestFile = files.singleWhere(
       (FileSystemEntity entity) => entity.basename == kManifestName);
-  return new JsonDecoder()
+  return const JsonDecoder()
       .convert(manifestFile.readAsStringSync())
       .cast<Map<String, dynamic>>();
 }
@@ -859,7 +860,7 @@ class _BasicClass {
       '$positionalArg.$namedArg';
 
   Future<String> futureMethod(String positionalArg, {String namedArg}) async {
-    await new Future<Null>.delayed(const Duration(milliseconds: 500));
+    await Future<void>.delayed(const Duration(milliseconds: 500));
     String basicValue = basicMethod(positionalArg, namedArg: namedArg);
     return 'future.$basicValue';
   }
@@ -871,7 +872,7 @@ class _BasicClass {
   }
 
   Future<String> veryLongFutureMethod() async {
-    await new Future<Null>.delayed(const Duration(seconds: 1));
+    await Future<void>.delayed(const Duration(seconds: 1));
     return 'future';
   }
 
@@ -880,7 +881,7 @@ class _BasicClass {
     int i = 0;
     while (i >= 0) {
       yield '${i++}';
-      await new Future<Null>.delayed(const Duration(seconds: 1));
+      await Future<void>.delayed(const Duration(seconds: 1));
     }
   }
 }
@@ -888,13 +889,11 @@ class _BasicClass {
 class _RecordingClass extends Object
     with RecordingProxyMixin
     implements _BasicClass {
-  final _BasicClass delegate;
-
   _RecordingClass({
     this.delegate,
     this.stopwatch,
     Directory destination,
-  }) : recording = new MutableRecording(destination) {
+  }) : recording = MutableRecording(destination) {
     methods.addAll(<Symbol, Function>{
       #basicMethod: delegate.basicMethod,
       #futureMethod: delegate.futureMethod,
@@ -912,6 +911,8 @@ class _RecordingClass extends Object
     });
   }
 
+  final _BasicClass delegate;
+
   @override
   String get identifier => '$runtimeType';
 
@@ -923,9 +924,9 @@ class _RecordingClass extends Object
 }
 
 class _FakeStopwatch implements Stopwatch {
-  int _value;
-
   _FakeStopwatch(this._value);
+
+  int _value;
 
   @override
   int get elapsedMilliseconds => _value++;

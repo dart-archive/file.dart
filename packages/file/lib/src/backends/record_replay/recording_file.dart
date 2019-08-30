@@ -22,19 +22,19 @@ import 'result_reference.dart';
 /// See also:
 ///   - [_BlobReference]
 ///   - [_BlobStreamReference]
-typedef void _BlobDataSyncWriter<T>(File file, T data);
+typedef _BlobDataSyncWriter<T> = void Function(File file, T data);
 
 /// Callback responsible for asynchronously writing result [data] to the
 /// specified [file].
 ///
 /// See also:
 ///   - [_BlobFutureReference]
-typedef Future<Null> _BlobDataAsyncWriter<T>(File file, T data);
+typedef _BlobDataAsyncWriter<T> = Future<void> Function(File file, T data);
 
 /// [File] implementation that records all invocation activity to its file
 /// system's recording.
 class RecordingFile extends RecordingFileSystemEntity<File> implements File {
-  /// Creates a new `RecordingFile`.
+  /// Creates a `RecordingFile`.
   RecordingFile(RecordingFileSystem fileSystem, io.File delegate)
       : super(fileSystem, delegate) {
     methods.addAll(<Symbol, Function>{
@@ -75,23 +75,23 @@ class RecordingFile extends RecordingFileSystemEntity<File> implements File {
   File _newRecordingFile() => recording.newFile(delegate.basename);
 
   RandomAccessFile _wrapRandomAccessFile(RandomAccessFile delegate) =>
-      new RecordingRandomAccessFile(fileSystem, delegate);
+      RecordingRandomAccessFile(fileSystem, delegate);
 
-  Future<File> _create({bool recursive: false}) =>
+  Future<File> _create({bool recursive = false}) =>
       delegate.create(recursive: recursive).then(wrap);
 
   Future<File> _copy(String newPath) => delegate.copy(newPath).then(wrap);
 
   File _copySync(String newPath) => wrap(delegate.copySync(newPath));
 
-  Future<RandomAccessFile> _open({FileMode mode: FileMode.read}) =>
+  Future<RandomAccessFile> _open({FileMode mode = FileMode.read}) =>
       delegate.open(mode: mode).then(_wrapRandomAccessFile);
 
-  RandomAccessFile _openSync({FileMode mode: FileMode.read}) =>
+  RandomAccessFile _openSync({FileMode mode = FileMode.read}) =>
       _wrapRandomAccessFile(delegate.openSync(mode: mode));
 
   StreamReference<Uint8List> _openRead([int start, int end]) {
-    return new _BlobStreamReference<Uint8List>(
+    return _BlobStreamReference<Uint8List>(
       file: _newRecordingFile(),
       stream: delegate.openRead(start, end),
       writer: (File file, Uint8List bytes) {
@@ -100,15 +100,16 @@ class RecordingFile extends RecordingFileSystemEntity<File> implements File {
     );
   }
 
-  IOSink _openWrite({FileMode mode: FileMode.write, Encoding encoding: utf8}) {
-    return new RecordingIOSink(
+  IOSink _openWrite(
+      {FileMode mode = FileMode.write, Encoding encoding = utf8}) {
+    return RecordingIOSink(
       fileSystem,
       delegate.openWrite(mode: mode, encoding: encoding),
     );
   }
 
   FutureReference<Uint8List> _readAsBytes() {
-    return new _BlobFutureReference<Uint8List>(
+    return _BlobFutureReference<Uint8List>(
       file: _newRecordingFile(),
       future: delegate.readAsBytes(),
       writer: (File file, Uint8List bytes) async {
@@ -118,7 +119,7 @@ class RecordingFile extends RecordingFileSystemEntity<File> implements File {
   }
 
   ResultReference<Uint8List> _readAsBytesSync() {
-    return new _BlobReference<Uint8List>(
+    return _BlobReference<Uint8List>(
       file: _newRecordingFile(),
       value: delegate.readAsBytesSync(),
       writer: (File file, Uint8List bytes) {
@@ -127,8 +128,8 @@ class RecordingFile extends RecordingFileSystemEntity<File> implements File {
     );
   }
 
-  FutureReference<String> _readAsString({Encoding encoding: utf8}) {
-    return new _BlobFutureReference<String>(
+  FutureReference<String> _readAsString({Encoding encoding = utf8}) {
+    return _BlobFutureReference<String>(
       file: _newRecordingFile(),
       future: delegate.readAsString(encoding: encoding),
       writer: (File file, String content) async {
@@ -137,8 +138,8 @@ class RecordingFile extends RecordingFileSystemEntity<File> implements File {
     );
   }
 
-  ResultReference<String> _readAsStringSync({Encoding encoding: utf8}) {
-    return new _BlobReference<String>(
+  ResultReference<String> _readAsStringSync({Encoding encoding = utf8}) {
+    return _BlobReference<String>(
       file: _newRecordingFile(),
       value: delegate.readAsStringSync(encoding: encoding),
       writer: (File file, String content) {
@@ -147,8 +148,8 @@ class RecordingFile extends RecordingFileSystemEntity<File> implements File {
     );
   }
 
-  FutureReference<List<String>> _readAsLines({Encoding encoding: utf8}) {
-    return new _BlobFutureReference<List<String>>(
+  FutureReference<List<String>> _readAsLines({Encoding encoding = utf8}) {
+    return _BlobFutureReference<List<String>>(
       file: _newRecordingFile(),
       future: delegate.readAsLines(encoding: encoding),
       writer: (File file, List<String> lines) async {
@@ -157,8 +158,8 @@ class RecordingFile extends RecordingFileSystemEntity<File> implements File {
     );
   }
 
-  ResultReference<List<String>> _readAsLinesSync({Encoding encoding: utf8}) {
-    return new _BlobReference<List<String>>(
+  ResultReference<List<String>> _readAsLinesSync({Encoding encoding = utf8}) {
+    return _BlobReference<List<String>>(
       file: _newRecordingFile(),
       value: delegate.readAsLinesSync(encoding: encoding),
       writer: (File file, List<String> lines) {
@@ -169,16 +170,16 @@ class RecordingFile extends RecordingFileSystemEntity<File> implements File {
 
   Future<File> _writeAsBytes(
     List<int> bytes, {
-    FileMode mode: FileMode.write,
-    bool flush: false,
+    FileMode mode = FileMode.write,
+    bool flush = false,
   }) =>
       delegate.writeAsBytes(bytes, mode: mode, flush: flush).then(wrap);
 
   Future<File> _writeAsString(
     String contents, {
-    FileMode mode: FileMode.write,
-    Encoding encoding: utf8,
-    bool flush: false,
+    FileMode mode = FileMode.write,
+    Encoding encoding = utf8,
+    bool flush = false,
   }) =>
       delegate
           .writeAsString(contents, mode: mode, encoding: encoding, flush: flush)
@@ -187,10 +188,6 @@ class RecordingFile extends RecordingFileSystemEntity<File> implements File {
 
 /// A [ResultReference] that serializes its value data to a separate file.
 class _BlobReference<T> extends ResultReference<T> {
-  final File _file;
-  final T _value;
-  final _BlobDataSyncWriter<T> _writer;
-
   _BlobReference({
     @required File file,
     @required T value,
@@ -198,6 +195,10 @@ class _BlobReference<T> extends ResultReference<T> {
   })  : _file = file,
         _value = value,
         _writer = writer;
+
+  final File _file;
+  final T _value;
+  final _BlobDataSyncWriter<T> _writer;
 
   @override
   T get value {
@@ -214,9 +215,6 @@ class _BlobReference<T> extends ResultReference<T> {
 
 /// A [FutureReference] that serializes its value data to a separate file.
 class _BlobFutureReference<T> extends FutureReference<T> {
-  final File _file;
-  final _BlobDataAsyncWriter<T> _writer;
-
   _BlobFutureReference({
     @required File file,
     @required Future<T> future,
@@ -224,6 +222,9 @@ class _BlobFutureReference<T> extends FutureReference<T> {
   })  : _file = file,
         _writer = writer,
         super(future);
+
+  final File _file;
+  final _BlobDataAsyncWriter<T> _writer;
 
   @override
   Future<T> get value {
@@ -239,9 +240,6 @@ class _BlobFutureReference<T> extends FutureReference<T> {
 
 /// A [StreamReference] that serializes its value data to a separate file.
 class _BlobStreamReference<T> extends StreamReference<T> {
-  final File _file;
-  final _BlobDataSyncWriter<T> _writer;
-
   _BlobStreamReference({
     @required File file,
     @required Stream<T> stream,
@@ -249,6 +247,9 @@ class _BlobStreamReference<T> extends StreamReference<T> {
   })  : _file = file,
         _writer = writer,
         super(stream);
+
+  final File _file;
+  final _BlobDataSyncWriter<T> _writer;
 
   @override
   void onData(T event) {

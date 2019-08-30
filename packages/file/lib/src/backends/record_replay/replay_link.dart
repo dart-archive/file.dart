@@ -14,10 +14,10 @@ import 'replay_file_system_entity.dart';
 /// [Link] implementation that replays all invocation activity from a prior
 /// recording.
 class ReplayLink extends ReplayFileSystemEntity implements Link {
-  /// Creates a new `ReplayLink`.
+  /// Creates a `ReplayLink`.
   ReplayLink(ReplayFileSystemImpl fileSystem, String identifier)
       : super(fileSystem, identifier) {
-    Converter<String, Link> reviveLink = new ReviveLink(fileSystem);
+    Converter<String, Link> reviveLink = ReviveLink(fileSystem);
     Converter<String, Future<Link>> reviveLinkAsFuture =
         reviveLink.fuse(const ToFuture<Link>());
 

@@ -14,20 +14,19 @@ import 'replay_file_system_entity.dart';
 /// [Directory] implementation that replays all invocation activity from a
 /// prior recording.
 class ReplayDirectory extends ReplayFileSystemEntity implements Directory {
-  /// Creates a new `ReplayDirectory`.
+  /// Creates a `ReplayDirectory`.
   ReplayDirectory(ReplayFileSystemImpl fileSystem, String identifier)
       : super(fileSystem, identifier) {
-    Converter<String, Directory> reviveDirectory =
-        new ReviveDirectory(fileSystem);
+    Converter<String, Directory> reviveDirectory = ReviveDirectory(fileSystem);
     Converter<String, Future<Directory>> reviveFutureDirectory =
         reviveDirectory.fuse(const ToFuture<Directory>());
     Converter<String, FileSystemEntity> reviveEntity =
-        new ReviveFileSystemEntity(fileSystem);
+        ReviveFileSystemEntity(fileSystem);
     Converter<List<dynamic>, List<String>> dynamicToString =
         const CastList<dynamic, String>();
     Converter<List<dynamic>, List<FileSystemEntity>> reviveEntities =
         dynamicToString.fuse<List<FileSystemEntity>>(
-            new ConvertElements<String, FileSystemEntity>(reviveEntity));
+            ConvertElements<String, FileSystemEntity>(reviveEntity));
     Converter<List<dynamic>, Stream<FileSystemEntity>> reviveEntitiesAsStream =
         reviveEntities
             .fuse<Stream<FileSystemEntity>>(const ToStream<FileSystemEntity>());
@@ -43,8 +42,8 @@ class ReplayDirectory extends ReplayFileSystemEntity implements Directory {
       #list: reviveEntitiesAsStream,
       #listSync: reviveEntities,
       #childDirectory: reviveDirectory,
-      #childFile: new ReviveFile(fileSystem),
-      #childLink: new ReviveLink(fileSystem),
+      #childFile: ReviveFile(fileSystem),
+      #childLink: ReviveLink(fileSystem),
     });
 
     properties.addAll(<Symbol, Converter<dynamic, dynamic>>{

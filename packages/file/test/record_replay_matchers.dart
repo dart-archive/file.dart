@@ -7,16 +7,16 @@ import 'package:file/src/backends/record_replay/common.dart'
     show getSymbolName; // ignore: implementation_imports
 import 'package:test/test.dart';
 
-const Map<Type, String> _kTypeDescriptions = const <Type, String>{
+const Map<Type, String> _kTypeDescriptions = <Type, String>{
   MethodEvent: 'a method invocation',
   PropertyGetEvent: 'a property retrieval',
   PropertySetEvent: 'a property mutation',
 };
 
-const Map<Type, Matcher> _kTypeMatchers = const <Type, Matcher>{
-  MethodEvent: const TypeMatcher<MethodEvent<dynamic>>(),
-  PropertyGetEvent: const TypeMatcher<PropertyGetEvent<dynamic>>(),
-  PropertySetEvent: const TypeMatcher<PropertySetEvent<dynamic>>(),
+const Map<Type, Matcher> _kTypeMatchers = <Type, Matcher>{
+  MethodEvent: TypeMatcher<MethodEvent<dynamic>>(),
+  PropertyGetEvent: TypeMatcher<PropertyGetEvent<dynamic>>(),
+  PropertySetEvent: TypeMatcher<PropertySetEvent<dynamic>>(),
 };
 
 /// Returns a matcher that will match against a [MethodEvent].
@@ -27,7 +27,7 @@ const Map<Type, Matcher> _kTypeMatchers = const <Type, Matcher>{
 ///
 /// The returned [MethodInvocation] matcher can be used to further limit the
 /// scope of the match (e.g. by invocation result, target object, etc).
-MethodInvocation invokesMethod([dynamic name]) => new MethodInvocation._(name);
+MethodInvocation invokesMethod([dynamic name]) => MethodInvocation._(name);
 
 /// Returns a matcher that will match against a [PropertyGetEvent].
 ///
@@ -37,7 +37,7 @@ MethodInvocation invokesMethod([dynamic name]) => new MethodInvocation._(name);
 ///
 /// The returned [PropertyGet] matcher can be used to further limit the
 /// scope of the match (e.g. by property value, target object, etc).
-PropertyGet getsProperty([dynamic name]) => new PropertyGet._(name);
+PropertyGet getsProperty([dynamic name]) => PropertyGet._(name);
 
 /// Returns a matcher that will match against a [PropertySetEvent].
 ///
@@ -47,7 +47,7 @@ PropertyGet getsProperty([dynamic name]) => new PropertyGet._(name);
 ///
 /// The returned [PropertySet] matcher can be used to further limit the
 /// scope of the match (e.g. by property value, target object, etc).
-PropertySet setsProperty([dynamic name]) => new PropertySet._(name);
+PropertySet setsProperty([dynamic name]) => PropertySet._(name);
 
 /// A matcher that successfully matches against a future or function
 /// that throws a [NoMatchingInvocationError].
@@ -58,10 +58,10 @@ Matcher throwsNoMatchingInvocationError =
 /// instances.
 abstract class RecordedInvocation<T extends RecordedInvocation<T>>
     extends Matcher {
+  RecordedInvocation._(Type type) : _typeMatcher = _Type(type);
+
   final _Type _typeMatcher;
   final List<Matcher> _fieldMatchers = <Matcher>[];
-
-  RecordedInvocation._(Type type) : _typeMatcher = new _Type(type);
 
   /// Limits the scope of the match to invocations that occurred on the
   /// specified target [object].
@@ -71,7 +71,7 @@ abstract class RecordedInvocation<T extends RecordedInvocation<T>>
   ///
   /// Returns this matcher for chaining.
   T on(dynamic object) {
-    _fieldMatchers.add(new _Target(object));
+    _fieldMatchers.add(_Target(object));
     return this;
   }
 
@@ -89,7 +89,7 @@ abstract class RecordedInvocation<T extends RecordedInvocation<T>>
   ///
   /// Returns this matcher for chaining.
   T withResult(dynamic result) {
-    _fieldMatchers.add(new _Result(result));
+    _fieldMatchers.add(_Result(result));
     return this;
   }
 
@@ -101,7 +101,7 @@ abstract class RecordedInvocation<T extends RecordedInvocation<T>>
   ///
   /// Returns this matcher for chaining.
   T withTimestamp(dynamic timestamp) {
-    _fieldMatchers.add(new _Timestamp(timestamp));
+    _fieldMatchers.add(_Timestamp(timestamp));
     return this;
   }
 
@@ -153,7 +153,7 @@ abstract class RecordedInvocation<T extends RecordedInvocation<T>>
 class MethodInvocation extends RecordedInvocation<MethodInvocation> {
   MethodInvocation._(dynamic methodName) : super._(MethodEvent) {
     if (methodName != null) {
-      _fieldMatchers.add(new _MethodName(methodName));
+      _fieldMatchers.add(_MethodName(methodName));
     }
   }
 
@@ -165,7 +165,7 @@ class MethodInvocation extends RecordedInvocation<MethodInvocation> {
   ///
   /// Returns this matcher for chaining.
   MethodInvocation withPositionalArguments(dynamic arguments) {
-    _fieldMatchers.add(new _PositionalArguments(arguments));
+    _fieldMatchers.add(_PositionalArguments(arguments));
     return this;
   }
 
@@ -177,7 +177,7 @@ class MethodInvocation extends RecordedInvocation<MethodInvocation> {
   ///
   /// Returns this matcher for chaining.
   MethodInvocation withNamedArgument(String name, dynamic value) {
-    _fieldMatchers.add(new _NamedArgument(name, value));
+    _fieldMatchers.add(_NamedArgument(name, value));
     return this;
   }
 
@@ -199,7 +199,7 @@ class MethodInvocation extends RecordedInvocation<MethodInvocation> {
 class PropertyGet extends RecordedInvocation<PropertyGet> {
   PropertyGet._(dynamic propertyName) : super._(PropertyGetEvent) {
     if (propertyName != null) {
-      _fieldMatchers.add(new _GetPropertyName(propertyName));
+      _fieldMatchers.add(_GetPropertyName(propertyName));
     }
   }
 }
@@ -213,7 +213,7 @@ class PropertySet extends RecordedInvocation<PropertySet> {
   PropertySet._(dynamic propertyName) : super._(PropertySetEvent) {
     withResult(null);
     if (propertyName != null) {
-      _fieldMatchers.add(new _SetPropertyName(propertyName));
+      _fieldMatchers.add(_SetPropertyName(propertyName));
     }
   }
 
@@ -225,15 +225,15 @@ class PropertySet extends RecordedInvocation<PropertySet> {
   ///
   /// Returns this matcher for chaining.
   PropertySet toValue(dynamic value) {
-    _fieldMatchers.add(new _SetValue(value));
+    _fieldMatchers.add(_SetValue(value));
     return this;
   }
 }
 
 class _Target extends Matcher {
-  final Matcher _matcher;
-
   _Target(dynamic target) : _matcher = wrapMatcher(target);
+
+  final Matcher _matcher;
 
   @override
   bool matches(dynamic item, Map<dynamic, dynamic> matchState) =>
@@ -247,7 +247,7 @@ class _Target extends Matcher {
     bool verbose,
   ) {
     description.add('was invoked on: ${item.object}');
-    Description matcherDesc = new StringDescription();
+    Description matcherDesc = StringDescription();
     _matcher.describeMismatch(item.object, matcherDesc, matchState, verbose);
     if (matcherDesc.length > 0) {
       description.add('\n   Which: ').add(matcherDesc.toString());
@@ -263,9 +263,9 @@ class _Target extends Matcher {
 }
 
 class _Result extends Matcher {
-  final Matcher _matcher;
-
   _Result(dynamic result) : _matcher = wrapMatcher(result);
+
+  final Matcher _matcher;
 
   @override
   bool matches(dynamic item, Map<dynamic, dynamic> matchState) =>
@@ -279,7 +279,7 @@ class _Result extends Matcher {
     bool verbose,
   ) {
     description.add('returned: ${item.result}');
-    Description matcherDesc = new StringDescription();
+    Description matcherDesc = StringDescription();
     _matcher.describeMismatch(item.result, matcherDesc, matchState, verbose);
     if (matcherDesc.length > 0) {
       description.add('\n   Which: ').add(matcherDesc.toString());
@@ -295,9 +295,9 @@ class _Result extends Matcher {
 }
 
 class _Timestamp extends Matcher {
-  final Matcher _matcher;
-
   _Timestamp(dynamic timestamp) : _matcher = wrapMatcher(timestamp);
+
+  final Matcher _matcher;
 
   @override
   bool matches(dynamic item, Map<dynamic, dynamic> matchState) =>
@@ -311,7 +311,7 @@ class _Timestamp extends Matcher {
     bool verbose,
   ) {
     description.add('has timestamp: ${item.timestamp}');
-    Description matcherDesc = new StringDescription();
+    Description matcherDesc = StringDescription();
     _matcher.describeMismatch(item.timestamp, matcherDesc, matchState, verbose);
     if (matcherDesc.length > 0) {
       description.add('\n   Which: ').add(matcherDesc.toString());
@@ -327,9 +327,9 @@ class _Timestamp extends Matcher {
 }
 
 class _Type extends Matcher {
-  final Type type;
-
   const _Type(this.type);
+
+  final Type type;
 
   @override
   bool matches(dynamic item, Map<dynamic, dynamic> matchState) =>
@@ -363,9 +363,9 @@ class _Type extends Matcher {
 }
 
 class _MethodName extends Matcher {
-  final Matcher _matcher;
-
   _MethodName(dynamic name) : _matcher = wrapMatcher(name);
+
+  final Matcher _matcher;
 
   @override
   bool matches(dynamic item, Map<dynamic, dynamic> matchState) =>
@@ -380,7 +380,7 @@ class _MethodName extends Matcher {
   ) {
     String methodName = getSymbolName(item.method);
     description.add('invoked method: \'$methodName\'');
-    Description matcherDesc = new StringDescription();
+    Description matcherDesc = StringDescription();
     _matcher.describeMismatch(methodName, matcherDesc, matchState, verbose);
     if (matcherDesc.length > 0) {
       description.add('\n   Which: ').add(matcherDesc.toString());
@@ -396,9 +396,9 @@ class _MethodName extends Matcher {
 }
 
 class _PositionalArguments extends Matcher {
-  final Matcher _matcher;
-
   _PositionalArguments(dynamic value) : _matcher = wrapMatcher(value);
+
+  final Matcher _matcher;
 
   @override
   bool matches(dynamic item, Map<dynamic, dynamic> matchState) =>
@@ -423,13 +423,12 @@ class _PositionalArguments extends Matcher {
 }
 
 class _NamedArgument extends Matcher {
+  _NamedArgument(this.name, this.value)
+      : _matcher = containsPair(Symbol(name), value);
+
   final String name;
   final dynamic value;
   final Matcher _matcher;
-
-  _NamedArgument(String name, this.value)
-      : this.name = name,
-        _matcher = containsPair(new Symbol(name), value);
 
   @override
   bool matches(dynamic item, Map<dynamic, dynamic> matchState) =>
@@ -452,9 +451,9 @@ class _NamedArgument extends Matcher {
 }
 
 class _NoNamedArguments extends Matcher {
-  final Matcher _matcher = isEmpty;
-
   const _NoNamedArguments();
+
+  Matcher get _matcher => isEmpty;
 
   @override
   bool matches(dynamic item, Map<dynamic, dynamic> matchState) =>
@@ -477,9 +476,9 @@ class _NoNamedArguments extends Matcher {
 }
 
 class _GetPropertyName extends Matcher {
-  final Matcher _matcher;
-
   _GetPropertyName(dynamic _name) : _matcher = wrapMatcher(_name);
+
+  final Matcher _matcher;
 
   @override
   bool matches(dynamic item, Map<dynamic, dynamic> matchState) =>
@@ -494,7 +493,7 @@ class _GetPropertyName extends Matcher {
   ) {
     String propertyName = getSymbolName(item.property);
     description.add('got property: \'$propertyName\'');
-    Description matcherDesc = new StringDescription();
+    Description matcherDesc = StringDescription();
     _matcher.describeMismatch(propertyName, matcherDesc, matchState, verbose);
     if (matcherDesc.length > 0) {
       description.add('\n   Which: ').add(matcherDesc.toString());
@@ -510,9 +509,9 @@ class _GetPropertyName extends Matcher {
 }
 
 class _SetPropertyName extends Matcher {
-  final Matcher _matcher;
-
   _SetPropertyName(dynamic _name) : _matcher = wrapMatcher(_name);
+
+  final Matcher _matcher;
 
   /// Strips the trailing `=` off the symbol name to get the property name.
   String _getPropertyName(dynamic item) {
@@ -534,7 +533,7 @@ class _SetPropertyName extends Matcher {
   ) {
     String propertyName = _getPropertyName(item);
     description.add('set property: \'$propertyName\'');
-    Description matcherDesc = new StringDescription();
+    Description matcherDesc = StringDescription();
     _matcher.describeMismatch(propertyName, matcherDesc, matchState, verbose);
     if (matcherDesc.length > 0) {
       description.add('\n   Which: ').add(matcherDesc.toString());
@@ -550,9 +549,9 @@ class _SetPropertyName extends Matcher {
 }
 
 class _SetValue extends Matcher {
-  final Matcher _matcher;
-
   _SetValue(dynamic value) : _matcher = wrapMatcher(value);
+
+  final Matcher _matcher;
 
   @override
   bool matches(dynamic item, Map<dynamic, dynamic> matchState) =>
@@ -566,7 +565,7 @@ class _SetValue extends Matcher {
     bool verbose,
   ) {
     description.add('set value: ${item.value}');
-    Description matcherDesc = new StringDescription();
+    Description matcherDesc = StringDescription();
     _matcher.describeMismatch(item.value, matcherDesc, matchState, verbose);
     if (matcherDesc.length > 0) {
       description.add('\n   Which: ').add(matcherDesc.toString());

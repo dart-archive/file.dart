@@ -6,13 +6,13 @@ part of file.src.backends.chroot;
 
 abstract class _ChrootFileSystemEntity<T extends FileSystemEntity,
     D extends io.FileSystemEntity> extends ForwardingFileSystemEntity<T, D> {
+  _ChrootFileSystemEntity(this.fileSystem, this.path);
+
   @override
   final ChrootFileSystem fileSystem;
 
   @override
   final String path;
-
-  _ChrootFileSystemEntity(this.fileSystem, this.path);
 
   @override
   String get dirname => fileSystem.path.dirname(path);
@@ -30,7 +30,7 @@ abstract class _ChrootFileSystemEntity<T extends FileSystemEntity,
   /// link, then the path of the delegate entity will reference the ultimate
   /// target of that symbolic link. Symbolic links in the middle of the path
   /// will always be resolved in the delegate entity's path.
-  D getDelegate({bool followLinks: false}) =>
+  D getDelegate({bool followLinks = false}) =>
       _rawDelegate(fileSystem._real(path, followLinks: followLinks));
 
   /// Returns the expected type of this entity, which may differ from the type
@@ -52,18 +52,18 @@ abstract class _ChrootFileSystemEntity<T extends FileSystemEntity,
 
   @override
   Directory wrapDirectory(io.Directory delegate) =>
-      new _ChrootDirectory.wrapped(fileSystem, delegate, relative: !isAbsolute);
+      _ChrootDirectory.wrapped(fileSystem, delegate, relative: !isAbsolute);
 
   @override
   File wrapFile(io.File delegate) =>
-      new _ChrootFile.wrapped(fileSystem, delegate, relative: !isAbsolute);
+      _ChrootFile.wrapped(fileSystem, delegate, relative: !isAbsolute);
 
   @override
   Link wrapLink(io.Link delegate) =>
-      new _ChrootLink.wrapped(fileSystem, delegate, relative: !isAbsolute);
+      _ChrootLink.wrapped(fileSystem, delegate, relative: !isAbsolute);
 
   @override
-  Uri get uri => new Uri.file(path);
+  Uri get uri => Uri.file(path);
 
   @override
   Future<bool> exists() => getDelegate(followLinks: true).exists();
@@ -84,7 +84,7 @@ abstract class _ChrootFileSystemEntity<T extends FileSystemEntity,
     try {
       delegate = getDelegate(followLinks: true);
     } on FileSystemException {
-      return new Future<FileStat>.value(const _NotFoundFileStat());
+      return Future<FileStat>.value(const _NotFoundFileStat());
     }
     return delegate.stat();
   }
@@ -101,7 +101,7 @@ abstract class _ChrootFileSystemEntity<T extends FileSystemEntity,
   }
 
   @override
-  Future<T> delete({bool recursive: false}) async {
+  Future<T> delete({bool recursive = false}) async {
     String path = fileSystem._resolve(this.path,
         followLinks: false, notFound: _NotFoundBehavior.throwError);
 
@@ -130,7 +130,7 @@ abstract class _ChrootFileSystemEntity<T extends FileSystemEntity,
   }
 
   @override
-  void deleteSync({bool recursive: false}) {
+  void deleteSync({bool recursive = false}) {
     String path = fileSystem._resolve(this.path,
         followLinks: false, notFound: _NotFoundBehavior.throwError);
 
@@ -158,10 +158,10 @@ abstract class _ChrootFileSystemEntity<T extends FileSystemEntity,
 
   @override
   Stream<FileSystemEvent> watch({
-    int events: FileSystemEvent.all,
-    bool recursive: false,
+    int events = FileSystemEvent.all,
+    bool recursive = false,
   }) =>
-      throw new UnsupportedError('watch is not supported on ChrootFileSystem');
+      throw UnsupportedError('watch is not supported on ChrootFileSystem');
 
   @override
   bool get isAbsolute => fileSystem.path.isAbsolute(path);

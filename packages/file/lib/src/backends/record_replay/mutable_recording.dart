@@ -15,7 +15,7 @@ import 'recording.dart';
 
 /// A mutable live recording.
 class MutableRecording implements LiveRecording {
-  /// Creates a new `MutableRecording` that will serialize its data to the
+  /// Creates a `MutableRecording` that will serialize its data to the
   /// specified [destination].
   MutableRecording(this.destination);
 
@@ -29,18 +29,18 @@ class MutableRecording implements LiveRecording {
 
   @override
   List<LiveInvocationEvent<dynamic>> get events =>
-      new List<LiveInvocationEvent<dynamic>>.unmodifiable(_events);
+      List<LiveInvocationEvent<dynamic>>.unmodifiable(_events);
 
   @override
-  Future<Null> flush({Duration pendingResultTimeout}) async {
+  Future<void> flush({Duration pendingResultTimeout}) async {
     if (_flushing) {
-      throw new StateError('Recording is already flushing');
+      throw StateError('Recording is already flushing');
     }
     _flushing = true;
     try {
-      Iterable<Future<Null>> futures =
+      Iterable<Future<void>> futures =
           _events.map((LiveInvocationEvent<dynamic> event) => event.done);
-      Future<List<Null>> results = Future.wait<Null>(futures);
+      Future<List<void>> results = Future.wait<void>(futures);
       if (pendingResultTimeout != null) {
         results = results.timeout(pendingResultTimeout, onTimeout: () {
           return null;
@@ -48,7 +48,7 @@ class MutableRecording implements LiveRecording {
       }
       await results;
       Directory dir = destination;
-      String json = new JsonEncoder.withIndent('  ').convert(encode(_events));
+      String json = const JsonEncoder.withIndent('  ').convert(encode(_events));
       String filename = dir.fileSystem.path.join(dir.path, kManifestName);
       await dir.fileSystem.file(filename).writeAsString(json, flush: true);
     } finally {
@@ -56,7 +56,7 @@ class MutableRecording implements LiveRecording {
     }
   }
 
-  /// Returns a new file for use with this recording.
+  /// Returns a file for use with this recording.
   ///
   /// The file name will combine the specified [name] with [newUid] to ensure
   /// that its name is unique among all recording files.
@@ -64,7 +64,7 @@ class MutableRecording implements LiveRecording {
   /// It is up to the caller to create the file - it will not exist in the
   /// file system when it is returned from this method.
   File newFile(String name) {
-    String basename = '${new NumberFormat('000').format(newUid())}.$name';
+    String basename = '${NumberFormat('000').format(newUid())}.$name';
     String dirname = destination.path;
     String path = destination.fileSystem.path.join(dirname, basename);
     return destination.fileSystem.file(path);

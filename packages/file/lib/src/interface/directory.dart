@@ -4,16 +4,17 @@
 
 import 'dart:async';
 
+import '../io.dart' as io;
+
 import 'file.dart';
 import 'file_system_entity.dart';
 import 'link.dart';
-import '../io.dart' as io;
 
 /// A reference to a directory on the file system.
 abstract class Directory implements FileSystemEntity, io.Directory {
   // Override method definitions to codify the return type covariance.
   @override
-  Future<Directory> create({bool recursive: false});
+  Future<Directory> create({bool recursive = false});
 
   @override
   Future<Directory> createTemp([String prefix]);
@@ -32,11 +33,11 @@ abstract class Directory implements FileSystemEntity, io.Directory {
 
   @override
   Stream<FileSystemEntity> list(
-      {bool recursive: false, bool followLinks: true});
+      {bool recursive = false, bool followLinks = true});
 
   @override
   List<FileSystemEntity> listSync(
-      {bool recursive: false, bool followLinks: true});
+      {bool recursive = false, bool followLinks = true});
 
   /// Returns a reference to a [Directory] that exists as a child of this
   /// directory and has the specified [basename].

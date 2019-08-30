@@ -11,7 +11,7 @@ import 'common.dart';
 import 'errors.dart';
 import 'proxy.dart';
 
-typedef bool _InvocationMatcher(Map<String, dynamic> entry);
+typedef _InvocationMatcher = bool Function(Map<String, dynamic> entry);
 
 /// Used to record the order in which invocations were replayed.
 ///
@@ -116,13 +116,13 @@ mixin ReplayProxyMixin on Object implements ProxyObject, ReplayAware {
       // on a method, in which case we return a method proxy that, when
       // invoked, will replay the desired invocation.
       return invocation.isGetter && methods[name] != null
-          ? new MethodProxy(this, name)
+          ? MethodProxy(this, name)
           : super.noSuchMethod(invocation);
     }
 
     Map<String, dynamic> entry = _nextEvent(invocation);
     if (entry == null) {
-      throw new NoMatchingInvocationError(invocation);
+      throw NoMatchingInvocationError(invocation);
     }
     entry[kManifestOrdinalKey] = _nextOrdinal++;
 
@@ -173,6 +173,6 @@ mixin ReplayProxyMixin on Object implements ProxyObject, ReplayAware {
   }
 
   static Map<String, dynamic> _asNamedArgsType(Map<dynamic, dynamic> map) {
-    return new Map<String, dynamic>.from(map);
+    return Map<String, dynamic>.from(map);
   }
 }

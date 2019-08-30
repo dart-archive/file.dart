@@ -76,7 +76,7 @@ abstract class MethodEvent<T> extends InvocationEvent<T> {
 
 /// An [InvocationEvent] that's in the process of being recorded.
 abstract class LiveInvocationEvent<T> implements InvocationEvent<T> {
-  /// Creates a new [LiveInvocationEvent].
+  /// Creates a [LiveInvocationEvent].
   LiveInvocationEvent(this.object, this._result, this.error, this.timestamp);
 
   final dynamic _result;
@@ -112,7 +112,7 @@ abstract class LiveInvocationEvent<T> implements InvocationEvent<T> {
   /// are unfinished futures will be serialized as `null`, and results that are
   /// unfinished streams will be serialized as the data that has been received
   /// thus far.
-  Future<Null> get done async {
+  Future<void> get done async {
     dynamic result = _result;
     while (result is ResultReference) {
       ResultReference<dynamic> reference = result;
@@ -138,7 +138,7 @@ abstract class LiveInvocationEvent<T> implements InvocationEvent<T> {
 /// A [PropertyGetEvent] that's in the process of being recorded.
 class LivePropertyGetEvent<T> extends LiveInvocationEvent<T>
     implements PropertyGetEvent<T> {
-  /// Creates a new [LivePropertyGetEvent].
+  /// Creates a [LivePropertyGetEvent].
   LivePropertyGetEvent(
       Object object, this.property, T result, dynamic error, int timestamp)
       : super(object, result, error, timestamp);
@@ -158,7 +158,7 @@ class LivePropertyGetEvent<T> extends LiveInvocationEvent<T>
 /// A [PropertySetEvent] that's in the process of being recorded.
 class LivePropertySetEvent<T> extends LiveInvocationEvent<Null>
     implements PropertySetEvent<T> {
-  /// Creates a new [LivePropertySetEvent].
+  /// Creates a [LivePropertySetEvent].
   LivePropertySetEvent(
       Object object, this.property, this.value, dynamic error, int timestamp)
       : super(object, null, error, timestamp);
@@ -182,7 +182,7 @@ class LivePropertySetEvent<T> extends LiveInvocationEvent<Null>
 /// A [MethodEvent] that's in the process of being recorded.
 class LiveMethodEvent<T> extends LiveInvocationEvent<T>
     implements MethodEvent<T> {
-  /// Creates a new [LiveMethodEvent].
+  /// Creates a [LiveMethodEvent].
   LiveMethodEvent(
     Object object,
     this.method,
@@ -191,10 +191,8 @@ class LiveMethodEvent<T> extends LiveInvocationEvent<T>
     T result,
     dynamic error,
     int timestamp,
-  )   : this.positionalArguments =
-            new List<dynamic>.unmodifiable(positionalArguments),
-        this.namedArguments =
-            new Map<Symbol, dynamic>.unmodifiable(namedArguments),
+  )   : positionalArguments = List<dynamic>.unmodifiable(positionalArguments),
+        namedArguments = Map<Symbol, dynamic>.unmodifiable(namedArguments),
         super(object, result, error, timestamp);
 
   @override

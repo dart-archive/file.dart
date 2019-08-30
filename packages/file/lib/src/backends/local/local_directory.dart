@@ -12,7 +12,7 @@ import 'local_file_system_entity.dart';
 /// [Directory] implementation that forwards all calls to `dart:io`.
 class LocalDirectory extends LocalFileSystemEntity<LocalDirectory, io.Directory>
     with ForwardingDirectory<LocalDirectory>, common.DirectoryAddOnsMixin {
-  /// Instantiates a new [LocalDirectory] tied to the specified file system
+  /// Instantiates a [LocalDirectory] tied to the specified file system
   /// and delegating to the specified [delegate].
   LocalDirectory(FileSystem fs, io.Directory delegate) : super(fs, delegate);
 

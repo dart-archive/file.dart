@@ -13,7 +13,7 @@ import 'recording_file_system_entity.dart';
 /// [Link] implementation that records all invocation activity to its file
 /// system's recording.
 class RecordingLink extends RecordingFileSystemEntity<Link> implements Link {
-  /// Creates a new `RecordingLink`.
+  /// Creates a `RecordingLink`.
   RecordingLink(RecordingFileSystem fileSystem, io.Link delegate)
       : super(fileSystem, delegate) {
     methods.addAll(<Symbol, Function>{
@@ -29,7 +29,7 @@ class RecordingLink extends RecordingFileSystemEntity<Link> implements Link {
   @override
   Link wrap(Link delegate) => super.wrap(delegate) ?? wrapLink(delegate);
 
-  Future<Link> _create(String target, {bool recursive: false}) =>
+  Future<Link> _create(String target, {bool recursive = false}) =>
       delegate.create(target, recursive: recursive).then(wrap);
 
   Future<Link> _update(String target) => delegate.update(target).then(wrap);

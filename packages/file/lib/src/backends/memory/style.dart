@@ -23,7 +23,7 @@ abstract class FileSystemStyle {
   /// * The path separator is `/`
   ///
   /// An example path in this style is `/path/to/file`.
-  static const FileSystemStyle posix = const _Posix();
+  static const FileSystemStyle posix = _Posix();
 
   /// Mimics the Windows file system style.
   ///
@@ -32,7 +32,7 @@ abstract class FileSystemStyle {
   /// * The path separator is `\`
   ///
   /// An example path in this style is `C:\path\to\file`.
-  static const FileSystemStyle windows = const _Windows();
+  static const FileSystemStyle windows = _Windows();
 
   /// The drive upon which the root directory is mounted.
   ///
@@ -72,7 +72,7 @@ class _Posix extends FileSystemStyle {
 
   @override
   p.Context contextFor(String path) =>
-      new p.Context(style: p.Style.posix, current: path);
+      p.Context(style: p.Style.posix, current: path);
 }
 
 class _Windows extends FileSystemStyle {
@@ -88,7 +88,7 @@ class _Windows extends FileSystemStyle {
 
   @override
   p.Context contextFor(String path) =>
-      new p.Context(style: p.Style.windows, current: path);
+      p.Context(style: p.Style.windows, current: path);
 }
 
 /// A file system that supports different styles.

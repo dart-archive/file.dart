@@ -42,7 +42,7 @@ import 'replay_file_system.dart';
 ///
 /// ```dart
 /// typedef FileStat StatSync(String path);
-/// FileSystem fs = new RecordingFileSystem(delegate: delegate, destination: dir);
+/// FileSystem fs = RecordingFileSystem(delegate: delegate, destination: dir);
 ///
 /// StatSync method = fs.statSync;     // Will fail in checked-mode
 /// fs.statSync is StatSync            // Will return false
@@ -55,7 +55,7 @@ import 'replay_file_system.dart';
 /// See also:
 ///   - [ReplayFileSystem]
 abstract class RecordingFileSystem extends FileSystem {
-  /// Creates a new `RecordingFileSystem`.
+  /// Creates a `RecordingFileSystem`.
   ///
   /// Invocations will be recorded and forwarded to the specified [delegate]
   /// file system.
@@ -73,7 +73,7 @@ abstract class RecordingFileSystem extends FileSystem {
     @required Directory destination,
     Stopwatch stopwatch,
   }) =>
-      new RecordingFileSystemImpl(delegate, destination, stopwatch);
+      RecordingFileSystemImpl(delegate, destination, stopwatch);
 
   /// The file system to which invocations will be forwarded upon recording.
   FileSystem get delegate;
@@ -95,11 +95,11 @@ abstract class RecordingFileSystem extends FileSystem {
 class RecordingFileSystemImpl extends FileSystem
     with RecordingProxyMixin
     implements RecordingFileSystem {
-  /// Creates a new `RecordingFileSystemImpl`.
+  /// Creates a `RecordingFileSystemImpl`.
   RecordingFileSystemImpl(
       this.delegate, Directory destination, Stopwatch recordingStopwatch)
-      : recording = new MutableRecording(destination),
-        stopwatch = recordingStopwatch ?? new Stopwatch() {
+      : recording = MutableRecording(destination),
+        stopwatch = recordingStopwatch ?? Stopwatch() {
     if (recordingStopwatch == null) {
       // We instantiated our own stopwatch, so start it ourselves.
       stopwatch.start();
@@ -142,17 +142,17 @@ class RecordingFileSystemImpl extends FileSystem
   final Stopwatch stopwatch;
 
   Directory _directory(dynamic path) =>
-      new RecordingDirectory(this, delegate.directory(path));
+      RecordingDirectory(this, delegate.directory(path));
 
-  File _file(dynamic path) => new RecordingFile(this, delegate.file(path));
+  File _file(dynamic path) => RecordingFile(this, delegate.file(path));
 
-  Link _link(dynamic path) => new RecordingLink(this, delegate.link(path));
+  Link _link(dynamic path) => RecordingLink(this, delegate.link(path));
 
   Directory _getSystemTempDirectory() =>
-      new RecordingDirectory(this, delegate.systemTempDirectory);
+      RecordingDirectory(this, delegate.systemTempDirectory);
 
   Directory _getCurrentDirectory() =>
-      new RecordingDirectory(this, delegate.currentDirectory);
+      RecordingDirectory(this, delegate.currentDirectory);
 
   void _setCurrentDirectory(dynamic value) {
     delegate.currentDirectory = value;

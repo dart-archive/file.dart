@@ -4,14 +4,15 @@
 
 import 'dart:async';
 
-import 'file_system_entity.dart';
 import '../io.dart' as io;
+
+import 'file_system_entity.dart';
 
 /// A reference to a symbolic link on the file system.
 abstract class Link implements FileSystemEntity, io.Link {
   // Override method definitions to codify the return type covariance.
   @override
-  Future<Link> create(String target, {bool recursive: false});
+  Future<Link> create(String target, {bool recursive = false});
 
   @override
   Future<Link> update(String target);

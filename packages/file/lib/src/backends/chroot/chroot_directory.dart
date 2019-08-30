@@ -11,10 +11,10 @@ class _ChrootDirectory extends _ChrootFileSystemEntity<Directory, io.Directory>
   factory _ChrootDirectory.wrapped(
     ChrootFileSystem fs,
     Directory delegate, {
-    bool relative: false,
+    bool relative = false,
   }) {
     String localPath = fs._local(delegate.path, relative: relative);
-    return new _ChrootDirectory(fs, localPath);
+    return _ChrootDirectory(fs, localPath);
   }
 
   @override
@@ -24,7 +24,7 @@ class _ChrootDirectory extends _ChrootFileSystemEntity<Directory, io.Directory>
   io.Directory _rawDelegate(String path) => fileSystem.delegate.directory(path);
 
   @override
-  Uri get uri => new Uri.directory(path);
+  Uri get uri => Uri.directory(path);
 
   @override
   Future<Directory> rename(String newPath) async {
@@ -83,7 +83,7 @@ class _ChrootDirectory extends _ChrootFileSystemEntity<Directory, io.Directory>
   }
 
   @override
-  Directory get absolute => new _ChrootDirectory(fileSystem, _absolutePath);
+  Directory get absolute => _ChrootDirectory(fileSystem, _absolutePath);
 
   @override
   Directory get parent {
@@ -95,7 +95,7 @@ class _ChrootDirectory extends _ChrootFileSystemEntity<Directory, io.Directory>
   }
 
   @override
-  Future<Directory> create({bool recursive: false}) async {
+  Future<Directory> create({bool recursive = false}) async {
     if (_isLink) {
       switch (await fileSystem.type(path)) {
         case FileSystemEntityType.notFound:
@@ -106,7 +106,7 @@ class _ChrootDirectory extends _ChrootFileSystemEntity<Directory, io.Directory>
           // Nothing to do.
           return this;
         default:
-          throw new AssertionError();
+          throw AssertionError();
       }
     } else {
       return wrap(await delegate.create(recursive: recursive));
@@ -114,7 +114,7 @@ class _ChrootDirectory extends _ChrootFileSystemEntity<Directory, io.Directory>
   }
 
   @override
-  void createSync({bool recursive: false}) {
+  void createSync({bool recursive = false}) {
     if (_isLink) {
       switch (fileSystem.typeSync(path)) {
         case FileSystemEntityType.notFound:
@@ -125,7 +125,7 @@ class _ChrootDirectory extends _ChrootFileSystemEntity<Directory, io.Directory>
           // Nothing to do.
           return;
         default:
-          throw new AssertionError();
+          throw AssertionError();
       }
     } else {
       delegate.createSync(recursive: recursive);
@@ -134,8 +134,8 @@ class _ChrootDirectory extends _ChrootFileSystemEntity<Directory, io.Directory>
 
   @override
   Stream<FileSystemEntity> list({
-    bool recursive: false,
-    bool followLinks: true,
+    bool recursive = false,
+    bool followLinks = true,
   }) {
     Directory delegate = this.delegate;
     String dirname = delegate.path;
@@ -146,8 +146,8 @@ class _ChrootDirectory extends _ChrootFileSystemEntity<Directory, io.Directory>
 
   @override
   List<FileSystemEntity> listSync({
-    bool recursive: false,
-    bool followLinks: true,
+    bool recursive = false,
+    bool followLinks = true,
   }) {
     Directory delegate = this.delegate;
     String dirname = delegate.path;
@@ -162,13 +162,13 @@ class _ChrootDirectory extends _ChrootFileSystemEntity<Directory, io.Directory>
     String relativePart = ctx.relative(entity.path, from: dirname);
     String entityPath = ctx.join(path, relativePart);
     if (entity is io.File) {
-      return new _ChrootFile(fileSystem, entityPath);
+      return _ChrootFile(fileSystem, entityPath);
     } else if (entity is io.Directory) {
-      return new _ChrootDirectory(fileSystem, entityPath);
+      return _ChrootDirectory(fileSystem, entityPath);
     } else if (entity is io.Link) {
-      return new _ChrootLink(fileSystem, entityPath);
+      return _ChrootLink(fileSystem, entityPath);
     }
-    throw new FileSystemException('Unsupported type: $entity', entity.path);
+    throw FileSystemException('Unsupported type: $entity', entity.path);
   }
 
   @override

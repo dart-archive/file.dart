@@ -16,11 +16,11 @@ abstract class ForwardingFile
   ForwardingFile wrap(io.File delegate) => wrapFile(delegate);
 
   @override
-  Future<File> create({bool recursive: false}) async =>
+  Future<File> create({bool recursive = false}) async =>
       wrap(await delegate.create(recursive: recursive));
 
   @override
-  void createSync({bool recursive: false}) =>
+  void createSync({bool recursive = false}) =>
       delegate.createSync(recursive: recursive);
 
   @override
@@ -63,12 +63,12 @@ abstract class ForwardingFile
 
   @override
   Future<RandomAccessFile> open({
-    FileMode mode: FileMode.read,
+    FileMode mode = FileMode.read,
   }) async =>
       delegate.open(mode: mode);
 
   @override
-  RandomAccessFile openSync({FileMode mode: FileMode.read}) =>
+  RandomAccessFile openSync({FileMode mode = FileMode.read}) =>
       delegate.openSync(mode: mode);
 
   @override
@@ -79,8 +79,8 @@ abstract class ForwardingFile
 
   @override
   IOSink openWrite({
-    FileMode mode: FileMode.write,
-    Encoding encoding: utf8,
+    FileMode mode = FileMode.write,
+    Encoding encoding = utf8,
   }) =>
       delegate.openWrite(mode: mode, encoding: encoding);
 
@@ -95,26 +95,26 @@ abstract class ForwardingFile
   Uint8List readAsBytesSync() => Uint8List.fromList(delegate.readAsBytesSync());
 
   @override
-  Future<String> readAsString({Encoding encoding: utf8}) =>
+  Future<String> readAsString({Encoding encoding = utf8}) =>
       delegate.readAsString(encoding: encoding);
 
   @override
-  String readAsStringSync({Encoding encoding: utf8}) =>
+  String readAsStringSync({Encoding encoding = utf8}) =>
       delegate.readAsStringSync(encoding: encoding);
 
   @override
-  Future<List<String>> readAsLines({Encoding encoding: utf8}) =>
+  Future<List<String>> readAsLines({Encoding encoding = utf8}) =>
       delegate.readAsLines(encoding: encoding);
 
   @override
-  List<String> readAsLinesSync({Encoding encoding: utf8}) =>
+  List<String> readAsLinesSync({Encoding encoding = utf8}) =>
       delegate.readAsLinesSync(encoding: encoding);
 
   @override
   Future<File> writeAsBytes(
     List<int> bytes, {
-    FileMode mode: FileMode.write,
-    bool flush: false,
+    FileMode mode = FileMode.write,
+    bool flush = false,
   }) async =>
       wrap(await delegate.writeAsBytes(
         bytes,
@@ -125,17 +125,17 @@ abstract class ForwardingFile
   @override
   void writeAsBytesSync(
     List<int> bytes, {
-    FileMode mode: FileMode.write,
-    bool flush: false,
+    FileMode mode = FileMode.write,
+    bool flush = false,
   }) =>
       delegate.writeAsBytesSync(bytes, mode: mode, flush: flush);
 
   @override
   Future<File> writeAsString(
     String contents, {
-    FileMode mode: FileMode.write,
-    Encoding encoding: utf8,
-    bool flush: false,
+    FileMode mode = FileMode.write,
+    Encoding encoding = utf8,
+    bool flush = false,
   }) async =>
       wrap(await delegate.writeAsString(
         contents,
@@ -147,9 +147,9 @@ abstract class ForwardingFile
   @override
   void writeAsStringSync(
     String contents, {
-    FileMode mode: FileMode.write,
-    Encoding encoding: utf8,
-    bool flush: false,
+    FileMode mode = FileMode.write,
+    Encoding encoding = utf8,
+    bool flush = false,
   }) =>
       delegate.writeAsStringSync(
         contents,

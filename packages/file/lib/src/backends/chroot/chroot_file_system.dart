@@ -16,13 +16,13 @@ const String _parentDir = '..';
 /// ## Example use:
 /// ```dart
 /// // Create a "file system" where the root directory is /tmp/some-dir.
-/// var fs = new ChrootFileSystem(existingFileSystem, '/tmp/some-dir');
+/// var fs = ChrootFileSystem(existingFileSystem, '/tmp/some-dir');
 /// ```
 ///
 /// **Notes on usage**:
 ///
 /// * This file system maintains its _own_ [currentDirectory], distinct from
-///   that of the underlying file system, and new instances automatically start
+///   that of the underlying file system, and instances automatically start
 ///   at the root (i.e. `/`).
 ///
 /// * This file system does _not_ leverage any underlying OS system calls (such
@@ -35,6 +35,16 @@ const String _parentDir = '..';
 /// * This file system _necessarily_ carries certain performance overhead due
 ///   to the fact that symbolic links are resolved manually (not delegated).
 class ChrootFileSystem extends FileSystem {
+  /// Creates a file system backed by [root] path in [delegate] file system.
+  ///
+  /// **NOTE**: [root] must be a _canonicalized_ path; see [p.canonicalize].
+  ChrootFileSystem(this.delegate, this.root) {
+    if (root != delegate.path.canonicalize(root)) {
+      throw ArgumentError.value(root, 'root', 'Must be canonical path');
+    }
+    _cwd = _localRoot;
+  }
+
   /// Underlying file system.
   final FileSystem delegate;
 
@@ -46,32 +56,20 @@ class ChrootFileSystem extends FileSystem {
   /// Path to the synthetic current working directory in this file system.
   String _cwd;
 
-  /// Creates a new file system backed by [root] path in [delegate] file system.
-  ///
-  /// **NOTE**: [root] must be a _canonicalized_ path; see [p.canonicalize].
-  ChrootFileSystem(this.delegate, this.root) {
-    if (root != delegate.path.canonicalize(root)) {
-      throw new ArgumentError.value(root, 'root', 'Must be canonical path');
-    }
-    _cwd = _localRoot;
-  }
-
   /// Gets the root path, as seen by entities in this file system.
   String get _localRoot => delegate.path.rootPrefix(root);
 
   @override
-  Directory directory(dynamic path) =>
-      new _ChrootDirectory(this, getPath(path));
+  Directory directory(dynamic path) => _ChrootDirectory(this, getPath(path));
 
   @override
-  File file(dynamic path) => new _ChrootFile(this, getPath(path));
+  File file(dynamic path) => _ChrootFile(this, getPath(path));
 
   @override
-  Link link(dynamic path) => new _ChrootLink(this, getPath(path));
+  Link link(dynamic path) => _ChrootLink(this, getPath(path));
 
   @override
-  p.Context get path =>
-      new p.Context(style: delegate.path.style, current: _cwd);
+  p.Context get path => p.Context(style: delegate.path.style, current: _cwd);
 
   /// Gets the system temp directory. This directory will be created on-demand
   /// in the local root of the file system. Once created, its location is fixed
@@ -105,7 +103,7 @@ class ChrootFileSystem extends FileSystem {
     } else if (path is String) {
       value = path;
     } else {
-      throw new ArgumentError('Invalid type for "path": ${path?.runtimeType}');
+      throw ArgumentError('Invalid type for "path": ${path?.runtimeType}');
     }
 
     value = _resolve(value, notFound: _NotFoundBehavior.throwError);
@@ -130,7 +128,7 @@ class ChrootFileSystem extends FileSystem {
     try {
       path = _resolve(path);
     } on FileSystemException {
-      return new Future<FileStat>.value(const _NotFoundFileStat());
+      return Future<FileStat>.value(const _NotFoundFileStat());
     }
     return delegate.stat(_real(path, resolve: false));
   }
@@ -161,19 +159,18 @@ class ChrootFileSystem extends FileSystem {
   bool get isWatchSupported => false;
 
   @override
-  Future<FileSystemEntityType> type(String path, {bool followLinks: true}) {
+  Future<FileSystemEntityType> type(String path, {bool followLinks = true}) {
     String realPath;
     try {
       realPath = _real(path, followLinks: followLinks);
     } on FileSystemException {
-      return new Future<FileSystemEntityType>.value(
-          FileSystemEntityType.notFound);
+      return Future<FileSystemEntityType>.value(FileSystemEntityType.notFound);
     }
     return delegate.type(realPath, followLinks: false);
   }
 
   @override
-  FileSystemEntityType typeSync(String path, {bool followLinks: true}) {
+  FileSystemEntityType typeSync(String path, {bool followLinks = true}) {
     String realPath;
     try {
       realPath = _real(path, followLinks: followLinks);
@@ -193,17 +190,17 @@ class ChrootFileSystem extends FileSystem {
   /// return the path of the root of this file system.
   String _local(
     String realPath, {
-    bool relative: false,
-    bool keepInJail: false,
+    bool relative = false,
+    bool keepInJail = false,
   }) {
     assert(path.isAbsolute(realPath));
     if (!realPath.startsWith(root)) {
       if (keepInJail) {
         return _localRoot;
       }
-      throw new _ChrootJailException();
+      throw _ChrootJailException();
     }
-    // TODO: See if _context.relative() works here
+    // TODO(tvolkert): See if _context.relative() works here
     String result = realPath.substring(root.length);
     if (result.isEmpty) {
       result = _localRoot;
@@ -226,8 +223,8 @@ class ChrootFileSystem extends FileSystem {
   /// in the middle of the path will always be resolved).
   String _real(
     String localPath, {
-    bool resolve: true,
-    bool followLinks: false,
+    bool resolve = true,
+    bool followLinks = false,
   }) {
     if (resolve) {
       localPath = _resolve(localPath, followLinks: followLinks);
@@ -259,8 +256,8 @@ class ChrootFileSystem extends FileSystem {
   String _resolve(
     String path, {
     String from,
-    bool followLinks: true,
-    _NotFoundBehavior notFound: _NotFoundBehavior.allow,
+    bool followLinks = true,
+    _NotFoundBehavior notFound = _NotFoundBehavior.allow,
   }) {
     if (path.isEmpty) {
       throw common.noSuchFileOrDirectory(path);
@@ -280,7 +277,7 @@ class ChrootFileSystem extends FileSystem {
     }
 
     String getCurrentPath() => root + ctx.joinAll(ledger);
-    Set<String> breadcrumbs = new Set<String>();
+    Set<String> breadcrumbs = Set<String>();
     while (parts.isNotEmpty) {
       String segment = parts.removeAt(0);
       if (segment == _thisDir) {
@@ -346,7 +343,7 @@ class ChrootFileSystem extends FileSystem {
           }
           break;
         default:
-          throw new AssertionError();
+          throw AssertionError();
       }
     }
 

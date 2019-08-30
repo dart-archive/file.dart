@@ -16,7 +16,7 @@ import 'replay_proxy_mixin.dart';
 abstract class ReplayFileSystemEntity extends Object
     with ReplayProxyMixin
     implements FileSystemEntity {
-  /// Creates a new `ReplayFileSystemEntity`.
+  /// Creates a `ReplayFileSystemEntity`.
   ReplayFileSystemEntity(this.fileSystem, this.identifier) {
     Converter<List<Map<String, Object>>, List<FileSystemEvent>> toEvents =
         const ConvertElements<Map<String, Object>, FileSystemEvent>(
@@ -41,7 +41,7 @@ abstract class ReplayFileSystemEntity extends Object
       #path: const Passthrough<String>(),
       #uri: UriCodec.deserialize,
       #isAbsolute: const Passthrough<bool>(),
-      #parent: new ReviveDirectory(fileSystem),
+      #parent: ReviveDirectory(fileSystem),
       #basename: const Passthrough<String>(),
       #dirname: const Passthrough<String>(),
     });

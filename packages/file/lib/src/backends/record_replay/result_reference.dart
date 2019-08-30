@@ -25,7 +25,7 @@ import 'recording_proxy_mixin.dart';
 ///     [LiveRecording.flush]) will automatically serialize the reference's
 ///     [serializedValue].
 abstract class ResultReference<T> {
-  /// Creates a new `ResultReference`.
+  /// Creates a `ResultReference`.
   const ResultReference();
 
   /// The raw value to return to callers of the method or getter.
@@ -57,22 +57,27 @@ abstract class ResultReference<T> {
   /// completed. If [value] is a [Stream], this future will complete when the
   /// stream sends a "done" event. If value is neither a future nor a stream,
   /// this future will complete immediately.
-  Future<void> get complete => new Future<void>.value();
+  Future<void> get complete => Future<void>.value();
 }
 
 /// Wraps a future result.
 class FutureReference<T> extends ResultReference<Future<T>> {
+  /// Creates a `FutureReference` that wraps the specified [future].
+  FutureReference(Future<T> future) : _future = future;
+
   final Future<T> _future;
   T _value;
 
-  /// Creates a new `FutureReference` that wraps the specified [future].
-  FutureReference(Future<T> future) : _future = future;
+  bool get _isVoid => T == const _TypeLiteral<void>().type;
 
   /// The future value to return to callers of the method or getter.
   @override
   Future<T> get value {
     return _future.then(
       (T value) {
+        if (_isVoid && value != null) {
+          throw StateError('Unexpected value in $runtimeType: ${_future.runtimeType}');
+        }
         _value = value;
         return value;
       },
@@ -93,20 +98,20 @@ class FutureReference<T> extends ResultReference<Future<T>> {
   Future<void> get complete => value.catchError((dynamic _) {});
 }
 
+class _TypeLiteral<T> {
+  const _TypeLiteral();
+
+  Type get type => T;
+}
+
 /// Wraps a stream result.
 class StreamReference<T> extends ResultReference<Stream<T>> {
-  final Stream<T> _stream;
-  final StreamController<T> _controller;
-  final Completer<Null> _completer = new Completer<Null>();
-  final List<T> _data = <T>[];
-  StreamSubscription<T> _subscription;
-
-  /// Creates a new `StreamReference` that wraps the specified [stream].
+  /// Creates a `StreamReference` that wraps the specified [stream].
   StreamReference(Stream<T> stream)
       : _stream = stream,
         _controller = stream.isBroadcast
-            ? new StreamController<T>.broadcast()
-            : new StreamController<T>() {
+            ? StreamController<T>.broadcast()
+            : StreamController<T>() {
     _controller.onListen = () {
       assert(_subscription == null);
       _subscription = _listenToStream();
@@ -125,6 +130,12 @@ class StreamReference<T> extends ResultReference<Stream<T>> {
       _subscription.resume();
     };
   }
+
+  final Stream<T> _stream;
+  final StreamController<T> _controller;
+  final Completer<void> _completer = Completer<void>();
+  final List<T> _data = <T>[];
+  StreamSubscription<T> _subscription;
 
   StreamSubscription<T> _listenToStream() {
     return _stream.listen(
@@ -158,5 +169,5 @@ class StreamReference<T> extends ResultReference<Stream<T>> {
   List<T> get recordedValue => _data;
 
   @override
-  Future<Null> get complete => _completer.future.catchError((dynamic _) {});
+  Future<void> get complete => _completer.future.catchError((dynamic _) {});
 }

@@ -8,16 +8,16 @@ import 'common.dart';
 /// Error thrown during replay when there is no matching invocation in the
 /// recording.
 class NoMatchingInvocationError extends Error {
-  /// The invocation that was unable to be replayed.
-  final Invocation invocation;
-
-  /// Creates a new `NoMatchingInvocationError` caused by the failure to replay
+  /// Creates a `NoMatchingInvocationError` caused by the failure to replay
   /// the specified [invocation].
   NoMatchingInvocationError(this.invocation);
 
+  /// The invocation that was unable to be replayed.
+  final Invocation invocation;
+
   @override
   String toString() {
-    StringBuffer buf = new StringBuffer();
+    StringBuffer buf = StringBuffer();
     buf.write('No matching invocation found: ');
     buf.write(getSymbolName(invocation.memberName));
     if (invocation.isMethod) {

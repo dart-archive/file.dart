@@ -18,9 +18,9 @@ void main() {
     String cwd;
 
     setUp(() {
-      fs = new LocalFileSystem();
+      fs = const LocalFileSystem();
       tmp = io.Directory.systemTemp.createTempSync('file_test_');
-      tmp = new io.Directory(tmp.resolveSymbolicLinksSync());
+      tmp = io.Directory(tmp.resolveSymbolicLinksSync());
       cwd = io.Directory.current.path;
       io.Directory.current = tmp;
     });
@@ -135,7 +135,9 @@ void main() {
 
         // https://github.com/dart-lang/sdk/issues/28277
         'Link > rename > throwsIfDestinationExistsAsFile',
-      ]..addAll(skipOnPlatform[io.Platform.operatingSystem] ?? <String>[]),
+
+        ...skipOnPlatform[io.Platform.operatingSystem] ?? <String>[],
+      ],
     );
 
     group('toString', () {

@@ -17,28 +17,28 @@ import 'local_link.dart';
 /// Since this implementation of the [FileSystem] interface delegates to
 /// `dart:io`, is is not suitable for use in the browser.
 class LocalFileSystem extends FileSystem {
-  /// Creates a new `LocalFileSystem`.
+  /// Creates a `LocalFileSystem`.
   const LocalFileSystem();
 
   @override
   Directory directory(dynamic path) =>
-      new LocalDirectory(this, new io.Directory(getPath(path)));
+      LocalDirectory(this, io.Directory(getPath(path)));
 
   @override
-  File file(dynamic path) => new LocalFile(this, new io.File(getPath(path)));
+  File file(dynamic path) => LocalFile(this, io.File(getPath(path)));
 
   @override
-  Link link(dynamic path) => new LocalLink(this, new io.Link(getPath(path)));
+  Link link(dynamic path) => LocalLink(this, io.Link(getPath(path)));
 
   @override
-  p.Context get path => new p.Context();
+  p.Context get path => p.Context();
 
   /// Gets the directory provided by the operating system for creating temporary
   /// files and directories in. The location of the system temp directory is
   /// platform-dependent, and may be set by an environment variable.
   @override
   Directory get systemTempDirectory =>
-      new LocalDirectory(this, io.Directory.systemTemp);
+      LocalDirectory(this, io.Directory.systemTemp);
 
   @override
   Directory get currentDirectory => directory(io.Directory.current.path);
@@ -64,10 +64,11 @@ class LocalFileSystem extends FileSystem {
   bool get isWatchSupported => io.FileSystemEntity.isWatchSupported;
 
   @override
-  Future<io.FileSystemEntityType> type(String path, {bool followLinks: true}) =>
+  Future<io.FileSystemEntityType> type(String path,
+          {bool followLinks = true}) =>
       io.FileSystemEntity.type(path, followLinks: followLinks);
 
   @override
-  io.FileSystemEntityType typeSync(String path, {bool followLinks: true}) =>
+  io.FileSystemEntityType typeSync(String path, {bool followLinks = true}) =>
       io.FileSystemEntity.typeSync(path, followLinks: followLinks);
 }

@@ -15,13 +15,13 @@ import 'replay_file_system_entity.dart';
 /// [File] implementation that replays all invocation activity from a prior
 /// recording.
 class ReplayFile extends ReplayFileSystemEntity implements File {
-  /// Creates a new `ReplayFile`.
+  /// Creates a `ReplayFile`.
   ReplayFile(ReplayFileSystemImpl fileSystem, String identifier)
       : super(fileSystem, identifier) {
-    Converter<String, File> reviveFile = new ReviveFile(fileSystem);
+    Converter<String, File> reviveFile = ReviveFile(fileSystem);
     Converter<String, Future<File>> reviveFileAsFuture =
         reviveFile.fuse(const ToFuture<File>());
-    Converter<String, Uint8List> blobToBytes = new BlobToBytes(fileSystem);
+    Converter<String, Uint8List> blobToBytes = BlobToBytes(fileSystem);
     Converter<String, Future<Uint8List>> blobToBytesFuture =
         blobToBytes.fuse(const ToFuture<Uint8List>());
     Converter<String, String> blobToString =
@@ -29,7 +29,7 @@ class ReplayFile extends ReplayFileSystemEntity implements File {
     Converter<String, Future<String>> blobToStringFuture =
         blobToString.fuse(const ToFuture<String>());
     Converter<String, RandomAccessFile> reviveRandomAccessFile =
-        new ReviveRandomAccessFile(fileSystem);
+        ReviveRandomAccessFile(fileSystem);
     Converter<String, Future<RandomAccessFile>> reviveRandomAccessFileFuture =
         reviveRandomAccessFile.fuse(const ToFuture<RandomAccessFile>());
     Converter<String, List<String>> lineSplitter =
@@ -65,7 +65,7 @@ class ReplayFile extends ReplayFileSystemEntity implements File {
       #open: reviveRandomAccessFileFuture,
       #openSync: reviveRandomAccessFile,
       #openRead: blobToByteStream,
-      #openWrite: new ReviveIOSink(fileSystem),
+      #openWrite: ReviveIOSink(fileSystem),
       #readAsBytes: blobToBytesFuture,
       #readAsBytesSync: blobToBytes,
       #readAsString: blobToStringFuture,

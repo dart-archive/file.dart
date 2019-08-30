@@ -15,22 +15,22 @@ abstract class ForwardingFileSystemEntity<T extends FileSystemEntity,
   @protected
   D get delegate;
 
-  /// Creates a new entity with the same file system and same type as this
+  /// Creates a entity with the same file system and same type as this
   /// entity but backed by the specified delegate.
   @protected
   T wrap(D delegate);
 
-  /// Creates a new directory with the same file system as this entity and
+  /// Creates a directory with the same file system as this entity and
   /// backed by the specified delegate.
   @protected
   Directory wrapDirectory(io.Directory delegate);
 
-  /// Creates a new file with the same file system as this entity and
+  /// Creates a file with the same file system as this entity and
   /// backed by the specified delegate.
   @protected
   File wrapFile(io.File delegate);
 
-  /// Creates a new link with the same file system as this entity and
+  /// Creates a link with the same file system as this entity and
   /// backed by the specified delegate.
   @protected
   Link wrapLink(io.Link delegate);
@@ -64,17 +64,17 @@ abstract class ForwardingFileSystemEntity<T extends FileSystemEntity,
   io.FileStat statSync() => delegate.statSync();
 
   @override
-  Future<T> delete({bool recursive: false}) async =>
+  Future<T> delete({bool recursive = false}) async =>
       wrap(await delegate.delete(recursive: recursive) as D);
 
   @override
-  void deleteSync({bool recursive: false}) =>
+  void deleteSync({bool recursive = false}) =>
       delegate.deleteSync(recursive: recursive);
 
   @override
   Stream<FileSystemEvent> watch({
-    int events: FileSystemEvent.all,
-    bool recursive: false,
+    int events = FileSystemEvent.all,
+    bool recursive = false,
   }) =>
       delegate.watch(events: events, recursive: recursive);
 

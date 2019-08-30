@@ -7,11 +7,12 @@ import 'dart:async';
 import 'package:meta/meta.dart';
 import 'package:path/path.dart' as p;
 
+import '../io.dart' as io;
+
 import 'directory.dart';
 import 'file.dart';
 import 'file_system_entity.dart';
 import 'link.dart';
-import '../io.dart' as io;
 
 /// A generic representation of a file system.
 ///
@@ -20,7 +21,7 @@ import '../io.dart' as io;
 /// dependence on the library (and the associated implications of using that
 /// implementation in the browser).
 abstract class FileSystem {
-  /// Creates a new `FileSystem`.
+  /// Creates a `FileSystem`.
   const FileSystem();
 
   /// Returns a reference to a [Directory] at [path].
@@ -52,7 +53,7 @@ abstract class FileSystem {
 
   /// Sets the current working directory to the specified [path].
   ///
-  /// The new value set can be either a [Directory] or a [String].
+  /// The value set can be either a [Directory] or a [String].
   ///
   /// Relative paths will be resolved by the underlying file system
   /// implementation (meaning it is up to the underlying implementation to
@@ -60,15 +61,15 @@ abstract class FileSystem {
   set currentDirectory(dynamic path);
 
   /// Asynchronously calls the operating system's stat() function on [path].
-  /// Returns a Future which completes with a [FileStat] object containing
+  /// Returns a Future which completes with a [io.FileStat] object containing
   /// the data returned by stat().
-  /// If the call fails, completes the future with a [FileStat] object with
+  /// If the call fails, completes the future with a [io.FileStat] object with
   /// .type set to FileSystemEntityType.NOT_FOUND and the other fields invalid.
   Future<io.FileStat> stat(String path);
 
   /// Calls the operating system's stat() function on [path].
-  /// Returns a [FileStat] object containing the data returned by stat().
-  /// If the call fails, returns a [FileStat] object with .type set to
+  /// Returns a [io.FileStat] object containing the data returned by stat().
+  /// If the call fails, returns a [io.FileStat] object with .type set to
   /// FileSystemEntityType.NOT_FOUND and the other fields invalid.
   io.FileStat statSync(String path);
 
@@ -107,17 +108,17 @@ abstract class FileSystem {
   ///
   /// If the [path] does not point to a file system object or an error occurs
   /// then [io.FileSystemEntityType.NOT_FOUND] is returned.
-  Future<io.FileSystemEntityType> type(String path, {bool followLinks: true});
+  Future<io.FileSystemEntityType> type(String path, {bool followLinks = true});
 
   /// Syncronously finds the type of file system object that a [path] points
-  /// to. Returns a [FileSystemEntityType].
+  /// to. Returns a [io.FileSystemEntityType].
   ///
   /// [io.FileSystemEntityType.LINK] will only be returned if [followLinks] is
   /// `false`, and [path] points to a link
   ///
   /// If the [path] does not point to a file system object or an error occurs
   /// then [io.FileSystemEntityType.NOT_FOUND] is returned.
-  io.FileSystemEntityType typeSync(String path, {bool followLinks: true});
+  io.FileSystemEntityType typeSync(String path, {bool followLinks = true});
 
   /// Checks if [`type(path)`](type) returns [io.FileSystemEntityType.FILE].
   Future<bool> isFile(String path) async =>
@@ -158,7 +159,7 @@ abstract class FileSystem {
     } else if (path is Uri) {
       return this.path.fromUri(path);
     } else {
-      throw new ArgumentError('Invalid type for "path": ${path?.runtimeType}');
+      throw ArgumentError('Invalid type for "path": ${path?.runtimeType}');
     }
   }
 }

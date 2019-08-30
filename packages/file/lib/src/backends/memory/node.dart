@@ -29,7 +29,7 @@ import 'style.dart';
 ///
 /// [finalSegment] is the index of the final segment that will be walked by
 /// [NodeBasedFileSystem.findNode].
-typedef Node SegmentVisitor(
+typedef SegmentVisitor = Node Function(
   DirectoryNode parent,
   String childName,
   Node childNode,
@@ -79,9 +79,9 @@ abstract class NodeBasedFileSystem implements StyleableFileSystem {
     String path, {
     Node reference,
     SegmentVisitor segmentVisitor,
-    bool visitLinks: false,
+    bool visitLinks = false,
     List<String> pathWithSymlinks,
-    bool followTailLink: false,
+    bool followTailLink = false,
   });
 }
 
@@ -92,14 +92,14 @@ abstract class NodeBasedFileSystem implements StyleableFileSystem {
 /// This data structure is loosely based on a Unix-style file system inode
 /// (hence the name).
 abstract class Node {
-  DirectoryNode _parent;
-
-  /// Constructs a new [Node] as a child of the specified parent.
+  /// Constructs a [Node] as a child of the specified parent.
   Node(this._parent) {
     if (_parent == null && !isRoot) {
-      throw new io.FileSystemException('All nodes must have a parent.');
+      throw const io.FileSystemException('All nodes must have a parent.');
     }
   }
+
+  DirectoryNode _parent;
 
   /// Gets the directory that holds this node.
   DirectoryNode get parent => _parent;
@@ -110,7 +110,7 @@ abstract class Node {
     DirectoryNode ancestor = parent;
     while (!ancestor.isRoot) {
       if (ancestor == this) {
-        throw new io.FileSystemException(
+        throw const io.FileSystemException(
             'A directory cannot be its own ancestor.');
       }
       ancestor = ancestor.parent;
@@ -140,6 +140,14 @@ abstract class Node {
 /// substance (namely, node types that will not redirect to other types when
 /// you call [stat] on them).
 abstract class RealNode extends Node {
+  /// Constructs a [RealNode] as a child of the specified [parent].
+  RealNode(DirectoryNode parent) : super(parent) {
+    int now = DateTime.now().millisecondsSinceEpoch;
+    changed = now;
+    modified = now;
+    accessed = now;
+  }
+
   /// Last changed time in milliseconds since the Epoch.
   int changed;
 
@@ -152,20 +160,12 @@ abstract class RealNode extends Node {
   /// Bitmask representing the file read/write/execute mode.
   int mode = 0x777;
 
-  /// Constructs a new [RealNode] as a child of the specified [parent].
-  RealNode(DirectoryNode parent) : super(parent) {
-    int now = new DateTime.now().millisecondsSinceEpoch;
-    changed = now;
-    modified = now;
-    accessed = now;
-  }
-
   @override
   io.FileStat get stat {
-    return new MemoryFileStat(
-      new DateTime.fromMillisecondsSinceEpoch(changed),
-      new DateTime.fromMillisecondsSinceEpoch(modified),
-      new DateTime.fromMillisecondsSinceEpoch(accessed),
+    return MemoryFileStat(
+      DateTime.fromMillisecondsSinceEpoch(changed),
+      DateTime.fromMillisecondsSinceEpoch(modified),
+      DateTime.fromMillisecondsSinceEpoch(accessed),
       type,
       mode,
       size,
@@ -177,17 +177,17 @@ abstract class RealNode extends Node {
 
   /// Updates the last modified time of the node.
   void touch() {
-    modified = new DateTime.now().millisecondsSinceEpoch;
+    modified = DateTime.now().millisecondsSinceEpoch;
   }
 }
 
 /// Class that represents the backing for an in-memory directory.
 class DirectoryNode extends RealNode {
+  /// Constructs a [DirectoryNode] as a child of the specified [parent].
+  DirectoryNode(DirectoryNode parent) : super(parent);
+
   /// Child nodes, indexed by their basename.
   final Map<String, Node> children = <String, Node>{};
-
-  /// Constructs a new [DirectoryNode] as a child of the specified [parent].
-  DirectoryNode(DirectoryNode parent) : super(parent);
 
   @override
   io.FileSystemEntityType get type => io.FileSystemEntityType.directory;
@@ -201,11 +201,11 @@ class DirectoryNode extends RealNode {
 
 /// Class that represents the backing for the root of the in-memory file system.
 class RootNode extends DirectoryNode {
-  /// Constructs a new [RootNode] tied to the specified file system.
-  RootNode(this.fs) : super(null) {
-    assert(fs != null);
-    assert(fs.root == null);
-  }
+  /// Constructs a [RootNode] tied to the specified file system.
+  RootNode(this.fs)
+      : assert(fs != null),
+        assert(fs.root == null),
+        super(null);
 
   @override
   final NodeBasedFileSystem fs;
@@ -217,18 +217,18 @@ class RootNode extends DirectoryNode {
   bool get isRoot => true;
 
   @override
-  set parent(DirectoryNode parent) => throw new UnsupportedError(
-      'Cannot set the parent of the root directory.');
+  set parent(DirectoryNode parent) =>
+      throw UnsupportedError('Cannot set the parent of the root directory.');
 }
 
 /// Class that represents the backing for an in-memory regular file.
 class FileNode extends RealNode {
+  /// Constructs a [FileNode] as a child of the specified [parent].
+  FileNode(DirectoryNode parent) : super(parent);
+
   /// File contents in bytes.
   Uint8List get content => _content;
   Uint8List _content = Uint8List(0);
-
-  /// Constructs a new [FileNode] as a child of the specified [parent].
-  FileNode(DirectoryNode parent) : super(parent);
 
   @override
   io.FileSystemEntityType get type => io.FileSystemEntityType.file;
@@ -253,7 +253,7 @@ class FileNode extends RealNode {
   /// fields will be reset as opposed to copied to indicate that this file
   /// has been modified and changed.
   void copyFrom(FileNode source) {
-    modified = changed = new DateTime.now().millisecondsSinceEpoch;
+    modified = changed = DateTime.now().millisecondsSinceEpoch;
     accessed = source.accessed;
     mode = source.mode;
     _content = Uint8List.fromList(source.content);
@@ -262,17 +262,17 @@ class FileNode extends RealNode {
 
 /// Class that represents the backing for an in-memory symbolic link.
 class LinkNode extends Node {
+  /// Constructs a [LinkNode] as a child of the specified [parent] and
+  /// linking to the specified [target] path.
+  LinkNode(DirectoryNode parent, this.target)
+      : assert(target != null && target.isNotEmpty),
+        super(parent);
+
   /// The path to which this link points.
   String target;
 
   /// A marker used to detect circular link references.
   bool _reentrant = false;
-
-  /// Constructs a new [LinkNode] as a child of the specified [parent] and
-  /// linking to the specified [target] path.
-  LinkNode(DirectoryNode parent, this.target) : super(parent) {
-    assert(target != null && target.isNotEmpty);
-  }
 
   /// Gets the node backing for this link's target. Throws a
   /// [FileSystemException] if this link references a non-existent file

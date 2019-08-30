@@ -54,5 +54,5 @@ abstract class LiveRecording extends Recording {
   ///
   /// Returns a future that completes once the recording has been fully written
   /// to disk.
-  Future<Null> flush({Duration pendingResultTimeout});
+  Future<void> flush({Duration pendingResultTimeout});
 }

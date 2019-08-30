@@ -5,7 +5,7 @@
 import 'package:file/src/common.dart' as common;
 
 /// Generates a path to use in error messages.
-typedef dynamic PathGenerator();
+typedef PathGenerator = dynamic Function();
 
 /// Throws a `FileSystemException` if [object] is null.
 void checkExists(Object object, PathGenerator path) {

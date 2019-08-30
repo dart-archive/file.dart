@@ -17,14 +17,7 @@ import 'recording_proxy_mixin.dart';
 class RecordingRandomAccessFile extends Object
     with RecordingProxyMixin
     implements RandomAccessFile {
-  /// The file system that owns this random access file.
-  final RecordingFileSystem fileSystem;
-
-  /// The random access file to which this random access file delegates its
-  /// functionality while recording.
-  final RandomAccessFile delegate;
-
-  /// Creates a new `RecordingRandomAccessFile`.
+  /// Creates a `RecordingRandomAccessFile`.
   RecordingRandomAccessFile(this.fileSystem, this.delegate) {
     methods.addAll(<Symbol, Function>{
       #close: _close,
@@ -62,6 +55,13 @@ class RecordingRandomAccessFile extends Object
     });
   }
 
+  /// The file system that owns this random access file.
+  final RecordingFileSystem fileSystem;
+
+  /// The random access file to which this random access file delegates its
+  /// functionality while recording.
+  final RandomAccessFile delegate;
+
   /// A unique entity id.
   final int uid = newUid();
 
@@ -75,7 +75,7 @@ class RecordingRandomAccessFile extends Object
   Stopwatch get stopwatch => fileSystem.stopwatch;
 
   RandomAccessFile _wrap(RandomAccessFile raw) =>
-      raw == delegate ? this : new RecordingRandomAccessFile(fileSystem, raw);
+      raw == delegate ? this : RecordingRandomAccessFile(fileSystem, raw);
 
   Future<void> _close() => delegate.close();
 
@@ -87,7 +87,7 @@ class RecordingRandomAccessFile extends Object
       delegate.writeFrom(buffer, start, end).then(_wrap);
 
   Future<RandomAccessFile> _writeString(String string,
-          {Encoding encoding: utf8}) =>
+          {Encoding encoding = utf8}) =>
       delegate.writeString(string, encoding: encoding).then(_wrap);
 
   Future<RandomAccessFile> _setPosition(int position) =>

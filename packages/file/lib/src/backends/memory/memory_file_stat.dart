@@ -6,9 +6,26 @@ import 'package:file/src/io.dart' as io;
 
 /// Internal implementation of [io.FileStat].
 class MemoryFileStat implements io.FileStat {
+  /// Creates a [MemoryFileStat] with the specified properties.
+  const MemoryFileStat(
+    this.changed,
+    this.modified,
+    this.accessed,
+    this.type,
+    this.mode,
+    this.size,
+  );
+
+  const MemoryFileStat._internalNotFound()
+      : changed = null,
+        modified = null,
+        accessed = null,
+        type = io.FileSystemEntityType.notFound,
+        mode = 0,
+        size = -1;
+
   /// Shared instance representing a non-existent entity.
-  static const MemoryFileStat notFound =
-      const MemoryFileStat._internalNotFound();
+  static const MemoryFileStat notFound = MemoryFileStat._internalNotFound();
 
   @override
   final DateTime changed;
@@ -27,24 +44,6 @@ class MemoryFileStat implements io.FileStat {
 
   @override
   final int size;
-
-  /// Creates a new [MemoryFileStat] with the specified properties.
-  const MemoryFileStat(
-    this.changed,
-    this.modified,
-    this.accessed,
-    this.type,
-    this.mode,
-    this.size,
-  );
-
-  const MemoryFileStat._internalNotFound()
-      : changed = null,
-        modified = null,
-        accessed = null,
-        type = io.FileSystemEntityType.notFound,
-        mode = 0,
-        size = -1;
 
   @override
   String modeString() {

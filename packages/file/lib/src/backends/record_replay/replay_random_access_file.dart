@@ -17,13 +17,11 @@ import 'replay_proxy_mixin.dart';
 class ReplayRandomAccessFile extends Object
     with ReplayProxyMixin
     implements RandomAccessFile {
-  final ReplayFileSystemImpl _fileSystem;
-
-  /// Creates a new [ReplayRandomAccessFile].
+  /// Creates a [ReplayRandomAccessFile].
   ReplayRandomAccessFile(this._fileSystem, this.identifier) {
     ToFuture<RandomAccessFile> toFuture = const ToFuture<RandomAccessFile>();
     Converter<String, Future<RandomAccessFile>> reviveRandomAccessFileAsFuture =
-        new ReviveRandomAccessFile(_fileSystem).fuse(toFuture);
+        ReviveRandomAccessFile(_fileSystem).fuse(toFuture);
 
     methods.addAll(<Symbol, Converter<dynamic, dynamic>>{
       #close: reviveRandomAccessFileAsFuture,
@@ -60,6 +58,8 @@ class ReplayRandomAccessFile extends Object
       #path: const Passthrough<String>(),
     });
   }
+
+  final ReplayFileSystemImpl _fileSystem;
 
   @override
   final String identifier;

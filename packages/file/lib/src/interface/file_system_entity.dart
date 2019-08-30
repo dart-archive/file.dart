@@ -4,11 +4,12 @@
 
 import 'dart:async';
 
-import 'directory.dart';
-import 'file_system.dart';
 import '../io.dart' as io;
 
-/// The common super class for [File], [Directory], and [Link] objects.
+import 'directory.dart';
+import 'file_system.dart';
+
+/// The common super class for [io.File], [io.Directory], and [io.Link] objects.
 abstract class FileSystemEntity implements io.FileSystemEntity {
   /// Returns the file system responsible for this entity.
   FileSystem get fileSystem;
@@ -36,7 +37,7 @@ abstract class FileSystemEntity implements io.FileSystemEntity {
 
   // Override method definitions to codify the return type covariance.
   @override
-  Future<FileSystemEntity> delete({bool recursive: false});
+  Future<FileSystemEntity> delete({bool recursive = false});
 
   @override
   Directory get parent;

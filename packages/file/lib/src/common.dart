@@ -47,7 +47,7 @@ FileSystemException badFileDescriptor(String path) {
 }
 
 FileSystemException _fsException(String path, String msg, int errorCode) {
-  return new FileSystemException(msg, path, new OSError(msg, errorCode));
+  return FileSystemException(msg, path, OSError(msg, errorCode));
 }
 
 /// Mixin containing implementations of [Directory] methods that are common

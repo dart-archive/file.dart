@@ -21,19 +21,19 @@ void main() {
     LiveRecording recording;
 
     setUp(() {
-      memoryFileSystem = new MemoryFileSystem();
-      recordingFileSystem = new RecordingFileSystem(
+      memoryFileSystem = MemoryFileSystem();
+      recordingFileSystem = RecordingFileSystem(
         delegate: memoryFileSystem,
-        destination: new MemoryFileSystem().directory('/tmp')..createSync(),
+        destination: MemoryFileSystem().directory('/tmp')..createSync(),
       );
       recording = recordingFileSystem.recording;
     });
 
-    /// Creates a new [ReplayFileSystem] that will replay a recording of the
+    /// Creates a [ReplayFileSystem] that will replay a recording of the
     /// events that have been recorded within [recordingFileSystem] thus far.
     Future<ReplayFileSystem> replay() async {
       await recording.flush();
-      return new ReplayFileSystem(recording: recording.destination);
+      return ReplayFileSystem(recording: recording.destination);
     }
 
     runCommonTests(
@@ -204,4 +204,4 @@ void main() {
 }
 
 /// Successfully matches against an instance of [Future].
-const Matcher isFuture = const TypeMatcher<Future<dynamic>>();
+const Matcher isFuture = TypeMatcher<Future<dynamic>>();

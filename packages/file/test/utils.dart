@@ -10,8 +10,8 @@ import 'package:test/test.dart';
 ///
 /// If [time] is not specified, it will default to the current time.
 DateTime floor([DateTime time]) {
-  time ??= new DateTime.now();
-  return time.subtract(new Duration(
+  time ??= DateTime.now();
+  return time.subtract(Duration(
     milliseconds: time.millisecond,
     microseconds: time.microsecond,
   ));
@@ -23,28 +23,28 @@ DateTime floor([DateTime time]) {
 ///
 /// If [time] is not specified, it will default to the current time.
 DateTime ceil([DateTime time]) {
-  time ??= new DateTime.now();
+  time ??= DateTime.now();
   int microseconds = (1000 * time.millisecond) + time.microsecond;
-  return time.add(new Duration(microseconds: 1000000 - microseconds));
+  return time.add(Duration(microseconds: 1000000 - microseconds));
 }
 
 /// Successfully matches against a [DateTime] that is the same moment or before
 /// the specified [time].
-Matcher isSameOrBefore(DateTime time) => new _IsSameOrBefore(time);
+Matcher isSameOrBefore(DateTime time) => _IsSameOrBefore(time);
 
 /// Successfully matches against a [DateTime] that is the same moment or after
 /// the specified [time].
-Matcher isSameOrAfter(DateTime time) => new _IsSameOrAfter(time);
+Matcher isSameOrAfter(DateTime time) => _IsSameOrAfter(time);
 
 /// Successfully matches against a [DateTime] that is after the specified
 /// [time].
-Matcher isAfter(DateTime time) => new _IsAfter(time);
+Matcher isAfter(DateTime time) => _IsAfter(time);
 
 abstract class _CompareDateTime extends Matcher {
+  const _CompareDateTime(this._time, this._matcher);
+
   final DateTime _time;
   final Matcher _matcher;
-
-  const _CompareDateTime(this._time, this._matcher);
 
   @override
   bool matches(dynamic item, Map<dynamic, dynamic> matchState) {

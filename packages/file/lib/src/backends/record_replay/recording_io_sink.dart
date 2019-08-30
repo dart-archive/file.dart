@@ -16,13 +16,7 @@ import 'recording_proxy_mixin.dart';
 class RecordingIOSink extends Object
     with RecordingProxyMixin
     implements IOSink {
-  /// The file system that owns this sink.
-  final RecordingFileSystem fileSystem;
-
-  /// The sink to which this sink delegates its functionality while recording.
-  final IOSink delegate;
-
-  /// Creates a new `RecordingIOSink`.
+  /// Creates a `RecordingIOSink`.
   RecordingIOSink(this.fileSystem, this.delegate) {
     methods.addAll(<Symbol, Function>{
       #add: delegate.add,
@@ -42,6 +36,12 @@ class RecordingIOSink extends Object
       #done: () => delegate.done,
     });
   }
+
+  /// The file system that owns this sink.
+  final RecordingFileSystem fileSystem;
+
+  /// The sink to which this sink delegates its functionality while recording.
+  final IOSink delegate;
 
   /// A unique entity id.
   final int uid = newUid();

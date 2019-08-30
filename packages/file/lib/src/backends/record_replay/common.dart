@@ -92,8 +92,15 @@ class TypeMatcher<T> {
   /// Creates a type matcher for the given type parameter.
   const TypeMatcher();
 
+  static const TypeMatcher<void> _void = TypeMatcher<void>();
+
+  /// This matcher's type, `T`.
+  Type get type => T;
+
   /// Returns `true` if the given object is of type `T`.
-  bool matches(dynamic object) => object is T;
+  bool matches(dynamic object) {
+    return T == _void.type ? object == T : object is T;
+  }
 }
 
 /// Marks a class that, when serialized, will be referred to merely by an

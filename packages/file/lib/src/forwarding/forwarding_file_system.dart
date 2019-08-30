@@ -11,13 +11,13 @@ import 'package:path/path.dart' as p;
 
 /// A file system that forwards all methods and properties to a delegate.
 abstract class ForwardingFileSystem extends FileSystem {
+  /// Creates a [ForwardingFileSystem] that forwards all methods and
+  /// properties to the specified [delegate].
+  ForwardingFileSystem(this.delegate);
+
   /// The file system to which this file system will forward all activity.
   @protected
   final FileSystem delegate;
-
-  /// Creates a new [ForwardingFileSystem] that forwards all methods and
-  /// properties to the specified [delegate].
-  ForwardingFileSystem(this.delegate);
 
   @override
   Directory directory(dynamic path) => delegate.directory(path);
@@ -58,10 +58,11 @@ abstract class ForwardingFileSystem extends FileSystem {
   bool get isWatchSupported => delegate.isWatchSupported;
 
   @override
-  Future<io.FileSystemEntityType> type(String path, {bool followLinks: true}) =>
+  Future<io.FileSystemEntityType> type(String path,
+          {bool followLinks = true}) =>
       delegate.type(path, followLinks: followLinks);
 
   @override
-  io.FileSystemEntityType typeSync(String path, {bool followLinks: true}) =>
+  io.FileSystemEntityType typeSync(String path, {bool followLinks = true}) =>
       delegate.typeSync(path, followLinks: followLinks);
 }
