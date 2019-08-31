@@ -21,7 +21,7 @@ import 'link.dart';
 /// dependence on the library (and the associated implications of using that
 /// implementation in the browser).
 abstract class FileSystem {
-  /// Creates a `FileSystem`.
+  /// Creates a new `FileSystem`.
   const FileSystem();
 
   /// Returns a reference to a [Directory] at [path].

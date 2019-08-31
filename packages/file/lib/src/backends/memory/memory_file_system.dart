@@ -30,7 +30,7 @@ const String _parentDir = '..';
 /// any `dart:io` APIs; it merely uses the library's enum values and interfaces.
 /// As such, it is suitable for use in the browser.
 abstract class MemoryFileSystem implements StyleableFileSystem {
-  /// Creates a `MemoryFileSystem`.
+  /// Creates a new `MemoryFileSystem`.
   ///
   /// The file system will be empty, and the current directory will be the
   /// root directory.

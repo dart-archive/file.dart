@@ -14,7 +14,7 @@ import 'recording_file_system_entity.dart';
 /// system's recording.
 class RecordingDirectory extends RecordingFileSystemEntity<Directory>
     implements Directory {
-  /// Creates a `RecordingDirectory`.
+  /// Creates a new `RecordingDirectory`.
   RecordingDirectory(RecordingFileSystem fileSystem, io.Directory delegate)
       : super(fileSystem, delegate) {
     methods.addAll(<Symbol, Function>{

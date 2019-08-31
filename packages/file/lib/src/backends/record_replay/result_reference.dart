@@ -25,7 +25,7 @@ import 'recording_proxy_mixin.dart';
 ///     [LiveRecording.flush]) will automatically serialize the reference's
 ///     [serializedValue].
 abstract class ResultReference<T> {
-  /// Creates a `ResultReference`.
+  /// Creates a new `ResultReference`.
   const ResultReference();
 
   /// The raw value to return to callers of the method or getter.

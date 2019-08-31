@@ -17,7 +17,7 @@ import 'recording_proxy_mixin.dart';
 class RecordingRandomAccessFile extends Object
     with RecordingProxyMixin
     implements RandomAccessFile {
-  /// Creates a `RecordingRandomAccessFile`.
+  /// Creates a new `RecordingRandomAccessFile`.
   RecordingRandomAccessFile(this.fileSystem, this.delegate) {
     methods.addAll(<Symbol, Function>{
       #close: _close,

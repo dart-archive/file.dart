@@ -16,7 +16,7 @@ import 'recording_proxy_mixin.dart';
 class RecordingIOSink extends Object
     with RecordingProxyMixin
     implements IOSink {
-  /// Creates a `RecordingIOSink`.
+  /// Creates a new `RecordingIOSink`.
   RecordingIOSink(this.fileSystem, this.delegate) {
     methods.addAll(<Symbol, Function>{
       #add: delegate.add,

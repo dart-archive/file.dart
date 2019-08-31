@@ -15,22 +15,22 @@ abstract class ForwardingFileSystemEntity<T extends FileSystemEntity,
   @protected
   D get delegate;
 
-  /// Creates a entity with the same file system and same type as this
+  /// Creates a new entity with the same file system and same type as this
   /// entity but backed by the specified delegate.
   @protected
   T wrap(D delegate);
 
-  /// Creates a directory with the same file system as this entity and
+  /// Creates a new directory with the same file system as this entity and
   /// backed by the specified delegate.
   @protected
   Directory wrapDirectory(io.Directory delegate);
 
-  /// Creates a file with the same file system as this entity and
+  /// Creates a new file with the same file system as this entity and
   /// backed by the specified delegate.
   @protected
   File wrapFile(io.File delegate);
 
-  /// Creates a link with the same file system as this entity and
+  /// Creates a new link with the same file system as this entity and
   /// backed by the specified delegate.
   @protected
   Link wrapLink(io.Link delegate);

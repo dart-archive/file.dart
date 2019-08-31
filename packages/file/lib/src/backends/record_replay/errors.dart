@@ -8,7 +8,7 @@ import 'common.dart';
 /// Error thrown during replay when there is no matching invocation in the
 /// recording.
 class NoMatchingInvocationError extends Error {
-  /// Creates a `NoMatchingInvocationError` caused by the failure to replay
+  /// Creates a new `NoMatchingInvocationError` caused by the failure to replay
   /// the specified [invocation].
   NoMatchingInvocationError(this.invocation);
 

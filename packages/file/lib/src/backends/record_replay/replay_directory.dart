@@ -14,7 +14,7 @@ import 'replay_file_system_entity.dart';
 /// [Directory] implementation that replays all invocation activity from a
 /// prior recording.
 class ReplayDirectory extends ReplayFileSystemEntity implements Directory {
-  /// Creates a `ReplayDirectory`.
+  /// Creates a new `ReplayDirectory`.
   ReplayDirectory(ReplayFileSystemImpl fileSystem, String identifier)
       : super(fileSystem, identifier) {
     Converter<String, Directory> reviveDirectory = ReviveDirectory(fileSystem);

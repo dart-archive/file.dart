@@ -15,7 +15,7 @@ import 'replay_file_system_entity.dart';
 /// [File] implementation that replays all invocation activity from a prior
 /// recording.
 class ReplayFile extends ReplayFileSystemEntity implements File {
-  /// Creates a `ReplayFile`.
+  /// Creates a new `ReplayFile`.
   ReplayFile(ReplayFileSystemImpl fileSystem, String identifier)
       : super(fileSystem, identifier) {
     Converter<String, File> reviveFile = ReviveFile(fileSystem);

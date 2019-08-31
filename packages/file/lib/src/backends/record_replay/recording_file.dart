@@ -34,7 +34,7 @@ typedef _BlobDataAsyncWriter<T> = Future<void> Function(File file, T data);
 /// [File] implementation that records all invocation activity to its file
 /// system's recording.
 class RecordingFile extends RecordingFileSystemEntity<File> implements File {
-  /// Creates a `RecordingFile`.
+  /// Creates a new `RecordingFile`.
   RecordingFile(RecordingFileSystem fileSystem, io.File delegate)
       : super(fileSystem, delegate) {
     methods.addAll(<Symbol, Function>{

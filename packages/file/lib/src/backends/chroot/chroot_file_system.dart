@@ -22,7 +22,7 @@ const String _parentDir = '..';
 /// **Notes on usage**:
 ///
 /// * This file system maintains its _own_ [currentDirectory], distinct from
-///   that of the underlying file system, and instances automatically start
+///   that of the underlying file system, and new instances automatically start
 ///   at the root (i.e. `/`).
 ///
 /// * This file system does _not_ leverage any underlying OS system calls (such

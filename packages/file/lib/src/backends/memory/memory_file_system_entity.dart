@@ -16,7 +16,7 @@ import 'style.dart';
 import 'utils.dart' as utils;
 
 /// Validator function for use with `_renameSync`. This will be invoked if the
-/// rename would overwrite an existing entity at the path. If this operation
+/// rename would overwrite an existing entity at the new path. If this operation
 /// should not be allowed, this function is expected to throw a
 /// [io.FileSystemException]. The lack of such an exception will be interpreted
 /// as the overwrite being permissible.
@@ -299,7 +299,7 @@ abstract class MemoryFileSystemEntity implements FileSystemEntity {
     node.parent.children.remove(basename);
   }
 
-  /// Creates a entity with the same type as this entity but with the
+  /// Creates a new entity with the same type as this entity but with the
   /// specified path.
   @protected
   FileSystemEntity clone(String path);

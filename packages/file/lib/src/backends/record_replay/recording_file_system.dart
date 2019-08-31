@@ -55,7 +55,7 @@ import 'replay_file_system.dart';
 /// See also:
 ///   - [ReplayFileSystem]
 abstract class RecordingFileSystem extends FileSystem {
-  /// Creates a `RecordingFileSystem`.
+  /// Creates a new `RecordingFileSystem`.
   ///
   /// Invocations will be recorded and forwarded to the specified [delegate]
   /// file system.
@@ -95,7 +95,7 @@ abstract class RecordingFileSystem extends FileSystem {
 class RecordingFileSystemImpl extends FileSystem
     with RecordingProxyMixin
     implements RecordingFileSystem {
-  /// Creates a `RecordingFileSystemImpl`.
+  /// Creates a new `RecordingFileSystemImpl`.
   RecordingFileSystemImpl(
       this.delegate, Directory destination, Stopwatch recordingStopwatch)
       : recording = MutableRecording(destination),

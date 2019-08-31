@@ -9,7 +9,7 @@ import 'codecs.dart';
 /// [FileStat] implementation that derives its properties from a recorded
 /// invocation event.
 class ReplayFileStat implements FileStat {
-  /// Creates a `ReplayFileStat` that will derive its properties from the
+  /// Creates a new `ReplayFileStat` that will derive its properties from the
   /// specified [data].
   ReplayFileStat(Map<String, dynamic> data) : _data = data;
 

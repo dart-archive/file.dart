@@ -61,7 +61,7 @@ import 'replay_proxy_mixin.dart';
 /// See also:
 ///   - [RecordingFileSystem]
 abstract class ReplayFileSystem extends FileSystem {
-  /// Creates a `ReplayFileSystem`.
+  /// Creates a new `ReplayFileSystem`.
   ///
   /// Recording data will be loaded from the specified [recording] location.
   /// This location must have been created by [RecordingFileSystem], or an
@@ -86,7 +86,7 @@ abstract class ReplayFileSystem extends FileSystem {
 class ReplayFileSystemImpl extends FileSystem
     with ReplayProxyMixin
     implements ReplayFileSystem, ReplayAware {
-  /// Creates a `ReplayFileSystemImpl`.
+  /// Creates a new `ReplayFileSystemImpl`.
   ReplayFileSystemImpl(this.recording, this.manifest) {
     Converter<String, Directory> reviveDirectory = ReviveDirectory(this);
     Converter<String, Future<FileSystemEntityType>> reviveEntityFuture =

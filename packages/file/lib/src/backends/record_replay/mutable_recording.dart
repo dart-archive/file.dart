@@ -15,7 +15,7 @@ import 'recording.dart';
 
 /// A mutable live recording.
 class MutableRecording implements LiveRecording {
-  /// Creates a `MutableRecording` that will serialize its data to the
+  /// Creates a new `MutableRecording` that will serialize its data to the
   /// specified [destination].
   MutableRecording(this.destination);
 
@@ -56,7 +56,7 @@ class MutableRecording implements LiveRecording {
     }
   }
 
-  /// Returns a file for use with this recording.
+  /// Returns a new file for use with this recording.
   ///
   /// The file name will combine the specified [name] with [newUid] to ensure
   /// that its name is unique among all recording files.
