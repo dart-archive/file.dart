@@ -1,3 +1,7 @@
+#### 5.0.10
+
+* Added example
+
 #### 5.0.9
 
 * Fix lints for project health
