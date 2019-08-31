@@ -48,7 +48,7 @@ import 'replay_proxy_mixin.dart';
 ///
 /// ```dart
 /// typedef FileStat StatSync(String path);
-/// FileSystem fs = new ReplayFileSystem(directory);
+/// FileSystem fs = ReplayFileSystem(directory);
 ///
 /// StatSync method = fs.statSync;     // Will fail in checked-mode
 /// fs.statSync is StatSync            // Will return false
@@ -73,12 +73,12 @@ abstract class ReplayFileSystem extends FileSystem {
     String path = recording.fileSystem.path.join(dirname, kManifestName);
     File manifestFile = recording.fileSystem.file(path);
     if (!manifestFile.existsSync()) {
-      throw new ArgumentError('Not a valid recording directory: $dirname');
+      throw ArgumentError('Not a valid recording directory: $dirname');
     }
-    List<Map<String, dynamic>> manifest = new JsonDecoder()
+    List<Map<String, dynamic>> manifest = const JsonDecoder()
         .convert(manifestFile.readAsStringSync())
         .cast<Map<String, dynamic>>();
-    return new ReplayFileSystemImpl(recording, manifest);
+    return ReplayFileSystemImpl(recording, manifest);
   }
 }
 
@@ -88,7 +88,7 @@ class ReplayFileSystemImpl extends FileSystem
     implements ReplayFileSystem, ReplayAware {
   /// Creates a new `ReplayFileSystemImpl`.
   ReplayFileSystemImpl(this.recording, this.manifest) {
-    Converter<String, Directory> reviveDirectory = new ReviveDirectory(this);
+    Converter<String, Directory> reviveDirectory = ReviveDirectory(this);
     Converter<String, Future<FileSystemEntityType>> reviveEntityFuture =
         EntityTypeCodec.deserialize
             .fuse(const ToFuture<FileSystemEntityType>());
@@ -97,8 +97,8 @@ class ReplayFileSystemImpl extends FileSystem
 
     methods.addAll(<Symbol, Converter<dynamic, dynamic>>{
       #directory: reviveDirectory,
-      #file: new ReviveFile(this),
-      #link: new ReviveLink(this),
+      #file: ReviveFile(this),
+      #link: ReviveLink(this),
       #stat: reviveFileStatFuture,
       #statSync: FileStatCodec.deserialize,
       #identical: const ToFuture<bool>(),

@@ -8,7 +8,7 @@ import 'utils.dart';
 
 void main() {
   test('floorAndCeilProduceExactSecondDateTime', () {
-    DateTime time = new DateTime.fromMicrosecondsSinceEpoch(1001);
+    DateTime time = DateTime.fromMicrosecondsSinceEpoch(1001);
     DateTime lower = floor(time);
     DateTime upper = ceil(time);
     expect(lower.millisecond, 0);
@@ -18,7 +18,7 @@ void main() {
   });
 
   test('floorAndCeilWorkWithNow', () {
-    DateTime time = new DateTime.now();
+    DateTime time = DateTime.now();
     int lower = time.difference(floor(time)).inMicroseconds;
     int upper = ceil(time).difference(time).inMicroseconds;
     expect(lower, lessThan(1000000));

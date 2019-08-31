@@ -17,9 +17,9 @@ import 'common_tests.dart';
 void main() {
   group('ChrootFileSystem', () {
     ChrootFileSystem createMemoryBackedChrootFileSystem() {
-      MemoryFileSystem fs = new MemoryFileSystem();
+      MemoryFileSystem fs = MemoryFileSystem();
       fs.directory('/tmp').createSync();
-      return new ChrootFileSystem(fs, '/tmp');
+      return ChrootFileSystem(fs, '/tmp');
     }
 
     group('memoryBacked', () {
@@ -37,8 +37,8 @@ void main() {
 
       setUp(() {
         tmp = io.Directory.systemTemp.createTempSync('file_test_');
-        tmp = new io.Directory(tmp.resolveSymbolicLinksSync());
-        fs = new ChrootFileSystem(new LocalFileSystem(), tmp.path);
+        tmp = io.Directory(tmp.resolveSymbolicLinksSync());
+        fs = ChrootFileSystem(const LocalFileSystem(), tmp.path);
       });
 
       tearDown(() {

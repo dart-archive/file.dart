@@ -41,21 +41,21 @@ class MemoryLink extends MemoryFileSystemEntity implements Link {
       );
 
   @override
-  Future<Link> create(String target, {bool recursive: false}) async {
+  Future<Link> create(String target, {bool recursive = false}) async {
     createSync(target, recursive: recursive);
     return this;
   }
 
   @override
-  void createSync(String target, {bool recursive: false}) {
+  void createSync(String target, {bool recursive = false}) {
     bool preexisting = true;
     internalCreateSync(
         createChild: (DirectoryNode parent, bool isFinalSegment) {
       if (isFinalSegment) {
         preexisting = false;
-        return new LinkNode(parent, target);
+        return LinkNode(parent, target);
       } else if (recursive) {
-        return new DirectoryNode(parent);
+        return DirectoryNode(parent);
       }
       return null;
     });
@@ -79,7 +79,7 @@ class MemoryLink extends MemoryFileSystemEntity implements Link {
   }
 
   @override
-  void deleteSync({bool recursive: false}) => internalDeleteSync(
+  void deleteSync({bool recursive = false}) => internalDeleteSync(
         recursive: recursive,
         checkType: (Node node) =>
             utils.checkType(expectedType, node.type, () => path),
@@ -103,7 +103,7 @@ class MemoryLink extends MemoryFileSystemEntity implements Link {
 
   @override
   @protected
-  Link clone(String path) => new MemoryLink(fileSystem, path);
+  Link clone(String path) => MemoryLink(fileSystem, path);
 
   @override
   String toString() => "MemoryLink: '$path'";

@@ -14,11 +14,11 @@ abstract class ForwardingLink
   ForwardingLink wrap(io.Link delegate) => wrapLink(delegate);
 
   @override
-  Future<Link> create(String target, {bool recursive: false}) async =>
+  Future<Link> create(String target, {bool recursive = false}) async =>
       wrap(await delegate.create(target, recursive: recursive));
 
   @override
-  void createSync(String target, {bool recursive: false}) =>
+  void createSync(String target, {bool recursive = false}) =>
       delegate.createSync(target, recursive: recursive);
 
   @override

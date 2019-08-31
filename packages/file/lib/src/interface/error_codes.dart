@@ -173,10 +173,10 @@ class ErrorCodes {
   }
 }
 
-const Map<String, _Codes> _platforms = const <String, _Codes>{
-  'linux': const _LinuxCodes(),
-  'macos': const _MacOSCodes(),
-  'windows': const _WindowsCodes(),
+const Map<String, _Codes> _platforms = <String, _Codes>{
+  'linux': _LinuxCodes(),
+  'macos': _MacOSCodes(),
+  'windows': _WindowsCodes(),
 };
 
 abstract class _Codes {
@@ -225,361 +225,361 @@ class _LinuxCodes implements _Codes {
   const _LinuxCodes();
 
   @override
-  final int e2big = 7;
+  int get e2big => 7;
 
   @override
-  final int eacces = 13;
+  int get eacces => 13;
 
   @override
-  final int eagain = 11;
+  int get eagain => 11;
 
   @override
-  final int ebadf = 9;
+  int get ebadf => 9;
 
   @override
-  final int ebusy = 16;
+  int get ebusy => 16;
 
   @override
-  final int echild = 10;
+  int get echild => 10;
 
   @override
-  final int edeadlk = 35;
+  int get edeadlk => 35;
 
   @override
-  final int edom = 33;
+  int get edom => 33;
 
   @override
-  final int eexist = 17;
+  int get eexist => 17;
 
   @override
-  final int efault = 14;
+  int get efault => 14;
 
   @override
-  final int efbig = 27;
+  int get efbig => 27;
 
   @override
-  final int eilseq = 84;
+  int get eilseq => 84;
 
   @override
-  final int eintr = 4;
+  int get eintr => 4;
 
   @override
-  final int einval = 22;
+  int get einval => 22;
 
   @override
-  final int eio = 5;
+  int get eio => 5;
 
   @override
-  final int eisdir = 21;
+  int get eisdir => 21;
 
   @override
-  final int eloop = 40;
+  int get eloop => 40;
 
   @override
-  final int emfile = 24;
+  int get emfile => 24;
 
   @override
-  final int emlink = 31;
+  int get emlink => 31;
 
   @override
-  final int enametoolong = 36;
+  int get enametoolong => 36;
 
   @override
-  final int enfile = 23;
+  int get enfile => 23;
 
   @override
-  final int enodev = 19;
+  int get enodev => 19;
 
   @override
-  final int enoent = 2;
+  int get enoent => 2;
 
   @override
-  final int enoexec = 8;
+  int get enoexec => 8;
 
   @override
-  final int enolck = 37;
+  int get enolck => 37;
 
   @override
-  final int enomem = 12;
+  int get enomem => 12;
 
   @override
-  final int enospc = 28;
+  int get enospc => 28;
 
   @override
-  final int enosys = 38;
+  int get enosys => 38;
 
   @override
-  final int enotdir = 20;
+  int get enotdir => 20;
 
   @override
-  final int enotempty = 39;
+  int get enotempty => 39;
 
   @override
-  final int enotty = 25;
+  int get enotty => 25;
 
   @override
-  final int enxio = 6;
+  int get enxio => 6;
 
   @override
-  final int eperm = 1;
+  int get eperm => 1;
 
   @override
-  final int epipe = 32;
+  int get epipe => 32;
 
   @override
-  final int erange = 34;
+  int get erange => 34;
 
   @override
-  final int erofs = 30;
+  int get erofs => 30;
 
   @override
-  final int espipe = 29;
+  int get espipe => 29;
 
   @override
-  final int esrch = 3;
+  int get esrch => 3;
 
   @override
-  final int exdev = 18;
+  int get exdev => 18;
 }
 
 class _MacOSCodes implements _Codes {
   const _MacOSCodes();
 
   @override
-  final int e2big = 7;
+  int get e2big => 7;
 
   @override
-  final int eacces = 13;
+  int get eacces => 13;
 
   @override
-  final int eagain = 35;
+  int get eagain => 35;
 
   @override
-  final int ebadf = 9;
+  int get ebadf => 9;
 
   @override
-  final int ebusy = 16;
+  int get ebusy => 16;
 
   @override
-  final int echild = 10;
+  int get echild => 10;
 
   @override
-  final int edeadlk = 11;
+  int get edeadlk => 11;
 
   @override
-  final int edom = 33;
+  int get edom => 33;
 
   @override
-  final int eexist = 17;
+  int get eexist => 17;
 
   @override
-  final int efault = 14;
+  int get efault => 14;
 
   @override
-  final int efbig = 27;
+  int get efbig => 27;
 
   @override
-  final int eilseq = 92;
+  int get eilseq => 92;
 
   @override
-  final int eintr = 4;
+  int get eintr => 4;
 
   @override
-  final int einval = 22;
+  int get einval => 22;
 
   @override
-  final int eio = 5;
+  int get eio => 5;
 
   @override
-  final int eisdir = 21;
+  int get eisdir => 21;
 
   @override
-  final int eloop = 62;
+  int get eloop => 62;
 
   @override
-  final int emfile = 24;
+  int get emfile => 24;
 
   @override
-  final int emlink = 31;
+  int get emlink => 31;
 
   @override
-  final int enametoolong = 63;
+  int get enametoolong => 63;
 
   @override
-  final int enfile = 23;
+  int get enfile => 23;
 
   @override
-  final int enodev = 19;
+  int get enodev => 19;
 
   @override
-  final int enoent = 2;
+  int get enoent => 2;
 
   @override
-  final int enoexec = 8;
+  int get enoexec => 8;
 
   @override
-  final int enolck = 77;
+  int get enolck => 77;
 
   @override
-  final int enomem = 12;
+  int get enomem => 12;
 
   @override
-  final int enospc = 28;
+  int get enospc => 28;
 
   @override
-  final int enosys = 78;
+  int get enosys => 78;
 
   @override
-  final int enotdir = 20;
+  int get enotdir => 20;
 
   @override
-  final int enotempty = 66;
+  int get enotempty => 66;
 
   @override
-  final int enotty = 25;
+  int get enotty => 25;
 
   @override
-  final int enxio = 6;
+  int get enxio => 6;
 
   @override
-  final int eperm = 1;
+  int get eperm => 1;
 
   @override
-  final int epipe = 32;
+  int get epipe => 32;
 
   @override
-  final int erange = 34;
+  int get erange => 34;
 
   @override
-  final int erofs = 30;
+  int get erofs => 30;
 
   @override
-  final int espipe = 29;
+  int get espipe => 29;
 
   @override
-  final int esrch = 3;
+  int get esrch => 3;
 
   @override
-  final int exdev = 18;
+  int get exdev => 18;
 }
 
 class _WindowsCodes implements _Codes {
   const _WindowsCodes();
 
   @override
-  final int e2big = 7;
+  int get e2big => 7;
 
   @override
-  final int eacces = 13;
+  int get eacces => 13;
 
   @override
-  final int eagain = 11;
+  int get eagain => 11;
 
   @override
-  final int ebadf = 9;
+  int get ebadf => 9;
 
   @override
-  final int ebusy = 16;
+  int get ebusy => 16;
 
   @override
-  final int echild = 10;
+  int get echild => 10;
 
   @override
-  final int edeadlk = 36;
+  int get edeadlk => 36;
 
   @override
-  final int edom = 33;
+  int get edom => 33;
 
   @override
-  final int eexist = 17;
+  int get eexist => 17;
 
   @override
-  final int efault = 14;
+  int get efault => 14;
 
   @override
-  final int efbig = 27;
+  int get efbig => 27;
 
   @override
-  final int eilseq = 42;
+  int get eilseq => 42;
 
   @override
-  final int eintr = 4;
+  int get eintr => 4;
 
   @override
-  final int einval = 22;
+  int get einval => 22;
 
   @override
-  final int eio = 5;
+  int get eio => 5;
 
   @override
-  final int eisdir = 21;
+  int get eisdir => 21;
 
   @override
-  final int eloop = -1;
+  int get eloop => -1;
 
   @override
-  final int emfile = 24;
+  int get emfile => 24;
 
   @override
-  final int emlink = 31;
+  int get emlink => 31;
 
   @override
-  final int enametoolong = 38;
+  int get enametoolong => 38;
 
   @override
-  final int enfile = 23;
+  int get enfile => 23;
 
   @override
-  final int enodev = 19;
+  int get enodev => 19;
 
   @override
-  final int enoent = 2;
+  int get enoent => 2;
 
   @override
-  final int enoexec = 8;
+  int get enoexec => 8;
 
   @override
-  final int enolck = 39;
+  int get enolck => 39;
 
   @override
-  final int enomem = 12;
+  int get enomem => 12;
 
   @override
-  final int enospc = 28;
+  int get enospc => 28;
 
   @override
-  final int enosys = 40;
+  int get enosys => 40;
 
   @override
-  final int enotdir = 20;
+  int get enotdir => 20;
 
   @override
-  final int enotempty = 41;
+  int get enotempty => 41;
 
   @override
-  final int enotty = 25;
+  int get enotty => 25;
 
   @override
-  final int enxio = 6;
+  int get enxio => 6;
 
   @override
-  final int eperm = 1;
+  int get eperm => 1;
 
   @override
-  final int epipe = 32;
+  int get epipe => 32;
 
   @override
-  final int erange = 34;
+  int get erange => 34;
 
   @override
-  final int erofs = 30;
+  int get erofs => 30;
 
   @override
-  final int espipe = 29;
+  int get espipe => 29;
 
   @override
-  final int esrch = 3;
+  int get esrch => 3;
 
   @override
-  final int exdev = 18;
+  int get exdev => 18;
 }

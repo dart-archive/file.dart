@@ -11,10 +11,10 @@ class _ChrootLink extends _ChrootFileSystemEntity<Link, io.Link>
   factory _ChrootLink.wrapped(
     ChrootFileSystem fs,
     io.Link delegate, {
-    bool relative: false,
+    bool relative = false,
   }) {
     String localPath = fs._local(delegate.path, relative: relative);
-    return new _ChrootLink(fs, localPath);
+    return _ChrootLink(fs, localPath);
   }
 
   @override
@@ -40,7 +40,7 @@ class _ChrootLink extends _ChrootFileSystemEntity<Link, io.Link>
   io.Link _rawDelegate(String path) => fileSystem.delegate.link(path);
 
   @override
-  Link get absolute => new _ChrootLink(fileSystem, _absolutePath);
+  Link get absolute => _ChrootLink(fileSystem, _absolutePath);
 
   @override
   String toString() => "ChrootLink: '$path'";

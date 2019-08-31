@@ -39,24 +39,24 @@ class RecordingDirectory extends RecordingFileSystemEntity<Directory>
   // https://github.com/dart-lang/sdk/issues/33459.
 
   @override
-  Future<Directory> create({bool recursive: false});
+  Future<Directory> create({bool recursive = false});
 
   @override
-  void createSync({bool recursive: false});
+  void createSync({bool recursive = false});
 
   @override
   Stream<FileSystemEntity> list(
-      {bool recursive: false, bool followLinks: true});
+      {bool recursive = false, bool followLinks = true});
 
   @override
   List<FileSystemEntity> listSync(
-      {bool recursive: false, bool followLinks: true});
+      {bool recursive = false, bool followLinks = true});
 
   @override
   Directory wrap(Directory delegate) =>
       super.wrap(delegate) ?? wrapDirectory(delegate);
 
-  Future<Directory> _create({bool recursive: false}) =>
+  Future<Directory> _create({bool recursive = false}) =>
       delegate.create(recursive: recursive).then(wrap);
 
   Future<Directory> _createTemp([String prefix]) =>
@@ -66,13 +66,13 @@ class RecordingDirectory extends RecordingFileSystemEntity<Directory>
       wrap(delegate.createTempSync(prefix));
 
   Stream<FileSystemEntity> _list(
-          {bool recursive: false, bool followLinks: true}) =>
+          {bool recursive = false, bool followLinks = true}) =>
       delegate
           .list(recursive: recursive, followLinks: followLinks)
           .map(_wrapGeneric);
 
   List<FileSystemEntity> _listSync(
-          {bool recursive: false, bool followLinks: true}) =>
+          {bool recursive = false, bool followLinks = true}) =>
       delegate
           .listSync(recursive: recursive, followLinks: followLinks)
           .map(_wrapGeneric)
@@ -86,7 +86,7 @@ class RecordingDirectory extends RecordingFileSystemEntity<Directory>
     } else if (entity is io.Link) {
       return wrapLink(entity);
     }
-    throw new FileSystemException('Unsupported type: $entity', entity.path);
+    throw FileSystemException('Unsupported type: $entity', entity.path);
   }
 
   Directory _childDirectory(String basename) =>

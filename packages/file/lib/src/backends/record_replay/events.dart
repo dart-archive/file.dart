@@ -112,7 +112,7 @@ abstract class LiveInvocationEvent<T> implements InvocationEvent<T> {
   /// are unfinished futures will be serialized as `null`, and results that are
   /// unfinished streams will be serialized as the data that has been received
   /// thus far.
-  Future<Null> get done async {
+  Future<void> get done async {
     dynamic result = _result;
     while (result is ResultReference) {
       ResultReference<dynamic> reference = result;
@@ -191,10 +191,8 @@ class LiveMethodEvent<T> extends LiveInvocationEvent<T>
     T result,
     dynamic error,
     int timestamp,
-  )   : this.positionalArguments =
-            new List<dynamic>.unmodifiable(positionalArguments),
-        this.namedArguments =
-            new Map<Symbol, dynamic>.unmodifiable(namedArguments),
+  )   : positionalArguments = List<dynamic>.unmodifiable(positionalArguments),
+        namedArguments = Map<Symbol, dynamic>.unmodifiable(namedArguments),
         super(object, result, error, timestamp);
 
   @override

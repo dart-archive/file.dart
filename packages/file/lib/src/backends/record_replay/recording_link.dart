@@ -29,7 +29,7 @@ class RecordingLink extends RecordingFileSystemEntity<Link> implements Link {
   @override
   Link wrap(Link delegate) => super.wrap(delegate) ?? wrapLink(delegate);
 
-  Future<Link> _create(String target, {bool recursive: false}) =>
+  Future<Link> _create(String target, {bool recursive = false}) =>
       delegate.create(target, recursive: recursive).then(wrap);
 
   Future<Link> _update(String target) => delegate.update(target).then(wrap);

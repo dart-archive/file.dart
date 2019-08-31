@@ -43,15 +43,15 @@ abstract class MemoryFileSystem implements StyleableFileSystem {
 /// Internal implementation of [MemoryFileSystem].
 class _MemoryFileSystem extends FileSystem
     implements MemoryFileSystem, NodeBasedFileSystem {
+  _MemoryFileSystem({this.style = FileSystemStyle.posix})
+      : assert(style != null) {
+    _root = RootNode(this);
+    _context = style.contextFor(style.root);
+  }
+
   RootNode _root;
   String _systemTemp;
   p.Context _context;
-
-  _MemoryFileSystem({this.style: FileSystemStyle.posix})
-      : assert(style != null) {
-    _root = new RootNode(this);
-    _context = style.contextFor(style.root);
-  }
 
   @override
   final FileSystemStyle style;
@@ -63,13 +63,13 @@ class _MemoryFileSystem extends FileSystem
   String get cwd => _context.current;
 
   @override
-  Directory directory(dynamic path) => new MemoryDirectory(this, getPath(path));
+  Directory directory(dynamic path) => MemoryDirectory(this, getPath(path));
 
   @override
-  File file(dynamic path) => new MemoryFile(this, getPath(path));
+  File file(dynamic path) => MemoryFile(this, getPath(path));
 
   @override
-  Link link(dynamic path) => new MemoryLink(this, getPath(path));
+  Link link(dynamic path) => MemoryLink(this, getPath(path));
 
   @override
   p.Context get path => _context;
@@ -94,7 +94,7 @@ class _MemoryFileSystem extends FileSystem
     } else if (path is String) {
       value = path;
     } else {
-      throw new ArgumentError('Invalid type for "path": ${path?.runtimeType}');
+      throw ArgumentError('Invalid type for "path": ${path?.runtimeType}');
     }
 
     value = directory(value).resolveSymbolicLinksSync();
@@ -136,12 +136,12 @@ class _MemoryFileSystem extends FileSystem
   @override
   Future<io.FileSystemEntityType> type(
     String path, {
-    bool followLinks: true,
+    bool followLinks = true,
   }) async =>
       typeSync(path, followLinks: followLinks);
 
   @override
-  io.FileSystemEntityType typeSync(String path, {bool followLinks: true}) {
+  io.FileSystemEntityType typeSync(String path, {bool followLinks = true}) {
     Node node;
     try {
       node = findNode(path, followTailLink: followLinks);
@@ -164,12 +164,12 @@ class _MemoryFileSystem extends FileSystem
     String path, {
     Node reference,
     SegmentVisitor segmentVisitor,
-    bool visitLinks: false,
+    bool visitLinks = false,
     List<String> pathWithSymlinks,
-    bool followTailLink: false,
+    bool followTailLink = false,
   }) {
     if (path == null) {
-      throw new ArgumentError.notNull('path');
+      throw ArgumentError.notNull('path');
     }
 
     if (_context.isAbsolute(path)) {

@@ -29,12 +29,12 @@ import 'result_reference.dart';
 /// without the need for a `toEncodable` argument.
 dynamic encode(dynamic object) => const _GenericEncoder().convert(object);
 
-typedef T _ConverterDelegate<S, T>(S input);
+typedef _ConverterDelegate<S, T> = T Function(S input);
 
 class _ForwardingConverter<S, T> extends Converter<S, T> {
-  final _ConverterDelegate<S, T> _delegate;
-
   const _ForwardingConverter(this._delegate);
+
+  final _ConverterDelegate<S, T> _delegate;
 
   @override
   T convert(S input) => _delegate(input);
@@ -50,29 +50,29 @@ class _GenericEncoder extends Converter<dynamic, dynamic> {
   /// for a matching encoder. Thus, when there are two encoders that match an
   /// object, the first one will win.
   static const Map<TypeMatcher<dynamic>, Converter<Object, Object>> _encoders =
-      const <TypeMatcher<dynamic>, Converter<Object, Object>>{
-    const TypeMatcher<num>(): const Passthrough<num>(),
-    const TypeMatcher<bool>(): const Passthrough<bool>(),
-    const TypeMatcher<String>(): const Passthrough<String>(),
-    const TypeMatcher<Null>(): const Passthrough<Null>(),
-    const TypeMatcher<Iterable<dynamic>>(): const _IterableEncoder(),
-    const TypeMatcher<Map<dynamic, dynamic>>(): const _MapEncoder(),
-    const TypeMatcher<Symbol>(): const _SymbolEncoder(),
-    const TypeMatcher<DateTime>(): DateTimeCodec.serialize,
-    const TypeMatcher<Uri>(): UriCodec.serialize,
-    const TypeMatcher<path.Context>(): PathContextCodec.serialize,
-    const TypeMatcher<ResultReference<dynamic>>(): const _ResultEncoder(),
-    const TypeMatcher<LiveInvocationEvent<dynamic>>(): const _EventEncoder(),
-    const TypeMatcher<ReplayAware>(): const _ReplayAwareEncoder(),
-    const TypeMatcher<Encoding>(): EncodingCodec.serialize,
-    const TypeMatcher<FileMode>(): const _FileModeEncoder(),
-    const TypeMatcher<FileStat>(): FileStatCodec.serialize,
-    const TypeMatcher<FileSystemEntityType>(): EntityTypeCodec.serialize,
-    const TypeMatcher<FileSystemEvent>(): FileSystemEventCodec.serialize,
-    const TypeMatcher<FileSystemException>(): _FSExceptionCodec.serialize,
-    const TypeMatcher<OSError>(): _OSErrorCodec.serialize,
-    const TypeMatcher<ArgumentError>(): _ArgumentErrorCodec.serialize,
-    const TypeMatcher<NoSuchMethodError>(): _NoSuchMethodErrorCodec.serialize,
+      <TypeMatcher<dynamic>, Converter<Object, Object>>{
+    TypeMatcher<num>(): Passthrough<num>(),
+    TypeMatcher<bool>(): Passthrough<bool>(),
+    TypeMatcher<String>(): Passthrough<String>(),
+    TypeMatcher<Null>(): Passthrough<Null>(),
+    TypeMatcher<Iterable<dynamic>>(): _IterableEncoder(),
+    TypeMatcher<Map<dynamic, dynamic>>(): _MapEncoder(),
+    TypeMatcher<Symbol>(): _SymbolEncoder(),
+    TypeMatcher<DateTime>(): DateTimeCodec.serialize,
+    TypeMatcher<Uri>(): UriCodec.serialize,
+    TypeMatcher<path.Context>(): PathContextCodec.serialize,
+    TypeMatcher<ResultReference<dynamic>>(): _ResultEncoder(),
+    TypeMatcher<LiveInvocationEvent<dynamic>>(): _EventEncoder(),
+    TypeMatcher<ReplayAware>(): _ReplayAwareEncoder(),
+    TypeMatcher<Encoding>(): EncodingCodec.serialize,
+    TypeMatcher<FileMode>(): _FileModeEncoder(),
+    TypeMatcher<FileStat>(): FileStatCodec.serialize,
+    TypeMatcher<FileSystemEntityType>(): EntityTypeCodec.serialize,
+    TypeMatcher<FileSystemEvent>(): FileSystemEventCodec.serialize,
+    TypeMatcher<FileSystemException>(): _FSExceptionCodec.serialize,
+    TypeMatcher<OSError>(): _OSErrorCodec.serialize,
+    TypeMatcher<ArgumentError>(): _ArgumentErrorCodec.serialize,
+    TypeMatcher<NoSuchMethodError>(): _NoSuchMethodErrorCodec.serialize,
   };
 
   @override
@@ -89,10 +89,13 @@ class _GenericEncoder extends Converter<dynamic, dynamic> {
 /// A trivial conversion turning a Sink<List<String>> into a
 /// Sink<String>
 class _StringSinkWrapper implements Sink<String> {
-  final Sink<List<String>> _sink;
   _StringSinkWrapper(this._sink);
+
+  final Sink<List<String>> _sink;
+
   @override
   void add(String s) => _sink.add(<String>[s]);
+
   @override
   void close() => _sink.close();
 }
@@ -100,16 +103,16 @@ class _StringSinkWrapper implements Sink<String> {
 /// An Converter version of the dart:convert LineSplitter (which in
 /// 2.0 no longer implements the Converter interface)
 class LineSplitterConverter extends Converter<String, List<String>> {
-  final LineSplitter _splitter = const LineSplitter();
-
   /// Creates a new [LineSplitterConverter]
   const LineSplitterConverter();
+
+  LineSplitter get _splitter => const LineSplitter();
 
   @override
   List<String> convert(String input) => _splitter.convert(input);
   @override
   StringConversionSink startChunkedConversion(Sink<List<String>> sink) =>
-      _splitter.startChunkedConversion(new _StringSinkWrapper(sink));
+      _splitter.startChunkedConversion(_StringSinkWrapper(sink));
 }
 
 /// Converter that leaves an object untouched.
@@ -166,18 +169,16 @@ class DateTimeCodec extends Codec<DateTime, int> {
   static int _encode(DateTime input) => input?.millisecondsSinceEpoch;
 
   static DateTime _decode(int input) {
-    return input == null
-        ? null
-        : new DateTime.fromMillisecondsSinceEpoch(input);
+    return input == null ? null : DateTime.fromMillisecondsSinceEpoch(input);
   }
 
   /// Converter that serializes [DateTime] instances.
   static const Converter<DateTime, int> serialize =
-      const _ForwardingConverter<DateTime, int>(_encode);
+      _ForwardingConverter<DateTime, int>(_encode);
 
   /// Converter that deserializes [DateTime] instances.
   static const Converter<int, DateTime> deserialize =
-      const _ForwardingConverter<int, DateTime>(_decode);
+      _ForwardingConverter<int, DateTime>(_decode);
 
   @override
   Converter<DateTime, int> get encoder => serialize;
@@ -197,11 +198,11 @@ class UriCodec extends Codec<Uri, String> {
 
   /// Converter that serializes [Uri] instances.
   static const Converter<Uri, String> serialize =
-      const _ForwardingConverter<Uri, String>(_encode);
+      _ForwardingConverter<Uri, String>(_encode);
 
   /// Converter that deserializes [Uri] instances.
   static const Converter<String, Uri> deserialize =
-      const _ForwardingConverter<String, Uri>(_decode);
+      _ForwardingConverter<String, Uri>(_decode);
 
   @override
   Converter<Uri, String> get encoder => serialize;
@@ -223,7 +224,7 @@ class PathContextCodec extends Codec<path.Context, Map<String, String>> {
   }
 
   static path.Context _decode(Map<String, dynamic> input) {
-    return new path.Context(
+    return path.Context(
       style: <String, path.Style>{
         'posix': path.Style.posix,
         'windows': path.Style.windows,
@@ -235,11 +236,11 @@ class PathContextCodec extends Codec<path.Context, Map<String, String>> {
 
   /// Converter that serializes [path.Context] instances.
   static const Converter<path.Context, Map<String, String>> serialize =
-      const _ForwardingConverter<path.Context, Map<String, String>>(_encode);
+      _ForwardingConverter<path.Context, Map<String, String>>(_encode);
 
   /// Converter that deserializes [path.Context] instances.
   static const Converter<Map<String, dynamic>, path.Context> deserialize =
-      const _ForwardingConverter<Map<String, dynamic>, path.Context>(_decode);
+      _ForwardingConverter<Map<String, dynamic>, path.Context>(_decode);
 
   @override
   Converter<path.Context, Map<String, String>> get encoder => serialize;
@@ -290,11 +291,11 @@ class EncodingCodec extends Codec<Encoding, String> {
 
   /// Converter that serializes [Encoding] instances.
   static const Converter<Encoding, String> serialize =
-      const _ForwardingConverter<Encoding, String>(_encode);
+      _ForwardingConverter<Encoding, String>(_encode);
 
   /// Converter that deserializes [Encoding] instances.
   static const Converter<String, Encoding> deserialize =
-      const _ForwardingConverter<String, Encoding>(_decode);
+      _ForwardingConverter<String, Encoding>(_decode);
 
   @override
   Converter<Encoding, String> get encoder => serialize;
@@ -320,7 +321,7 @@ class _FileModeEncoder extends Converter<FileMode, String> {
       case FileMode.writeOnlyAppend:
         return 'WRITE_ONLY_APPEND';
     }
-    throw new ArgumentError('Invalid value: $input');
+    throw ArgumentError('Invalid value: $input');
   }
 }
 
@@ -341,16 +342,15 @@ class FileStatCodec extends Codec<FileStat, Map<String, Object>> {
     };
   }
 
-  static FileStat _decode(Map<String, Object> input) =>
-      new ReplayFileStat(input);
+  static FileStat _decode(Map<String, Object> input) => ReplayFileStat(input);
 
   /// Converter that serializes [FileStat] instances.
   static const Converter<FileStat, Map<String, Object>> serialize =
-      const _ForwardingConverter<FileStat, Map<String, Object>>(_encode);
+      _ForwardingConverter<FileStat, Map<String, Object>>(_encode);
 
   /// Converter that deserializes [FileStat] instances.
   static const Converter<Map<String, Object>, FileStat> deserialize =
-      const _ForwardingConverter<Map<String, Object>, FileStat>(_decode);
+      _ForwardingConverter<Map<String, Object>, FileStat>(_decode);
 
   @override
   Converter<FileStat, Map<String, Object>> get encoder => serialize;
@@ -378,11 +378,11 @@ class EntityTypeCodec extends Codec<FileSystemEntityType, String> {
 
   /// Converter that serializes [FileSystemEntityType] instances.
   static const Converter<FileSystemEntityType, String> serialize =
-      const _ForwardingConverter<FileSystemEntityType, String>(_encode);
+      _ForwardingConverter<FileSystemEntityType, String>(_encode);
 
   /// Converter that deserializes [FileSystemEntityType] instances.
   static const Converter<String, FileSystemEntityType> deserialize =
-      const _ForwardingConverter<String, FileSystemEntityType>(_decode);
+      _ForwardingConverter<String, FileSystemEntityType>(_decode);
 
   @override
   Converter<FileSystemEntityType, String> get encoder => serialize;
@@ -406,15 +406,15 @@ class FileSystemEventCodec extends Codec<FileSystemEvent, Map<String, Object>> {
   }
 
   static FileSystemEvent _decode(Map<String, Object> input) =>
-      new _FileSystemEvent(input);
+      _FileSystemEvent(input);
 
   /// Converter that serializes [FileSystemEvent] instances.
   static const Converter<FileSystemEvent, Map<String, Object>> serialize =
-      const _ForwardingConverter<FileSystemEvent, Map<String, Object>>(_encode);
+      _ForwardingConverter<FileSystemEvent, Map<String, Object>>(_encode);
 
   /// Converter that deserializes [FileSystemEvent] instances.
   static const Converter<Map<String, Object>, FileSystemEvent> deserialize =
-      const _ForwardingConverter<Map<String, Object>, FileSystemEvent>(_decode);
+      _ForwardingConverter<Map<String, Object>, FileSystemEvent>(_decode);
 
   @override
   Converter<FileSystemEvent, Map<String, Object>> get encoder => serialize;
@@ -424,9 +424,9 @@ class FileSystemEventCodec extends Codec<FileSystemEvent, Map<String, Object>> {
 }
 
 class _FileSystemEvent implements FileSystemEvent {
-  final Map<String, Object> _data;
-
   const _FileSystemEvent(this._data);
+
+  final Map<String, Object> _data;
 
   @override
   int get type => _data['type'];
@@ -456,64 +456,65 @@ class Listify<T> extends Converter<T, List<T>> {
   List<T> convert(T input) => <T>[input];
 }
 
+/// Converts a [Uint8List] to a simple [List<int>].
 class Uint8ListToPlainList extends Converter<Uint8List, List<int>> {
   /// Creates a new [Uint8ListToPlainList]
   const Uint8ListToPlainList();
 
   @override
-  List<int> convert(Uint8List list) => List<int>.from(list);
+  List<int> convert(Uint8List input) => List<int>.from(input);
 }
 
 /// Revives a [Directory] entity reference into a [ReplayDirectory].
 class ReviveDirectory extends Converter<String, Directory> {
-  final ReplayFileSystemImpl _fileSystem;
-
   /// Creates a new [ReviveDirectory].
   const ReviveDirectory(this._fileSystem);
 
+  final ReplayFileSystemImpl _fileSystem;
+
   @override
-  Directory convert(String input) => new ReplayDirectory(_fileSystem, input);
+  Directory convert(String input) => ReplayDirectory(_fileSystem, input);
 }
 
 /// Revives a [File] entity reference into a [ReplayFile].
 class ReviveFile extends Converter<String, File> {
-  final ReplayFileSystemImpl _fileSystem;
-
   /// Creates a new [ReviveFile].
   const ReviveFile(this._fileSystem);
 
+  final ReplayFileSystemImpl _fileSystem;
+
   @override
-  File convert(String input) => new ReplayFile(_fileSystem, input);
+  File convert(String input) => ReplayFile(_fileSystem, input);
 }
 
 /// Revives a [Link] entity reference into a [ReplayLink].
 class ReviveLink extends Converter<String, Link> {
-  final ReplayFileSystemImpl _fileSystem;
-
   /// Creates a new [ReviveLink].
   const ReviveLink(this._fileSystem);
 
+  final ReplayFileSystemImpl _fileSystem;
+
   @override
-  Link convert(String input) => new ReplayLink(_fileSystem, input);
+  Link convert(String input) => ReplayLink(_fileSystem, input);
 }
 
 /// Revives a [FileSystemEntity] entity reference into a [ReplayDirectory],
 /// [ReplayFile], or a [ReplayLink] depending on the identifier of the entity
 /// reference.
 class ReviveFileSystemEntity extends Converter<String, FileSystemEntity> {
-  final ReplayFileSystemImpl _fileSystem;
-
   /// Creates a new [ReviveFileSystemEntity].
   const ReviveFileSystemEntity(this._fileSystem);
+
+  final ReplayFileSystemImpl _fileSystem;
 
   @override
   FileSystemEntity convert(String input) {
     if (input.contains('Directory')) {
-      return new ReplayDirectory(_fileSystem, input);
+      return ReplayDirectory(_fileSystem, input);
     } else if (input.contains('File')) {
-      return new ReplayFile(_fileSystem, input);
+      return ReplayFile(_fileSystem, input);
     } else {
-      return new ReplayLink(_fileSystem, input);
+      return ReplayLink(_fileSystem, input);
     }
   }
 }
@@ -521,38 +522,38 @@ class ReviveFileSystemEntity extends Converter<String, FileSystemEntity> {
 /// Revives a [RandomAccessFile] entity reference into a
 /// [ReplayRandomAccessFile].
 class ReviveRandomAccessFile extends Converter<String, RandomAccessFile> {
-  final ReplayFileSystemImpl _fileSystem;
-
   /// Creates a new [ReviveRandomAccessFile] that will derive its behavior
   /// from the specified file system's recording.
   const ReviveRandomAccessFile(this._fileSystem);
 
+  final ReplayFileSystemImpl _fileSystem;
+
   @override
   RandomAccessFile convert(String input) =>
-      new ReplayRandomAccessFile(_fileSystem, input);
+      ReplayRandomAccessFile(_fileSystem, input);
 }
 
 /// Revives an [IOSink] entity reference into a [ReplayIOSink].
 class ReviveIOSink extends Converter<String, IOSink> {
-  final ReplayFileSystemImpl _fileSystem;
-
   /// Creates a new [ReviveIOSink] that will derive its behavior from the
   /// specified file system's recording.
   const ReviveIOSink(this._fileSystem);
 
+  final ReplayFileSystemImpl _fileSystem;
+
   @override
-  IOSink convert(String input) => new ReplayIOSink(_fileSystem, input);
+  IOSink convert(String input) => ReplayIOSink(_fileSystem, input);
 }
 
 /// Converts all elements of a [List], returning a new [List] of converted
 /// elements.
 class ConvertElements<S, T> extends Converter<List<S>, List<T>> {
-  final Converter<S, T> _delegate;
-
   /// Creates a new [ConvertElements] that will use the specified
   /// [elementConverter] to convert the elements of an [Iterable].
   const ConvertElements(Converter<S, T> elementConverter)
       : _delegate = elementConverter;
+
+  final Converter<S, T> _delegate;
 
   @override
   List<T> convert(List<S> input) => input.map(_delegate.convert).toList();
@@ -575,17 +576,17 @@ class ToStream<T> extends Converter<List<T>, Stream<T>> {
   const ToStream();
 
   @override
-  Stream<T> convert(List<T> input) => new Stream<T>.fromIterable(input);
+  Stream<T> convert(List<T> input) => Stream<T>.fromIterable(input);
 }
 
 /// Converts a blob reference (serialized as a [String] of the form
 /// `!<filename>`) into a byte list.
 class BlobToBytes extends Converter<String, Uint8List> {
-  final ReplayFileSystemImpl _fileSystem;
-
   /// Creates a new [BlobToBytes] that will use the specified file system's
   /// recording to load the blob.
   const BlobToBytes(this._fileSystem);
+
+  final ReplayFileSystemImpl _fileSystem;
 
   @override
   Uint8List convert(String input) {
@@ -606,7 +607,7 @@ class ToError extends Converter<dynamic, dynamic> {
   /// Known decoders (keyed by `type`). Types not covered here will be decoded
   /// into [InvocationException].
   static const Map<String, Converter<Object, Object>> _decoders =
-      const <String, Converter<Object, Object>>{
+      <String, Converter<Object, Object>>{
     _FSExceptionCodec.type: _FSExceptionCodec.deserialize,
     _OSErrorCodec.type: _OSErrorCodec.deserialize,
     _ArgumentErrorCodec.type: _ArgumentErrorCodec.deserialize,
@@ -621,7 +622,7 @@ class ToError extends Converter<dynamic, dynamic> {
         return _decoders[errorType].convert(input);
       }
     }
-    return new InvocationException();
+    return InvocationException();
   }
 }
 
@@ -642,7 +643,7 @@ class _FSExceptionCodec
 
   static FileSystemException _decode(Map<String, Object> input) {
     Object osError = input['osError'];
-    return new FileSystemException(
+    return FileSystemException(
       input['message'],
       input['path'],
       osError == null ? null : const ToError().convert(osError),
@@ -650,12 +651,10 @@ class _FSExceptionCodec
   }
 
   static const Converter<FileSystemException, Map<String, Object>> serialize =
-      const _ForwardingConverter<FileSystemException, Map<String, Object>>(
-          _encode);
+      _ForwardingConverter<FileSystemException, Map<String, Object>>(_encode);
 
   static const Converter<Map<String, Object>, FileSystemException> deserialize =
-      const _ForwardingConverter<Map<String, Object>, FileSystemException>(
-          _decode);
+      _ForwardingConverter<Map<String, Object>, FileSystemException>(_decode);
 
   @override
   Converter<FileSystemException, Map<String, Object>> get encoder => serialize;
@@ -679,14 +678,14 @@ class _OSErrorCodec extends Codec<OSError, Map<String, Object>> {
   }
 
   static OSError _decode(Map<String, Object> input) {
-    return new OSError(input['message'], input['errorCode']);
+    return OSError(input['message'], input['errorCode']);
   }
 
   static const Converter<OSError, Map<String, Object>> serialize =
-      const _ForwardingConverter<OSError, Map<String, Object>>(_encode);
+      _ForwardingConverter<OSError, Map<String, Object>>(_encode);
 
   static const Converter<Map<String, Object>, OSError> deserialize =
-      const _ForwardingConverter<Map<String, Object>, OSError>(_decode);
+      _ForwardingConverter<Map<String, Object>, OSError>(_decode);
 
   @override
   Converter<OSError, Map<String, Object>> get encoder => serialize;
@@ -714,19 +713,19 @@ class _ArgumentErrorCodec extends Codec<ArgumentError, Map<String, Object>> {
     dynamic invalidValue = input['invalidValue'];
     String name = input['name'];
     if (invalidValue != null) {
-      return new ArgumentError.value(invalidValue, name, message);
+      return ArgumentError.value(invalidValue, name, message);
     } else if (name != null) {
-      return new ArgumentError.notNull(name);
+      return ArgumentError.notNull(name);
     } else {
-      return new ArgumentError(message);
+      return ArgumentError(message);
     }
   }
 
   static const Converter<ArgumentError, Map<String, Object>> serialize =
-      const _ForwardingConverter<ArgumentError, Map<String, Object>>(_encode);
+      _ForwardingConverter<ArgumentError, Map<String, Object>>(_encode);
 
   static const Converter<Map<String, Object>, ArgumentError> deserialize =
-      const _ForwardingConverter<Map<String, Object>, ArgumentError>(_decode);
+      _ForwardingConverter<Map<String, Object>, ArgumentError>(_decode);
 
   @override
   Converter<ArgumentError, Map<String, Object>> get encoder => serialize;
@@ -749,16 +748,14 @@ class _NoSuchMethodErrorCodec
   }
 
   static NoSuchMethodError _decode(Map<String, Object> input) {
-    return new _NoSuchMethodError(input['toString']);
+    return _NoSuchMethodError(input['toString']);
   }
 
   static const Converter<NoSuchMethodError, Map<String, Object>> serialize =
-      const _ForwardingConverter<NoSuchMethodError, Map<String, Object>>(
-          _encode);
+      _ForwardingConverter<NoSuchMethodError, Map<String, Object>>(_encode);
 
   static const Converter<Map<String, Object>, NoSuchMethodError> deserialize =
-      const _ForwardingConverter<Map<String, Object>, NoSuchMethodError>(
-          _decode);
+      _ForwardingConverter<Map<String, Object>, NoSuchMethodError>(_decode);
 
   @override
   Converter<NoSuchMethodError, Map<String, Object>> get encoder => serialize;
@@ -768,9 +765,9 @@ class _NoSuchMethodErrorCodec
 }
 
 class _NoSuchMethodError extends Error implements NoSuchMethodError {
-  final String _toString;
-
   _NoSuchMethodError(this._toString);
+
+  final String _toString;
 
   @override
   String toString() => _toString;

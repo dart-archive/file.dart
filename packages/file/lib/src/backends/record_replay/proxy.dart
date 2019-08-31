@@ -13,6 +13,12 @@ abstract class ProxyObject {}
 /// method's getter. In these cases, the caller will receive a [MethodProxy]
 /// that allows delayed invocation of the method.
 class MethodProxy {
+  /// Creates a new [MethodProxy] that, when invoked, will invoke the method
+  /// identified by [methodName] on the specified target [object].
+  MethodProxy(ProxyObject object, Symbol methodName)
+      : _proxyObject = object,
+        _methodName = methodName;
+
   /// The object on which the method was retrieved.
   ///
   /// This will be the target object when this method proxy is invoked.
@@ -21,19 +27,13 @@ class MethodProxy {
   /// The name of the method in question.
   final Symbol _methodName;
 
-  /// Creates a new [MethodProxy] that, when invoked, will invoke the method
-  /// identified by [methodName] on the specified target [object].
-  MethodProxy(ProxyObject object, Symbol methodName)
-      : _proxyObject = object,
-        _methodName = methodName;
-
   @override
   dynamic noSuchMethod(Invocation invocation) {
     if (invocation.isMethod && invocation.memberName == #call) {
       // The method is being invoked. Capture the arguments, and invoke the
       // method on the proxy object. We have to synthesize an invocation, since
       // our current `invocation` object represents the invocation of `call()`.
-      return _proxyObject.noSuchMethod(new _MethodInvocationProxy(
+      return _proxyObject.noSuchMethod(_MethodInvocationProxy(
         _methodName,
         invocation.positionalArguments,
         invocation.namedArguments,

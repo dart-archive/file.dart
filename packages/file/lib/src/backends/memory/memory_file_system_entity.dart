@@ -20,18 +20,19 @@ import 'utils.dart' as utils;
 /// should not be allowed, this function is expected to throw a
 /// [io.FileSystemException]. The lack of such an exception will be interpreted
 /// as the overwrite being permissible.
-typedef void RenameOverwriteValidator<T extends Node>(T existingNode);
+typedef RenameOverwriteValidator<T extends Node> = void Function(
+    T existingNode);
 
 /// Base class for all in-memory file system entity types.
 abstract class MemoryFileSystemEntity implements FileSystemEntity {
+  /// Constructor for subclasses.
+  const MemoryFileSystemEntity(this.fileSystem, this.path);
+
   @override
   final NodeBasedFileSystem fileSystem;
 
   @override
   final String path;
-
-  /// Constructor for subclasses.
-  const MemoryFileSystemEntity(this.fileSystem, this.path);
 
   @override
   String get dirname => fileSystem.path.dirname(path);
@@ -91,8 +92,7 @@ abstract class MemoryFileSystemEntity implements FileSystemEntity {
 
   @override
   Uri get uri {
-    return new Uri.file(path,
-        windows: fileSystem.style == FileSystemStyle.windows);
+    return Uri.file(path, windows: fileSystem.style == FileSystemStyle.windows);
   }
 
   @override
@@ -129,21 +129,21 @@ abstract class MemoryFileSystemEntity implements FileSystemEntity {
   io.FileStat statSync() => fileSystem.statSync(path);
 
   @override
-  Future<FileSystemEntity> delete({bool recursive: false}) async {
+  Future<FileSystemEntity> delete({bool recursive = false}) async {
     deleteSync(recursive: recursive);
     return this;
   }
 
   @override
-  void deleteSync({bool recursive: false}) =>
+  void deleteSync({bool recursive = false}) =>
       internalDeleteSync(recursive: recursive);
 
   @override
   Stream<io.FileSystemEvent> watch({
-    int events: io.FileSystemEvent.all,
-    bool recursive: false,
+    int events = io.FileSystemEvent.all,
+    bool recursive = false,
   }) =>
-      throw new UnsupportedError('Watching not supported in MemoryFileSystem');
+      throw UnsupportedError('Watching not supported in MemoryFileSystem');
 
   @override
   bool get isAbsolute => fileSystem.path.isAbsolute(path);
@@ -158,7 +158,7 @@ abstract class MemoryFileSystemEntity implements FileSystemEntity {
   }
 
   @override
-  Directory get parent => new MemoryDirectory(fileSystem, dirname);
+  Directory get parent => MemoryDirectory(fileSystem, dirname);
 
   /// Helper method for subclasses wishing to synchronously create this entity.
   /// This method will traverse the path to this entity one segment at a time,
@@ -181,8 +181,8 @@ abstract class MemoryFileSystemEntity implements FileSystemEntity {
   @protected
   Node internalCreateSync({
     Node createChild(DirectoryNode parent, bool isFinalSegment),
-    bool followTailLink: false,
-    bool visitLinks: false,
+    bool followTailLink = false,
+    bool visitLinks = false,
   }) {
     return fileSystem.findNode(
       path,
@@ -237,7 +237,7 @@ abstract class MemoryFileSystemEntity implements FileSystemEntity {
   FileSystemEntity internalRenameSync<T extends Node>(
     String newPath, {
     RenameOverwriteValidator<T> validateOverwriteExistingEntity,
-    bool followTailLink: false,
+    bool followTailLink = false,
     utils.TypeChecker checkType,
   }) {
     Node node = backing;
@@ -283,7 +283,7 @@ abstract class MemoryFileSystemEntity implements FileSystemEntity {
   /// [defaultCheckType] is used to perform this validation.
   @protected
   void internalDeleteSync({
-    bool recursive: false,
+    bool recursive = false,
     utils.TypeChecker checkType,
   }) {
     Node node = backing;

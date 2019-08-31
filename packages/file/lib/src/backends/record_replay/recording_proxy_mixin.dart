@@ -117,19 +117,17 @@ mixin RecordingProxyMixin on Object implements ProxyObject, ReplayAware {
       // a getter on a method, in which case we return a method proxy that,
       // when invoked, will perform the desired recording.
       return invocation.isGetter && methods[name] != null
-          ? new MethodProxy(this, name)
+          ? MethodProxy(this, name)
           : super.noSuchMethod(invocation);
     }
 
     InvocationEvent<dynamic> createEvent({dynamic result, dynamic error}) {
       if (invocation.isGetter) {
-        return new LivePropertyGetEvent<dynamic>(
-            this, name, result, error, time);
+        return LivePropertyGetEvent<dynamic>(this, name, result, error, time);
       } else if (invocation.isSetter) {
-        return new LivePropertySetEvent<dynamic>(
-            this, name, args[0], error, time);
+        return LivePropertySetEvent<dynamic>(this, name, args[0], error, time);
       } else {
-        return new LiveMethodEvent<dynamic>(
+        return LiveMethodEvent<dynamic>(
             this, name, args, namedArgs, result, error, time);
       }
     }
@@ -150,40 +148,39 @@ mixin RecordingProxyMixin on Object implements ProxyObject, ReplayAware {
     // afterward.
     if (_runningDart1Runtime && value is Stream<dynamic>) {
       // This one is here for Dart 1 runtime mode.
-      value = new StreamReference<dynamic>(value);
+      value = StreamReference<dynamic>(value);
     } else if (value is Stream<FileSystemEntity>) {
-      value = new StreamReference<FileSystemEntity>(value);
+      value = StreamReference<FileSystemEntity>(value);
     } else if (value is Stream<String>) {
-      value = new StreamReference<String>(value);
+      value = StreamReference<String>(value);
     } else if (value is Stream) {
-      throw new UnimplementedError(
+      throw UnimplementedError(
           'Cannot record method with return type ${value.runtimeType}');
     } else if (_runningDart1Runtime && value is Future<dynamic>) {
       // This one is here for Dart 1 runtime mode.
-      value = new FutureReference<dynamic>(value);
+      value = FutureReference<dynamic>(value);
     } else if (value is Future<bool>) {
-      value = new FutureReference<bool>(value);
+      value = FutureReference<bool>(value);
     } else if (value is Future<Directory>) {
-      value = new FutureReference<Directory>(value);
+      value = FutureReference<Directory>(value);
     } else if (value is Future<File>) {
-      value = new FutureReference<File>(value);
+      value = FutureReference<File>(value);
     } else if (value is Future<FileNode>) {
-      value = new FutureReference<FileNode>(value);
+      value = FutureReference<FileNode>(value);
     } else if (value is Future<FileStat>) {
-      value = new FutureReference<FileStat>(value);
+      value = FutureReference<FileStat>(value);
     } else if (value is Future<Link>) {
-      value = new FutureReference<Link>(value);
+      value = FutureReference<Link>(value);
     } else if (value is Future<FileSystemEntity>) {
-      value = new FutureReference<FileSystemEntity>(value);
+      value = FutureReference<FileSystemEntity>(value);
     } else if (value is Future<FileSystemEntityType>) {
-      value = new FutureReference<FileSystemEntityType>(value);
+      value = FutureReference<FileSystemEntityType>(value);
     } else if (value is Future<String>) {
-      value = new FutureReference<String>(value);
+      value = FutureReference<String>(value);
     } else if (value is Future<RandomAccessFile>) {
-      value = new FutureReference<RandomAccessFile>(value);
-    } else if (value is Future) {
-      throw new UnimplementedError(
-          'Cannot record method with return type ${value.runtimeType}');
+      value = FutureReference<RandomAccessFile>(value);
+    } else if (value is Future<void>) {
+      value = FutureReference<void>(value);
     }
 
     // Record the invocation event associated with this invocation.

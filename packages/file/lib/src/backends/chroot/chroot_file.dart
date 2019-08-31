@@ -4,7 +4,7 @@
 
 part of file.src.backends.chroot;
 
-typedef dynamic _SetupCallback();
+typedef _SetupCallback = dynamic Function();
 
 class _ChrootFile extends _ChrootFileSystemEntity<File, io.File>
     with ForwardingFile {
@@ -13,10 +13,10 @@ class _ChrootFile extends _ChrootFileSystemEntity<File, io.File>
   factory _ChrootFile.wrapped(
     ChrootFileSystem fs,
     io.File delegate, {
-    bool relative: false,
+    bool relative = false,
   }) {
     String localPath = fs._local(delegate.path, relative: relative);
-    return new _ChrootFile(fs, localPath);
+    return _ChrootFile(fs, localPath);
   }
 
   @override
@@ -48,7 +48,7 @@ class _ChrootFile extends _ChrootFileSystemEntity<File, io.File>
           throw common.isADirectory(newPath);
         default:
           // Should never happen.
-          throw new AssertionError();
+          throw AssertionError();
       }
     }
 
@@ -63,10 +63,10 @@ class _ChrootFile extends _ChrootFileSystemEntity<File, io.File>
           await fileSystem.delegate
               .link(fileSystem._real(path))
               .rename(fileSystem._real(newPath));
-          return new _ChrootFile(fileSystem, newPath);
+          return _ChrootFile(fileSystem, newPath);
           break;
         default:
-          throw new AssertionError();
+          throw AssertionError();
       }
     } else {
       await setUp();
@@ -97,7 +97,7 @@ class _ChrootFile extends _ChrootFileSystemEntity<File, io.File>
           throw common.isADirectory(newPath);
         default:
           // Should never happen.
-          throw new AssertionError();
+          throw AssertionError();
       }
     }
 
@@ -112,10 +112,10 @@ class _ChrootFile extends _ChrootFileSystemEntity<File, io.File>
           fileSystem.delegate
               .link(fileSystem._real(path))
               .renameSync(fileSystem._real(newPath));
-          return new _ChrootFile(fileSystem, newPath);
+          return _ChrootFile(fileSystem, newPath);
           break;
         default:
-          throw new AssertionError();
+          throw AssertionError();
       }
     } else {
       setUp();
@@ -124,10 +124,10 @@ class _ChrootFile extends _ChrootFileSystemEntity<File, io.File>
   }
 
   @override
-  File get absolute => new _ChrootFile(fileSystem, _absolutePath);
+  File get absolute => _ChrootFile(fileSystem, _absolutePath);
 
   @override
-  Future<File> create({bool recursive: false}) async {
+  Future<File> create({bool recursive = false}) async {
     String path = fileSystem._resolve(
       this.path,
       followLinks: false,
@@ -151,7 +151,7 @@ class _ChrootFile extends _ChrootFileSystemEntity<File, io.File>
         case FileSystemEntityType.directory:
           throw common.isADirectory(path);
         default:
-          throw new AssertionError();
+          throw AssertionError();
       }
     } else {
       return wrap(await _rawDelegate(real()).create());
@@ -159,7 +159,7 @@ class _ChrootFile extends _ChrootFileSystemEntity<File, io.File>
   }
 
   @override
-  void createSync({bool recursive: false}) {
+  void createSync({bool recursive = false}) {
     String path = fileSystem._resolve(
       this.path,
       followLinks: false,
@@ -183,7 +183,7 @@ class _ChrootFile extends _ChrootFileSystemEntity<File, io.File>
         case FileSystemEntityType.directory:
           throw common.isADirectory(path);
         default:
-          throw new AssertionError();
+          throw AssertionError();
       }
     } else {
       _rawDelegate(real()).createSync();
@@ -242,12 +242,12 @@ class _ChrootFile extends _ChrootFileSystemEntity<File, io.File>
 
   @override
   Future<RandomAccessFile> open({
-    FileMode mode: FileMode.read,
+    FileMode mode = FileMode.read,
   }) async =>
       getDelegate(followLinks: true).open(mode: mode);
 
   @override
-  RandomAccessFile openSync({FileMode mode: FileMode.read}) =>
+  RandomAccessFile openSync({FileMode mode = FileMode.read}) =>
       getDelegate(followLinks: true).openSync(mode: mode);
 
   @override
@@ -256,8 +256,8 @@ class _ChrootFile extends _ChrootFileSystemEntity<File, io.File>
 
   @override
   IOSink openWrite({
-    FileMode mode: FileMode.write,
-    Encoding encoding: utf8,
+    FileMode mode = FileMode.write,
+    Encoding encoding = utf8,
   }) =>
       getDelegate(followLinks: true).openWrite(mode: mode, encoding: encoding);
 
@@ -270,26 +270,26 @@ class _ChrootFile extends _ChrootFileSystemEntity<File, io.File>
       getDelegate(followLinks: true).readAsBytesSync();
 
   @override
-  Future<String> readAsString({Encoding encoding: utf8}) =>
+  Future<String> readAsString({Encoding encoding = utf8}) =>
       getDelegate(followLinks: true).readAsString(encoding: encoding);
 
   @override
-  String readAsStringSync({Encoding encoding: utf8}) =>
+  String readAsStringSync({Encoding encoding = utf8}) =>
       getDelegate(followLinks: true).readAsStringSync(encoding: encoding);
 
   @override
-  Future<List<String>> readAsLines({Encoding encoding: utf8}) =>
+  Future<List<String>> readAsLines({Encoding encoding = utf8}) =>
       getDelegate(followLinks: true).readAsLines(encoding: encoding);
 
   @override
-  List<String> readAsLinesSync({Encoding encoding: utf8}) =>
+  List<String> readAsLinesSync({Encoding encoding = utf8}) =>
       getDelegate(followLinks: true).readAsLinesSync(encoding: encoding);
 
   @override
   Future<File> writeAsBytes(
     List<int> bytes, {
-    FileMode mode: FileMode.write,
-    bool flush: false,
+    FileMode mode = FileMode.write,
+    bool flush = false,
   }) async =>
       wrap(await getDelegate(followLinks: true).writeAsBytes(
         bytes,
@@ -300,8 +300,8 @@ class _ChrootFile extends _ChrootFileSystemEntity<File, io.File>
   @override
   void writeAsBytesSync(
     List<int> bytes, {
-    FileMode mode: FileMode.write,
-    bool flush: false,
+    FileMode mode = FileMode.write,
+    bool flush = false,
   }) =>
       getDelegate(followLinks: true)
           .writeAsBytesSync(bytes, mode: mode, flush: flush);
@@ -309,9 +309,9 @@ class _ChrootFile extends _ChrootFileSystemEntity<File, io.File>
   @override
   Future<File> writeAsString(
     String contents, {
-    FileMode mode: FileMode.write,
-    Encoding encoding: utf8,
-    bool flush: false,
+    FileMode mode = FileMode.write,
+    Encoding encoding = utf8,
+    bool flush = false,
   }) async =>
       wrap(await getDelegate(followLinks: true).writeAsString(
         contents,
@@ -323,9 +323,9 @@ class _ChrootFile extends _ChrootFileSystemEntity<File, io.File>
   @override
   void writeAsStringSync(
     String contents, {
-    FileMode mode: FileMode.write,
-    Encoding encoding: utf8,
-    bool flush: false,
+    FileMode mode = FileMode.write,
+    Encoding encoding = utf8,
+    bool flush = false,
   }) =>
       getDelegate(followLinks: true).writeAsStringSync(
         contents,

@@ -17,7 +17,7 @@ class ReplayLink extends ReplayFileSystemEntity implements Link {
   /// Creates a new `ReplayLink`.
   ReplayLink(ReplayFileSystemImpl fileSystem, String identifier)
       : super(fileSystem, identifier) {
-    Converter<String, Link> reviveLink = new ReviveLink(fileSystem);
+    Converter<String, Link> reviveLink = ReviveLink(fileSystem);
     Converter<String, Future<Link>> reviveLinkAsFuture =
         reviveLink.fuse(const ToFuture<Link>());
 

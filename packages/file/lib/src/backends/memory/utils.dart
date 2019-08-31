@@ -20,7 +20,7 @@ bool isLink(Node node) => node?.type == io.FileSystemEntityType.link;
 
 /// Validator function that is expected to throw a [FileSystemException] if
 /// the node does not represent the type that is expected in any given context.
-typedef void TypeChecker(Node node);
+typedef TypeChecker = void Function(Node node);
 
 /// Throws a [io.FileSystemException] if [node] is not a directory.
 void checkIsDir(Node node, PathGenerator path) {
@@ -47,7 +47,7 @@ void checkType(
         throw common.invalidArgument(path());
       default:
         // Should not happen
-        throw new AssertionError();
+        throw AssertionError();
     }
   }
 }
@@ -85,7 +85,7 @@ Node resolveLinks(
   Node tailVisitor(DirectoryNode parent, String childName, Node child),
 }) {
   // Record a breadcrumb trail to guard against symlink loops.
-  Set<LinkNode> breadcrumbs = new Set<LinkNode>();
+  Set<LinkNode> breadcrumbs = Set<LinkNode>();
 
   Node node = link;
   while (isLink(node)) {

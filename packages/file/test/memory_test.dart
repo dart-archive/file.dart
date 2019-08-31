@@ -12,7 +12,7 @@ void main() {
     MemoryFileSystem fs;
 
     setUp(() {
-      fs = new MemoryFileSystem();
+      fs = MemoryFileSystem();
     });
 
     runCommonTests(
@@ -41,7 +41,7 @@ void main() {
     MemoryFileSystem fs;
 
     setUp(() {
-      fs = new MemoryFileSystem(style: FileSystemStyle.windows);
+      fs = MemoryFileSystem(style: FileSystemStyle.windows);
     });
 
     runCommonTests(

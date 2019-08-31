@@ -2,11 +2,10 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-@TestOn("vm")
+@TestOn('vm')
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io' as io;
-import 'dart:typed_data';
 
 import 'package:file/file.dart';
 import 'package:file_testing/file_testing.dart';
@@ -18,16 +17,16 @@ import 'utils.dart';
 
 /// Callback used in [runCommonTests] to produce the root folder in which all
 /// file system entities will be created.
-typedef String RootPathGenerator();
+typedef RootPathGenerator = String Function();
 
 /// Callback used in [runCommonTests] to create the file system under test.
 /// It must return either a [FileSystem] or a [Future] that completes with a
 /// [FileSystem].
-typedef dynamic FileSystemGenerator();
+typedef FileSystemGenerator = dynamic Function();
 
 /// A function to run before tests (passed to [setUp]) or after tests
 /// (passed to [tearDown]).
-typedef dynamic SetUpTearDown();
+typedef SetUpTearDown = dynamic Function();
 
 /// Runs a suite of tests common to all file system implementations. All file
 /// system implementations should run *at least* these tests to ensure
@@ -52,7 +51,7 @@ typedef dynamic SetUpTearDown();
 void runCommonTests(
   FileSystemGenerator createFileSystem, {
   RootPathGenerator root,
-  List<String> skip: const <String>[],
+  List<String> skip = const <String>[],
   FileSystemGenerator replay,
 }) {
   RootPathGenerator rootfn = root;
@@ -69,7 +68,7 @@ void runCommonTests(
     void skipIfNecessary(String description, void callback()) {
       stack.add(description);
       bool matchesCurrentFrame(String input) =>
-          new RegExp('^$input\$').hasMatch(stack.join(' > '));
+          RegExp('^$input\$').hasMatch(stack.join(' > '));
       if (skip.where(matchesCurrentFrame).isEmpty) {
         callback();
       }
@@ -129,7 +128,7 @@ void runCommonTests(
     /// Returns [path] prefixed by the [root] namespace.
     /// This is only intended for absolute paths.
     String ns(String path) {
-      p.Context posix = new p.Context(style: p.Style.posix);
+      p.Context posix = p.Context(style: p.Style.posix);
       List<String> parts = posix.split(path);
       parts[0] = root;
       path = fs.path.joinAll(parts);
@@ -168,7 +167,7 @@ void runCommonTests(
         });
 
         test('allowsDirectoryArgument', () {
-          expect(fs.directory(new io.Directory(ns('/foo'))), isDirectory);
+          expect(fs.directory(io.Directory(ns('/foo'))), isDirectory);
         });
 
         test('disallowsOtherArgumentType', () {
@@ -180,7 +179,7 @@ void runCommonTests(
         test('considersBothSlashesEquivalent', () {
           fs.directory(r'foo\bar_dir').createSync(recursive: true);
           expect(fs.directory(r'foo/bar_dir'), exists);
-        }, skip: "Fails due to https://github.com/google/file.dart/issues/112");
+        }, skip: 'Fails due to https://github.com/google/file.dart/issues/112');
       });
 
       group('file', () {
@@ -199,7 +198,7 @@ void runCommonTests(
         });
 
         test('allowsDirectoryArgument', () {
-          expect(fs.file(new io.File(ns('/foo'))), isFile);
+          expect(fs.file(io.File(ns('/foo'))), isFile);
         });
 
         test('disallowsOtherArgumentType', () {
@@ -211,7 +210,7 @@ void runCommonTests(
         test('considersBothSlashesEquivalent', () {
           fs.file(r'foo\bar_file').createSync(recursive: true);
           expect(fs.file(r'foo/bar_file'), exists);
-        }, skip: "Fails due to https://github.com/google/file.dart/issues/112");
+        }, skip: 'Fails due to https://github.com/google/file.dart/issues/112');
       });
 
       group('link', () {
@@ -231,7 +230,7 @@ void runCommonTests(
         });
 
         test('allowsDirectoryArgument', () {
-          expect(fs.link(new io.File(ns('/foo'))), isLink);
+          expect(fs.link(io.File(ns('/foo'))), isLink);
         });
 
         test('disallowsOtherArgumentType', () {
@@ -283,7 +282,7 @@ void runCommonTests(
 
         test('succeedsIfSetToValidDirectory', () {
           fs.directory(ns('/foo')).createSync();
-          fs.currentDirectory = new io.Directory(ns('/foo'));
+          fs.currentDirectory = io.Directory(ns('/foo'));
           expect(fs.currentDirectory.path, ns('/foo'));
         });
 
@@ -320,7 +319,7 @@ void runCommonTests(
 
         test('staysAtRootIfSetToParentOfRoot', () {
           fs.currentDirectory =
-              new List<String>.filled(20, '..').join(fs.path.separator);
+              List<String>.filled(20, '..').join(fs.path.separator);
           String cwd = fs.currentDirectory.path;
           expect(cwd, fs.path.rootPrefix(cwd));
         });
@@ -463,8 +462,8 @@ void runCommonTests(
         });
 
         test('isDirectoryForAncestorOfRoot', () {
-          FileSystemEntityType type = fs.typeSync(
-              new List<String>.filled(20, '..').join(fs.path.separator));
+          FileSystemEntityType type = fs
+              .typeSync(List<String>.filled(20, '..').join(fs.path.separator));
           expect(type, FileSystemEntityType.directory);
         });
 
@@ -1601,7 +1600,7 @@ void runCommonTests(
       });
 
       group('setLastAccessed', () {
-        final DateTime time = new DateTime(1999);
+        final DateTime time = DateTime(1999);
 
         test('throwsIfDoesntExist', () {
           expectFileSystemException(ErrorCodes.ENOENT, () {
@@ -1665,7 +1664,7 @@ void runCommonTests(
       });
 
       group('setLastModified', () {
-        final DateTime time = new DateTime(1999);
+        final DateTime time = DateTime(1999);
 
         test('throwsIfDoesntExist', () {
           expectFileSystemException(ErrorCodes.ENOENT, () {
@@ -1792,7 +1791,7 @@ void runCommonTests(
 
               test('throwsIfReadInto', () {
                 expectFileSystemException(ErrorCodes.EBADF, () {
-                  raf.readIntoSync(new List<int>(5));
+                  raf.readIntoSync(List<int>(5));
                 });
               });
             } else {
@@ -1817,7 +1816,7 @@ void runCommonTests(
                 });
 
                 test('readIntoWithBufferLargerThanContent', () {
-                  List<int> buffer = new List<int>(1024);
+                  List<int> buffer = List<int>(1024);
                   int numRead = raf.readIntoSync(buffer);
                   expect(numRead, 21);
                   expect(utf8.decode(buffer.sublist(0, 21)),
@@ -1825,21 +1824,21 @@ void runCommonTests(
                 });
 
                 test('readIntoWithBufferSmallerThanContent', () {
-                  List<int> buffer = new List<int>(10);
+                  List<int> buffer = List<int>(10);
                   int numRead = raf.readIntoSync(buffer);
                   expect(numRead, 10);
                   expect(utf8.decode(buffer), 'pre-existi');
                 });
 
                 test('readIntoWithStart', () {
-                  List<int> buffer = new List<int>(10);
+                  List<int> buffer = List<int>(10);
                   int numRead = raf.readIntoSync(buffer, 2);
                   expect(numRead, 8);
                   expect(utf8.decode(buffer.sublist(2)), 'pre-exis');
                 });
 
                 test('readIntoWithStartAndEnd', () {
-                  List<int> buffer = new List<int>(10);
+                  List<int> buffer = List<int>(10);
                   int numRead = raf.readIntoSync(buffer, 2, 5);
                   expect(numRead, 3);
                   expect(utf8.decode(buffer.sublist(2, 5)), 'pre');
@@ -2224,7 +2223,7 @@ void runCommonTests(
           });
 
           test('throwsIfAddError', () async {
-            sink.addError(new ArgumentError());
+            sink.addError(ArgumentError());
             expect(sink.done, throwsArgumentError);
             isSinkClosed = true;
           });
@@ -2312,7 +2311,7 @@ void runCommonTests(
             }
 
             setUp(() {
-              controller = new StreamController<List<int>>();
+              controller = StreamController<List<int>>();
               sink.addStream(controller.stream);
             });
 
@@ -2569,7 +2568,7 @@ void runCommonTests(
         test('updatesLastModifiedTime', () async {
           File f = fs.file(ns('/foo'))..createSync();
           DateTime before = f.statSync().modified;
-          await new Future<Null>.delayed(const Duration(seconds: 2));
+          await Future<void>.delayed(const Duration(seconds: 2));
           f.writeAsBytesSync(<int>[1, 2, 3]);
           DateTime after = f.statSync().modified;
           expect(after, isAfter(before));

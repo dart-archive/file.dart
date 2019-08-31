@@ -83,17 +83,17 @@ abstract class RecordingFileSystemEntity<T extends FileSystemEntity>
   /// by the specified delegate directory.
   @protected
   Directory wrapDirectory(io.Directory delegate) =>
-      new RecordingDirectory(fileSystem, delegate);
+      RecordingDirectory(fileSystem, delegate);
 
   /// Returns a file with the same file system as this entity but backed
   /// by the specified delegate file.
   @protected
-  File wrapFile(io.File delegate) => new RecordingFile(fileSystem, delegate);
+  File wrapFile(io.File delegate) => RecordingFile(fileSystem, delegate);
 
   /// Returns a link with the same file system as this entity but backed
   /// by the specified delegate link.
   @protected
-  Link wrapLink(io.Link delegate) => new RecordingLink(fileSystem, delegate);
+  Link wrapLink(io.Link delegate) => RecordingLink(fileSystem, delegate);
 
   Future<T> _rename(String newPath) => delegate
       .rename(newPath)
@@ -101,7 +101,7 @@ abstract class RecordingFileSystemEntity<T extends FileSystemEntity>
 
   T _renameSync(String newPath) => wrap(delegate.renameSync(newPath) as T);
 
-  Future<T> _delete({bool recursive: false}) => delegate
+  Future<T> _delete({bool recursive = false}) => delegate
       .delete(recursive: recursive)
       .then((io.FileSystemEntity entity) => wrap(entity as T));
 

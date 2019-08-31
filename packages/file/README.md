@@ -33,7 +33,7 @@ Use the in-memory file system:
 ```dart
 import 'package:file/memory.dart';
 
-var fs = new MemoryFileSystem();
+var fs = MemoryFileSystem();
 ```
 
 Use the local file system (requires dart:io access):

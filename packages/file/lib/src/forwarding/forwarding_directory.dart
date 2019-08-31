@@ -14,11 +14,11 @@ abstract class ForwardingDirectory<T extends Directory>
   T wrap(io.Directory delegate) => wrapDirectory(delegate);
 
   @override
-  Future<Directory> create({bool recursive: false}) async =>
+  Future<Directory> create({bool recursive = false}) async =>
       wrap(await delegate.create(recursive: recursive));
 
   @override
-  void createSync({bool recursive: false}) =>
+  void createSync({bool recursive = false}) =>
       delegate.createSync(recursive: recursive);
 
   @override
@@ -31,15 +31,15 @@ abstract class ForwardingDirectory<T extends Directory>
 
   @override
   Stream<FileSystemEntity> list({
-    bool recursive: false,
-    bool followLinks: true,
+    bool recursive = false,
+    bool followLinks = true,
   }) =>
       delegate.list(recursive: recursive, followLinks: followLinks).map(_wrap);
 
   @override
   List<FileSystemEntity> listSync({
-    bool recursive: false,
-    bool followLinks: true,
+    bool recursive = false,
+    bool followLinks = true,
   }) =>
       delegate
           .listSync(recursive: recursive, followLinks: followLinks)
@@ -54,6 +54,6 @@ abstract class ForwardingDirectory<T extends Directory>
     } else if (entity is io.Link) {
       return wrapLink(entity);
     }
-    throw new FileSystemException('Unsupported type: $entity', entity.path);
+    throw FileSystemException('Unsupported type: $entity', entity.path);
   }
 }

@@ -5,14 +5,15 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'file_system_entity.dart';
 import '../io.dart' as io;
+
+import 'file_system_entity.dart';
 
 /// A reference to a file on the file system.
 abstract class File implements FileSystemEntity, io.File {
   // Override method definitions to codify the return type covariance.
   @override
-  Future<File> create({bool recursive: false});
+  Future<File> create({bool recursive = false});
 
   @override
   Future<File> rename(String newPath);
@@ -31,11 +32,11 @@ abstract class File implements FileSystemEntity, io.File {
 
   @override
   Future<File> writeAsBytes(List<int> bytes,
-      {io.FileMode mode: io.FileMode.write, bool flush: false});
+      {io.FileMode mode = io.FileMode.write, bool flush = false});
 
   @override
   Future<File> writeAsString(String contents,
-      {io.FileMode mode: io.FileMode.write,
-      Encoding encoding: utf8,
-      bool flush: false});
+      {io.FileMode mode = io.FileMode.write,
+      Encoding encoding = utf8,
+      bool flush = false});
 }

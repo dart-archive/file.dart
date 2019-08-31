@@ -1,14 +1,19 @@
 name: file
-version: 5.0.8+1
+version: 5.0.9
 authors:
 - Matan Lurey <matanl@google.com>
 - Yegor Jbanov <yjbanov@google.com>
 - Todd Volkert <tvolkert@google.com>
-description: A pluggable, mockable file system abstraction for Dart.
+
+description:
+  A pluggable, mockable file system abstraction for Dart. Supports local file
+  system access, as well as in-memory file systems, record-replay file systems,
+  and chroot file systems.
+
 homepage: https://github.com/google/file.dart
 
 dependencies:
-  intl: '>=0.14.0 <0.16.0'
+  intl: '>=0.14.0 <1.0.0'
   meta: ^1.1.2
   path: ^1.5.1
 
@@ -17,4 +22,4 @@ dev_dependencies:
   file_testing: '>=2.0.0 <3.0.0'
 
 environment:
-  sdk: '>=2.0.0-dev.67.0 <3.0.0'
+  sdk: '>=2.2.2 <3.0.0'

@@ -21,18 +21,18 @@ import 'utils.dart' as utils;
 class MemoryDirectory extends MemoryFileSystemEntity
     with common.DirectoryAddOnsMixin
     implements Directory {
-  static int _tempCounter = 0;
-
   /// Instantiates a new [MemoryDirectory].
   MemoryDirectory(NodeBasedFileSystem fileSystem, String path)
       : super(fileSystem, path);
+
+  static int _tempCounter = 0;
 
   @override
   io.FileSystemEntityType get expectedType => io.FileSystemEntityType.directory;
 
   @override
   Uri get uri {
-    return new Uri.directory(path,
+    return Uri.directory(path,
         windows: fileSystem.style == FileSystemStyle.windows);
   }
 
@@ -40,19 +40,19 @@ class MemoryDirectory extends MemoryFileSystemEntity
   bool existsSync() => backingOrNull?.stat?.type == expectedType;
 
   @override
-  Future<Directory> create({bool recursive: false}) async {
+  Future<Directory> create({bool recursive = false}) async {
     createSync(recursive: recursive);
     return this;
   }
 
   @override
-  void createSync({bool recursive: false}) {
+  void createSync({bool recursive = false}) {
     Node node = internalCreateSync(
       followTailLink: true,
       visitLinks: true,
       createChild: (DirectoryNode parent, bool isFinalSegment) {
         if (recursive || isFinalSegment) {
-          return new DirectoryNode(parent);
+          return DirectoryNode(parent);
         }
         return null;
       },
@@ -79,10 +79,9 @@ class MemoryDirectory extends MemoryFileSystemEntity
     while (node.children.containsKey(name())) {
       _tempCounter++;
     }
-    DirectoryNode tempDir = new DirectoryNode(node);
+    DirectoryNode tempDir = DirectoryNode(node);
     node.children[name()] = tempDir;
-    return new MemoryDirectory(
-        fileSystem, fileSystem.path.join(dirname, name()));
+    return MemoryDirectory(fileSystem, fileSystem.path.join(dirname, name()));
   }
 
   @override
@@ -107,34 +106,34 @@ class MemoryDirectory extends MemoryFileSystemEntity
 
   @override
   Stream<FileSystemEntity> list({
-    bool recursive: false,
-    bool followLinks: true,
+    bool recursive = false,
+    bool followLinks = true,
   }) =>
-      new Stream<FileSystemEntity>.fromIterable(listSync(
+      Stream<FileSystemEntity>.fromIterable(listSync(
         recursive: recursive,
         followLinks: followLinks,
       ));
 
   @override
   List<FileSystemEntity> listSync({
-    bool recursive: false,
-    bool followLinks: true,
+    bool recursive = false,
+    bool followLinks = true,
   }) {
     DirectoryNode node = backing;
     List<FileSystemEntity> listing = <FileSystemEntity>[];
     List<_PendingListTask> tasks = <_PendingListTask>[
-      new _PendingListTask(
+      _PendingListTask(
         node,
         path.endsWith(fileSystem.path.separator)
             ? path.substring(0, path.length - 1)
             : path,
-        new Set<LinkNode>(),
+        Set<LinkNode>(),
       ),
     ];
     while (tasks.isNotEmpty) {
       _PendingListTask task = tasks.removeLast();
       task.dir.children.forEach((String name, Node child) {
-        Set<LinkNode> breadcrumbs = new Set<LinkNode>.from(task.breadcrumbs);
+        Set<LinkNode> breadcrumbs = Set<LinkNode>.from(task.breadcrumbs);
         String childPath = fileSystem.path.join(task.path, name);
         while (followLinks && utils.isLink(child) && breadcrumbs.add(child)) {
           Node referent = (child as LinkNode).referentOrNull;
@@ -143,14 +142,14 @@ class MemoryDirectory extends MemoryFileSystemEntity
           }
         }
         if (utils.isDirectory(child)) {
-          listing.add(new MemoryDirectory(fileSystem, childPath));
+          listing.add(MemoryDirectory(fileSystem, childPath));
           if (recursive) {
-            tasks.add(new _PendingListTask(child, childPath, breadcrumbs));
+            tasks.add(_PendingListTask(child, childPath, breadcrumbs));
           }
         } else if (utils.isLink(child)) {
-          listing.add(new MemoryLink(fileSystem, childPath));
+          listing.add(MemoryLink(fileSystem, childPath));
         } else if (utils.isFile(child)) {
-          listing.add(new MemoryFile(fileSystem, childPath));
+          listing.add(MemoryFile(fileSystem, childPath));
         }
       });
     }
@@ -159,15 +158,15 @@ class MemoryDirectory extends MemoryFileSystemEntity
 
   @override
   @protected
-  Directory clone(String path) => new MemoryDirectory(fileSystem, path);
+  Directory clone(String path) => MemoryDirectory(fileSystem, path);
 
   @override
   String toString() => "MemoryDirectory: '$path'";
 }
 
 class _PendingListTask {
+  _PendingListTask(this.dir, this.path, this.breadcrumbs);
   final DirectoryNode dir;
   final String path;
   final Set<LinkNode> breadcrumbs;
-  _PendingListTask(this.dir, this.path, this.breadcrumbs);
 }

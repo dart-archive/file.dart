@@ -41,7 +41,7 @@ abstract class ReplayFileSystemEntity extends Object
       #path: const Passthrough<String>(),
       #uri: UriCodec.deserialize,
       #isAbsolute: const Passthrough<bool>(),
-      #parent: new ReviveDirectory(fileSystem),
+      #parent: ReviveDirectory(fileSystem),
       #basename: const Passthrough<String>(),
       #dirname: const Passthrough<String>(),
     });

@@ -64,17 +64,17 @@ abstract class ForwardingFileSystemEntity<T extends FileSystemEntity,
   io.FileStat statSync() => delegate.statSync();
 
   @override
-  Future<T> delete({bool recursive: false}) async =>
+  Future<T> delete({bool recursive = false}) async =>
       wrap(await delegate.delete(recursive: recursive) as D);
 
   @override
-  void deleteSync({bool recursive: false}) =>
+  void deleteSync({bool recursive = false}) =>
       delegate.deleteSync(recursive: recursive);
 
   @override
   Stream<FileSystemEvent> watch({
-    int events: FileSystemEvent.all,
-    bool recursive: false,
+    int events = FileSystemEvent.all,
+    bool recursive = false,
   }) =>
       delegate.watch(events: events, recursive: recursive);
 
