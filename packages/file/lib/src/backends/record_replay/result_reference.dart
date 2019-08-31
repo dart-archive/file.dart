@@ -76,7 +76,8 @@ class FutureReference<T> extends ResultReference<Future<T>> {
     return _future.then(
       (T value) {
         if (_isVoid && value != null) {
-          throw StateError('Unexpected value in $runtimeType: ${_future.runtimeType}');
+          throw StateError(
+              'Unexpected value in $runtimeType: ${_future.runtimeType}');
         }
         _value = value;
         return value;
