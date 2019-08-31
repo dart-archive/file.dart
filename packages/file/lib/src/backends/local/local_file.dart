@@ -11,7 +11,7 @@ import 'local_file_system_entity.dart';
 /// [File] implementation that forwards all calls to `dart:io`.
 class LocalFile extends LocalFileSystemEntity<File, io.File>
     with ForwardingFile {
-  /// Instantiates a [LocalFile] tied to the specified file system
+  /// Instantiates a new [LocalFile] tied to the specified file system
   /// and delegating to the specified [delegate].
   LocalFile(FileSystem fs, io.File delegate) : super(fs, delegate);
 

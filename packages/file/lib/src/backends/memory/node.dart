@@ -92,7 +92,7 @@ abstract class NodeBasedFileSystem implements StyleableFileSystem {
 /// This data structure is loosely based on a Unix-style file system inode
 /// (hence the name).
 abstract class Node {
-  /// Constructs a [Node] as a child of the specified parent.
+  /// Constructs a new [Node] as a child of the specified parent.
   Node(this._parent) {
     if (_parent == null && !isRoot) {
       throw const io.FileSystemException('All nodes must have a parent.');
@@ -140,7 +140,7 @@ abstract class Node {
 /// substance (namely, node types that will not redirect to other types when
 /// you call [stat] on them).
 abstract class RealNode extends Node {
-  /// Constructs a [RealNode] as a child of the specified [parent].
+  /// Constructs a new [RealNode] as a child of the specified [parent].
   RealNode(DirectoryNode parent) : super(parent) {
     int now = DateTime.now().millisecondsSinceEpoch;
     changed = now;
@@ -183,7 +183,7 @@ abstract class RealNode extends Node {
 
 /// Class that represents the backing for an in-memory directory.
 class DirectoryNode extends RealNode {
-  /// Constructs a [DirectoryNode] as a child of the specified [parent].
+  /// Constructs a new [DirectoryNode] as a child of the specified [parent].
   DirectoryNode(DirectoryNode parent) : super(parent);
 
   /// Child nodes, indexed by their basename.
@@ -201,7 +201,7 @@ class DirectoryNode extends RealNode {
 
 /// Class that represents the backing for the root of the in-memory file system.
 class RootNode extends DirectoryNode {
-  /// Constructs a [RootNode] tied to the specified file system.
+  /// Constructs a new [RootNode] tied to the specified file system.
   RootNode(this.fs)
       : assert(fs != null),
         assert(fs.root == null),
@@ -223,7 +223,7 @@ class RootNode extends DirectoryNode {
 
 /// Class that represents the backing for an in-memory regular file.
 class FileNode extends RealNode {
-  /// Constructs a [FileNode] as a child of the specified [parent].
+  /// Constructs a new [FileNode] as a child of the specified [parent].
   FileNode(DirectoryNode parent) : super(parent);
 
   /// File contents in bytes.
@@ -262,7 +262,7 @@ class FileNode extends RealNode {
 
 /// Class that represents the backing for an in-memory symbolic link.
 class LinkNode extends Node {
-  /// Constructs a [LinkNode] as a child of the specified [parent] and
+  /// Constructs a new [LinkNode] as a child of the specified [parent] and
   /// linking to the specified [target] path.
   LinkNode(DirectoryNode parent, this.target)
       : assert(target != null && target.isNotEmpty),

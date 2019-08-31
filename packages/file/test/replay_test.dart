@@ -29,7 +29,7 @@ void main() {
       recording = recordingFileSystem.recording;
     });
 
-    /// Creates a [ReplayFileSystem] that will replay a recording of the
+    /// Creates a new [ReplayFileSystem] that will replay a recording of the
     /// events that have been recorded within [recordingFileSystem] thus far.
     Future<ReplayFileSystem> replay() async {
       await recording.flush();

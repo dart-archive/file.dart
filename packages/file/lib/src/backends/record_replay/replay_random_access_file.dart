@@ -17,7 +17,7 @@ import 'replay_proxy_mixin.dart';
 class ReplayRandomAccessFile extends Object
     with ReplayProxyMixin
     implements RandomAccessFile {
-  /// Creates a [ReplayRandomAccessFile].
+  /// Creates a new [ReplayRandomAccessFile].
   ReplayRandomAccessFile(this._fileSystem, this.identifier) {
     ToFuture<RandomAccessFile> toFuture = const ToFuture<RandomAccessFile>();
     Converter<String, Future<RandomAccessFile>> reviveRandomAccessFileAsFuture =

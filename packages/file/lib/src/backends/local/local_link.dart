@@ -11,7 +11,7 @@ import 'local_file_system_entity.dart';
 /// [Link] implementation that forwards all calls to `dart:io`.
 class LocalLink extends LocalFileSystemEntity<Link, io.Link>
     with ForwardingLink {
-  /// Instantiates a [LocalLink] tied to the specified file system
+  /// Instantiates a new [LocalLink] tied to the specified file system
   /// and delegating to the specified [delegate].
   LocalLink(FileSystem fs, io.Link delegate) : super(fs, delegate);
 

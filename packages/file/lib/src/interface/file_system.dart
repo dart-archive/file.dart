@@ -53,7 +53,7 @@ abstract class FileSystem {
 
   /// Sets the current working directory to the specified [path].
   ///
-  /// The value set can be either a [Directory] or a [String].
+  /// The new value set can be either a [Directory] or a [String].
   ///
   /// Relative paths will be resolved by the underlying file system
   /// implementation (meaning it is up to the underlying implementation to

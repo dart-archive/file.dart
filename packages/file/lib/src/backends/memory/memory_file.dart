@@ -19,7 +19,7 @@ import 'utils.dart' as utils;
 
 /// Internal implementation of [File].
 class MemoryFile extends MemoryFileSystemEntity implements File {
-  /// Instantiates a [MemoryFile].
+  /// Instantiates a new [MemoryFile].
   const MemoryFile(NodeBasedFileSystem fileSystem, String path)
       : super(fileSystem, path);
 

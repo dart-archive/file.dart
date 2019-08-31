@@ -62,7 +62,7 @@ abstract class ResultReference<T> {
 
 /// Wraps a future result.
 class FutureReference<T> extends ResultReference<Future<T>> {
-  /// Creates a `FutureReference` that wraps the specified [future].
+  /// Creates a new `FutureReference` that wraps the specified [future].
   FutureReference(Future<T> future) : _future = future;
 
   final Future<T> _future;
@@ -106,7 +106,7 @@ class _TypeLiteral<T> {
 
 /// Wraps a stream result.
 class StreamReference<T> extends ResultReference<Stream<T>> {
-  /// Creates a `StreamReference` that wraps the specified [stream].
+  /// Creates a new `StreamReference` that wraps the specified [stream].
   StreamReference(Stream<T> stream)
       : _stream = stream,
         _controller = stream.isBroadcast

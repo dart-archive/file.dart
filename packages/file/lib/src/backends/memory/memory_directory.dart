@@ -21,7 +21,7 @@ import 'utils.dart' as utils;
 class MemoryDirectory extends MemoryFileSystemEntity
     with common.DirectoryAddOnsMixin
     implements Directory {
-  /// Instantiates a [MemoryDirectory].
+  /// Instantiates a new [MemoryDirectory].
   MemoryDirectory(NodeBasedFileSystem fileSystem, String path)
       : super(fileSystem, path);
 

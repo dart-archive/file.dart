@@ -76,7 +76,7 @@ abstract class MethodEvent<T> extends InvocationEvent<T> {
 
 /// An [InvocationEvent] that's in the process of being recorded.
 abstract class LiveInvocationEvent<T> implements InvocationEvent<T> {
-  /// Creates a [LiveInvocationEvent].
+  /// Creates a new [LiveInvocationEvent].
   LiveInvocationEvent(this.object, this._result, this.error, this.timestamp);
 
   final dynamic _result;
@@ -138,7 +138,7 @@ abstract class LiveInvocationEvent<T> implements InvocationEvent<T> {
 /// A [PropertyGetEvent] that's in the process of being recorded.
 class LivePropertyGetEvent<T> extends LiveInvocationEvent<T>
     implements PropertyGetEvent<T> {
-  /// Creates a [LivePropertyGetEvent].
+  /// Creates a new [LivePropertyGetEvent].
   LivePropertyGetEvent(
       Object object, this.property, T result, dynamic error, int timestamp)
       : super(object, result, error, timestamp);
@@ -158,7 +158,7 @@ class LivePropertyGetEvent<T> extends LiveInvocationEvent<T>
 /// A [PropertySetEvent] that's in the process of being recorded.
 class LivePropertySetEvent<T> extends LiveInvocationEvent<Null>
     implements PropertySetEvent<T> {
-  /// Creates a [LivePropertySetEvent].
+  /// Creates a new [LivePropertySetEvent].
   LivePropertySetEvent(
       Object object, this.property, this.value, dynamic error, int timestamp)
       : super(object, null, error, timestamp);
@@ -182,7 +182,7 @@ class LivePropertySetEvent<T> extends LiveInvocationEvent<Null>
 /// A [MethodEvent] that's in the process of being recorded.
 class LiveMethodEvent<T> extends LiveInvocationEvent<T>
     implements MethodEvent<T> {
-  /// Creates a [LiveMethodEvent].
+  /// Creates a new [LiveMethodEvent].
   LiveMethodEvent(
     Object object,
     this.method,

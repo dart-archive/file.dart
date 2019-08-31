@@ -103,7 +103,7 @@ class _StringSinkWrapper implements Sink<String> {
 /// An Converter version of the dart:convert LineSplitter (which in
 /// 2.0 no longer implements the Converter interface)
 class LineSplitterConverter extends Converter<String, List<String>> {
-  /// Creates a [LineSplitterConverter]
+  /// Creates a new [LineSplitterConverter]
   const LineSplitterConverter();
 
   LineSplitter get _splitter => const LineSplitter();
@@ -117,7 +117,7 @@ class LineSplitterConverter extends Converter<String, List<String>> {
 
 /// Converter that leaves an object untouched.
 class Passthrough<T> extends Converter<T, T> {
-  /// Creates a [Passthrough].
+  /// Creates a new [Passthrough].
   const Passthrough();
 
   @override
@@ -163,7 +163,7 @@ class _SymbolEncoder extends Converter<Symbol, String> {
 
 /// A [DateTimeCodec] serializes and deserializes [DateTime] instances.
 class DateTimeCodec extends Codec<DateTime, int> {
-  /// Creates a [DateTimeCodec].
+  /// Creates a new [DateTimeCodec].
   const DateTimeCodec();
 
   static int _encode(DateTime input) => input?.millisecondsSinceEpoch;
@@ -189,7 +189,7 @@ class DateTimeCodec extends Codec<DateTime, int> {
 
 /// A [UriCodec] serializes and deserializes [Uri] instances.
 class UriCodec extends Codec<Uri, String> {
-  /// Creates a [UriCodec].
+  /// Creates a new [UriCodec].
   const UriCodec();
 
   static String _encode(Uri input) => input.toString();
@@ -213,7 +213,7 @@ class UriCodec extends Codec<Uri, String> {
 
 /// A [PathContextCodec] serializes and deserializes [path.Context] instances.
 class PathContextCodec extends Codec<path.Context, Map<String, String>> {
-  /// Creates a [PathContextCodec].
+  /// Creates a new [PathContextCodec].
   const PathContextCodec();
 
   static Map<String, String> _encode(path.Context input) {
@@ -275,7 +275,7 @@ class _ReplayAwareEncoder extends Converter<ReplayAware, String> {
 
 /// An [EncodingCodec] serializes and deserializes [Encoding] instances.
 class EncodingCodec extends Codec<Encoding, String> {
-  /// Creates a [EncodingCodec].
+  /// Creates a new [EncodingCodec].
   const EncodingCodec();
 
   static String _encode(Encoding input) => input.name;
@@ -327,7 +327,7 @@ class _FileModeEncoder extends Converter<FileMode, String> {
 
 /// An [FileStatCodec] serializes and deserializes [FileStat] instances.
 class FileStatCodec extends Codec<FileStat, Map<String, Object>> {
-  /// Creates a [FileStatCodec].
+  /// Creates a new [FileStatCodec].
   const FileStatCodec();
 
   static Map<String, Object> _encode(FileStat input) {
@@ -362,7 +362,7 @@ class FileStatCodec extends Codec<FileStat, Map<String, Object>> {
 /// An [EntityTypeCodec] serializes and deserializes [FileSystemEntity]
 /// instances.
 class EntityTypeCodec extends Codec<FileSystemEntityType, String> {
-  /// Creates a [EntityTypeCodec].
+  /// Creates a new [EntityTypeCodec].
   const EntityTypeCodec();
 
   static String _encode(FileSystemEntityType input) => input.toString();
@@ -394,7 +394,7 @@ class EntityTypeCodec extends Codec<FileSystemEntityType, String> {
 /// A [FileSystemEventCodec] serializes and deserializes [FileSystemEvent]
 /// instances.
 class FileSystemEventCodec extends Codec<FileSystemEvent, Map<String, Object>> {
-  /// Creates a [FileSystemEventCodec].
+  /// Creates a new [FileSystemEventCodec].
   const FileSystemEventCodec();
 
   static Map<String, Object> _encode(FileSystemEvent input) {
@@ -440,7 +440,7 @@ class _FileSystemEvent implements FileSystemEvent {
 
 /// Converts an object into a [Future] that completes with that object.
 class ToFuture<T> extends Converter<T, Future<T>> {
-  /// Creates a [ToFuture].
+  /// Creates a new [ToFuture].
   const ToFuture();
 
   @override
@@ -449,7 +449,7 @@ class ToFuture<T> extends Converter<T, Future<T>> {
 
 /// Converts an object into a single-element [List] containing that object.
 class Listify<T> extends Converter<T, List<T>> {
-  /// Creates a [Listify].
+  /// Creates a new [Listify].
   const Listify();
 
   @override
@@ -458,7 +458,7 @@ class Listify<T> extends Converter<T, List<T>> {
 
 /// Converts a [Uint8List] to a simple [List<int>].
 class Uint8ListToPlainList extends Converter<Uint8List, List<int>> {
-  /// Creates a [Uint8ListToPlainList]
+  /// Creates a new [Uint8ListToPlainList]
   const Uint8ListToPlainList();
 
   @override
@@ -467,7 +467,7 @@ class Uint8ListToPlainList extends Converter<Uint8List, List<int>> {
 
 /// Revives a [Directory] entity reference into a [ReplayDirectory].
 class ReviveDirectory extends Converter<String, Directory> {
-  /// Creates a [ReviveDirectory].
+  /// Creates a new [ReviveDirectory].
   const ReviveDirectory(this._fileSystem);
 
   final ReplayFileSystemImpl _fileSystem;
@@ -478,7 +478,7 @@ class ReviveDirectory extends Converter<String, Directory> {
 
 /// Revives a [File] entity reference into a [ReplayFile].
 class ReviveFile extends Converter<String, File> {
-  /// Creates a [ReviveFile].
+  /// Creates a new [ReviveFile].
   const ReviveFile(this._fileSystem);
 
   final ReplayFileSystemImpl _fileSystem;
@@ -489,7 +489,7 @@ class ReviveFile extends Converter<String, File> {
 
 /// Revives a [Link] entity reference into a [ReplayLink].
 class ReviveLink extends Converter<String, Link> {
-  /// Creates a [ReviveLink].
+  /// Creates a new [ReviveLink].
   const ReviveLink(this._fileSystem);
 
   final ReplayFileSystemImpl _fileSystem;
@@ -502,7 +502,7 @@ class ReviveLink extends Converter<String, Link> {
 /// [ReplayFile], or a [ReplayLink] depending on the identifier of the entity
 /// reference.
 class ReviveFileSystemEntity extends Converter<String, FileSystemEntity> {
-  /// Creates a [ReviveFileSystemEntity].
+  /// Creates a new [ReviveFileSystemEntity].
   const ReviveFileSystemEntity(this._fileSystem);
 
   final ReplayFileSystemImpl _fileSystem;
@@ -522,7 +522,7 @@ class ReviveFileSystemEntity extends Converter<String, FileSystemEntity> {
 /// Revives a [RandomAccessFile] entity reference into a
 /// [ReplayRandomAccessFile].
 class ReviveRandomAccessFile extends Converter<String, RandomAccessFile> {
-  /// Creates a [ReviveRandomAccessFile] that will derive its behavior
+  /// Creates a new [ReviveRandomAccessFile] that will derive its behavior
   /// from the specified file system's recording.
   const ReviveRandomAccessFile(this._fileSystem);
 
@@ -535,7 +535,7 @@ class ReviveRandomAccessFile extends Converter<String, RandomAccessFile> {
 
 /// Revives an [IOSink] entity reference into a [ReplayIOSink].
 class ReviveIOSink extends Converter<String, IOSink> {
-  /// Creates a [ReviveIOSink] that will derive its behavior from the
+  /// Creates a new [ReviveIOSink] that will derive its behavior from the
   /// specified file system's recording.
   const ReviveIOSink(this._fileSystem);
 
@@ -545,10 +545,10 @@ class ReviveIOSink extends Converter<String, IOSink> {
   IOSink convert(String input) => ReplayIOSink(_fileSystem, input);
 }
 
-/// Converts all elements of a [List], returning a [List] of converted
+/// Converts all elements of a [List], returning a new [List] of converted
 /// elements.
 class ConvertElements<S, T> extends Converter<List<S>, List<T>> {
-  /// Creates a [ConvertElements] that will use the specified
+  /// Creates a new [ConvertElements] that will use the specified
   /// [elementConverter] to convert the elements of an [Iterable].
   const ConvertElements(Converter<S, T> elementConverter)
       : _delegate = elementConverter;
@@ -563,7 +563,7 @@ class ConvertElements<S, T> extends Converter<List<S>, List<T>> {
 /// type. The list must contain only elements of type `T`, or a runtime error
 /// will be thrown.
 class CastList<S, T> extends Converter<List<S>, List<T>> {
-  /// Creates a [CastList].
+  /// Creates a new [CastList].
   const CastList();
 
   @override
@@ -572,7 +572,7 @@ class CastList<S, T> extends Converter<List<S>, List<T>> {
 
 /// Converts a [List] of elements into a [Stream] of the same elements.
 class ToStream<T> extends Converter<List<T>, Stream<T>> {
-  /// Creates a [ToStream].
+  /// Creates a new [ToStream].
   const ToStream();
 
   @override
@@ -582,7 +582,7 @@ class ToStream<T> extends Converter<List<T>, Stream<T>> {
 /// Converts a blob reference (serialized as a [String] of the form
 /// `!<filename>`) into a byte list.
 class BlobToBytes extends Converter<String, Uint8List> {
-  /// Creates a [BlobToBytes] that will use the specified file system's
+  /// Creates a new [BlobToBytes] that will use the specified file system's
   /// recording to load the blob.
   const BlobToBytes(this._fileSystem);
 
@@ -601,7 +601,7 @@ class BlobToBytes extends Converter<String, Uint8List> {
 
 /// Converts serialized errors into throwable objects.
 class ToError extends Converter<dynamic, dynamic> {
-  /// Creates a [ToError].
+  /// Creates a new [ToError].
   const ToError();
 
   /// Known decoders (keyed by `type`). Types not covered here will be decoded

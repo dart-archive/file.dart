@@ -13,7 +13,7 @@ abstract class ProxyObject {}
 /// method's getter. In these cases, the caller will receive a [MethodProxy]
 /// that allows delayed invocation of the method.
 class MethodProxy {
-  /// Creates a [MethodProxy] that, when invoked, will invoke the method
+  /// Creates a new [MethodProxy] that, when invoked, will invoke the method
   /// identified by [methodName] on the specified target [object].
   MethodProxy(ProxyObject object, Symbol methodName)
       : _proxyObject = object,

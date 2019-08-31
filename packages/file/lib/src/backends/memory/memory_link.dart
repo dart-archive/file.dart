@@ -15,7 +15,7 @@ import 'utils.dart' as utils;
 
 /// Internal implementation of [Link].
 class MemoryLink extends MemoryFileSystemEntity implements Link {
-  /// Instantiates a [MemoryLink].
+  /// Instantiates a new [MemoryLink].
   const MemoryLink(NodeBasedFileSystem fileSystem, String path)
       : super(fileSystem, path);
 

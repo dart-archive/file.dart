@@ -35,7 +35,7 @@ const String _parentDir = '..';
 /// * This file system _necessarily_ carries certain performance overhead due
 ///   to the fact that symbolic links are resolved manually (not delegated).
 class ChrootFileSystem extends FileSystem {
-  /// Creates a file system backed by [root] path in [delegate] file system.
+  /// Creates a new file system backed by [root] path in [delegate] file system.
   ///
   /// **NOTE**: [root] must be a _canonicalized_ path; see [p.canonicalize].
   ChrootFileSystem(this.delegate, this.root) {

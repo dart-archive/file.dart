@@ -6,7 +6,7 @@ import 'package:file/src/io.dart' as io;
 
 /// Internal implementation of [io.FileStat].
 class MemoryFileStat implements io.FileStat {
-  /// Creates a [MemoryFileStat] with the specified properties.
+  /// Creates a new [MemoryFileStat] with the specified properties.
   const MemoryFileStat(
     this.changed,
     this.modified,

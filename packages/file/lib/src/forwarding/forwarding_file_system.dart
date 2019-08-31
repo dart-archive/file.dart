@@ -11,7 +11,7 @@ import 'package:path/path.dart' as p;
 
 /// A file system that forwards all methods and properties to a delegate.
 abstract class ForwardingFileSystem extends FileSystem {
-  /// Creates a [ForwardingFileSystem] that forwards all methods and
+  /// Creates a new [ForwardingFileSystem] that forwards all methods and
   /// properties to the specified [delegate].
   ForwardingFileSystem(this.delegate);
 
