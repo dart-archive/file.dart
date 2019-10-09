@@ -67,4 +67,23 @@ void main() {
       });
     });
   });
+
+  test('MemoryFileSystem.test', () {
+    final MemoryFileSystem fs = MemoryFileSystem.test(); // creates root directory
+    fs.file('/test1.txt').createSync(); // creates file
+    fs.file('/test2.txt').createSync(); // creates file
+    expect(fs.directory('/').statSync().modified, DateTime(2000, 1, 1, 0, 1));
+    expect(fs.file('/test1.txt').statSync().modified, DateTime(2000, 1, 1, 0, 2));
+    expect(fs.file('/test2.txt').statSync().modified, DateTime(2000, 1, 1, 0, 3));
+    fs.file('/test1.txt').createSync();
+    fs.file('/test2.txt').createSync();
+    expect(fs.file('/test1.txt').statSync().modified, DateTime(2000, 1, 1, 0, 2)); // file already existed
+    expect(fs.file('/test2.txt').statSync().modified, DateTime(2000, 1, 1, 0, 3)); // file already existed
+    fs.file('/test1.txt').writeAsStringSync('test'); // touches file
+    expect(fs.file('/test1.txt').statSync().modified, DateTime(2000, 1, 1, 0, 4));
+    expect(fs.file('/test2.txt').statSync().modified, DateTime(2000, 1, 1, 0, 3)); // didn't touch it
+    fs.file('/test1.txt').copySync('/test2.txt'); // creates file, then mutates file (so time changes twice)
+    expect(fs.file('/test1.txt').statSync().modified, DateTime(2000, 1, 1, 0, 4)); // didn't touch it
+    expect(fs.file('/test2.txt').statSync().modified, DateTime(2000, 1, 1, 0, 6));
+  });
 }
