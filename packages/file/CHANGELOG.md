@@ -1,3 +1,7 @@
+#### 5.1.0
+
+* Added `clock` argument to `MemoryFileSystem`
+
 #### 5.0.10
 
 * Added example
