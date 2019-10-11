@@ -6,8 +6,10 @@ import 'dart:async';
 
 import 'package:file/file.dart';
 import 'package:file/src/io.dart' as io;
+import 'package:meta/meta.dart';
 import 'package:path/path.dart' as p;
 
+import 'clock.dart';
 import 'common.dart';
 import 'memory_directory.dart';
 import 'memory_file.dart';
@@ -35,16 +37,46 @@ abstract class MemoryFileSystem implements StyleableFileSystem {
   /// The file system will be empty, and the current directory will be the
   /// root directory.
   ///
+  /// The clock will be a real-time clock; file modification times will
+  /// reflect the real time as reported by the operating system.
+  ///
   /// If [style] is specified, the file system will use the specified path
   /// style. The default is [FileSystemStyle.posix].
-  factory MemoryFileSystem({FileSystemStyle style}) = _MemoryFileSystem;
+  factory MemoryFileSystem({
+    FileSystemStyle style = FileSystemStyle.posix,
+  }) =>
+      _MemoryFileSystem(
+        style: style,
+        clock: const Clock.realTime(),
+      );
+
+  /// Creates a new `MemoryFileSystem` that has a fake clock.
+  ///
+  /// The file system will be empty, and the current directory will be the
+  /// root directory.
+  ///
+  /// The clock will increase monotonically each time it is used, disconnected
+  /// from any real-world clock.
+  ///
+  /// If [style] is specified, the file system will use the specified path
+  /// style. The default is [FileSystemStyle.posix].
+  factory MemoryFileSystem.test({
+    FileSystemStyle style = FileSystemStyle.posix,
+  }) =>
+      _MemoryFileSystem(
+        style: style,
+        clock: Clock.monotonicTest(),
+      );
 }
 
 /// Internal implementation of [MemoryFileSystem].
 class _MemoryFileSystem extends FileSystem
     implements MemoryFileSystem, NodeBasedFileSystem {
-  _MemoryFileSystem({this.style = FileSystemStyle.posix})
-      : assert(style != null) {
+  _MemoryFileSystem({
+    this.style = FileSystemStyle.posix,
+    @required this.clock,
+  })  : assert(style != null),
+        assert(clock != null) {
     _root = RootNode(this);
     _context = style.contextFor(style.root);
   }
@@ -52,6 +84,9 @@ class _MemoryFileSystem extends FileSystem
   RootNode _root;
   String _systemTemp;
   p.Context _context;
+
+  @override
+  final Clock clock;
 
   @override
   final FileSystemStyle style;

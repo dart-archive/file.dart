@@ -7,6 +7,7 @@ import 'dart:typed_data';
 import 'package:file/file.dart';
 import 'package:file/src/io.dart' as io;
 
+import 'clock.dart';
 import 'common.dart';
 import 'memory_file_stat.dart';
 import 'style.dart';
@@ -45,6 +46,10 @@ abstract class NodeBasedFileSystem implements StyleableFileSystem {
 
   /// The path of the current working directory.
   String get cwd;
+
+  /// The clock to use when finding the current time (e.g. to set the creation
+  /// time of a new node).
+  Clock get clock;
 
   /// Gets the backing node of the entity at the specified path. If the tail
   /// element of the path does not exist, this will return null. If the tail
@@ -142,11 +147,13 @@ abstract class Node {
 abstract class RealNode extends Node {
   /// Constructs a new [RealNode] as a child of the specified [parent].
   RealNode(DirectoryNode parent) : super(parent) {
-    int now = DateTime.now().millisecondsSinceEpoch;
+    int now = clock.now.millisecondsSinceEpoch;
     changed = now;
     modified = now;
     accessed = now;
   }
+
+  Clock get clock => parent.clock;
 
   /// Last changed time in milliseconds since the Epoch.
   int changed;
@@ -177,7 +184,7 @@ abstract class RealNode extends Node {
 
   /// Updates the last modified time of the node.
   void touch() {
-    modified = DateTime.now().millisecondsSinceEpoch;
+    modified = clock.now.millisecondsSinceEpoch;
   }
 }
 
@@ -209,6 +216,9 @@ class RootNode extends DirectoryNode {
 
   @override
   final NodeBasedFileSystem fs;
+
+  @override
+  Clock get clock => fs.clock;
 
   @override
   DirectoryNode get parent => this;
@@ -253,7 +263,7 @@ class FileNode extends RealNode {
   /// fields will be reset as opposed to copied to indicate that this file
   /// has been modified and changed.
   void copyFrom(FileNode source) {
-    modified = changed = DateTime.now().millisecondsSinceEpoch;
+    modified = changed = clock.now.millisecondsSinceEpoch;
     accessed = source.accessed;
     mode = source.mode;
     _content = Uint8List.fromList(source.content);
