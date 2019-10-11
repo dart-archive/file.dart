@@ -1,6 +1,6 @@
 #### 5.1.0
 
-* Added `clock` argument to `MemoryFileSystem`
+* Added a new `MemoryFileSystem` constructor to use a test clock
 
 #### 5.0.10
 
