@@ -1,3 +1,7 @@
+#### 5.1.0
+
+* Added a new `MemoryFileSystem` constructor to use a test clock
+
 #### 5.0.10
 
 * Added example
