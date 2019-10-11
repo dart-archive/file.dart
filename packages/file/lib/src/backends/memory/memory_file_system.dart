@@ -44,10 +44,11 @@ abstract class MemoryFileSystem implements StyleableFileSystem {
   /// style. The default is [FileSystemStyle.posix].
   factory MemoryFileSystem({
     FileSystemStyle style = FileSystemStyle.posix,
-  }) => _MemoryFileSystem(
-    style: style,
-    clock: const Clock.realTime(),
-  );
+  }) =>
+      _MemoryFileSystem(
+        style: style,
+        clock: const Clock.realTime(),
+      );
 
   /// Creates a new `MemoryFileSystem` that has a fake clock.
   ///
@@ -61,10 +62,11 @@ abstract class MemoryFileSystem implements StyleableFileSystem {
   /// style. The default is [FileSystemStyle.posix].
   factory MemoryFileSystem.test({
     FileSystemStyle style = FileSystemStyle.posix,
-  }) => _MemoryFileSystem(
-    style: style,
-    clock: Clock.monotonicTest(),
-  );
+  }) =>
+      _MemoryFileSystem(
+        style: style,
+        clock: Clock.monotonicTest(),
+      );
 }
 
 /// Internal implementation of [MemoryFileSystem].
@@ -73,8 +75,8 @@ class _MemoryFileSystem extends FileSystem
   _MemoryFileSystem({
     this.style = FileSystemStyle.posix,
     @required this.clock,
-  }) : assert(style != null),
-       assert(clock != null) {
+  })  : assert(style != null),
+        assert(clock != null) {
     _root = RootNode(this);
     _context = style.contextFor(style.root);
   }
