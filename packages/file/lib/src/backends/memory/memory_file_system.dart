@@ -214,8 +214,7 @@ class _MemoryFileSystem extends FileSystem
       reference ??= _current;
     }
 
-    List<String> parts = path.split(style.separator)
-      ..removeWhere(utils.isEmpty);
+    List<String> parts = _context.split(path);
     DirectoryNode directory = reference.directory;
     Node child = directory;
 

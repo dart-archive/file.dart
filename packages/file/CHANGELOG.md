@@ -1,3 +1,7 @@
+#### 5.1.1
+
+* Fixed a bug in `MemoryFileSystem` where file paths with forward slashes created with  `FileSystemStyle.windows` were incorrectly parsed.
+
 #### 5.1.0
 
 * Added a new `MemoryFileSystem` constructor to use a test clock

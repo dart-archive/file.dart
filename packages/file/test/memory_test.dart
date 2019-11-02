@@ -2,6 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:io';
+
 import 'package:file/memory.dart';
 import 'package:test/test.dart';
 
@@ -95,5 +97,18 @@ void main() {
         DateTime(2000, 1, 1, 0, 4)); // didn't touch it
     expect(
         fs.file('/test2.txt').statSync().modified, DateTime(2000, 1, 1, 0, 6));
+  });
+
+  test('Regression test for forward slash in windows fillesystem', () {
+    final MemoryFileSystem fs = MemoryFileSystem(style: FileSystemStyle.windows);
+    final File file = fs.file(r'C:\a\b\c/d.png');
+    file.createSync(recursive: true);
+    file.writeAsStringSync('hello');
+
+    expect(file.existsSync(), true);
+
+    file.deleteSync();
+
+    expect(file.existsSync(), false);
   });
 }
