@@ -153,5 +153,9 @@ void main() {
         expect(fs.link('/foo').toString(), "LocalLink: '/foo'");
       });
     });
+
+    test('caches context value', () {
+      expect(identical(fs.path, fs.path), true);
+    });
   });
 }

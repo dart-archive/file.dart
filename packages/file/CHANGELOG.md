@@ -1,3 +1,7 @@
+#### 5.1.1
+
+* Cache the path context for `LocalFileSystem`.
+
 #### 5.1.0
 
 * Added a new `MemoryFileSystem` constructor to use a test clock

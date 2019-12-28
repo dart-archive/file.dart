@@ -12,6 +12,10 @@ import 'local_directory.dart';
 import 'local_file.dart';
 import 'local_link.dart';
 
+// Use an expando To avoid expensive re-creations of the Context object without
+// removing the const constructor.
+final Expando<p.Context> _expandoContext = Expando<p.Context>();
+
 /// A wrapper implementation around `dart:io`'s implementation.
 ///
 /// Since this implementation of the [FileSystem] interface delegates to
@@ -31,8 +35,9 @@ class LocalFileSystem extends FileSystem {
   Link link(dynamic path) => LocalLink(this, io.Link(getPath(path)));
 
   @override
-  p.Context get path => _context ??= p.Context();
-  p.Context _context;
+  p.Context get path {
+    return _expandoContext[this] ??= p.Context();
+  }
 
   /// Gets the directory provided by the operating system for creating temporary
   /// files and directories in. The location of the system temp directory is
