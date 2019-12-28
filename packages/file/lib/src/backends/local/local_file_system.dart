@@ -31,7 +31,8 @@ class LocalFileSystem extends FileSystem {
   Link link(dynamic path) => LocalLink(this, io.Link(getPath(path)));
 
   @override
-  p.Context get path => p.Context();
+  p.Context get path => _context ??= p.Context();
+  p.Context _context;
 
   /// Gets the directory provided by the operating system for creating temporary
   /// files and directories in. The location of the system temp directory is
