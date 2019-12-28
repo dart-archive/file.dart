@@ -18,7 +18,7 @@ void main() {
     String cwd;
 
     setUp(() {
-      fs = const LocalFileSystem();
+      fs = LocalFileSystem(); // ignore: prefer_const_constructors
       tmp = io.Directory.systemTemp.createTempSync('file_test_');
       tmp = io.Directory(tmp.resolveSymbolicLinksSync());
       cwd = io.Directory.current.path;
