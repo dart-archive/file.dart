@@ -50,7 +50,10 @@ class LocalFileSystem extends FileSystem {
   Directory get currentDirectory => directory(io.Directory.current.path);
 
   @override
-  set currentDirectory(dynamic path) => io.Directory.current = path;
+  set currentDirectory(dynamic path) {
+    _expandoContext[this] = null;
+    io.Directory.current = path;
+  }
 
   @override
   Future<io.FileStat> stat(String path) => io.FileStat.stat(path);

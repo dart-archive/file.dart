@@ -18,11 +18,11 @@ void main() {
     String cwd;
 
     setUp(() {
-      fs = LocalFileSystem(); // ignore: prefer_const_constructors
+      fs = const LocalFileSystem();
       tmp = io.Directory.systemTemp.createTempSync('file_test_');
       tmp = io.Directory(tmp.resolveSymbolicLinksSync());
       cwd = io.Directory.current.path;
-      io.Directory.current = tmp;
+      fs.currentDirectory = tmp;
     });
 
     tearDown(() {
