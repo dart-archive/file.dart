@@ -14,6 +14,7 @@ import 'package:meta/meta.dart';
 
 import 'common.dart';
 import 'memory_file_system_entity.dart';
+import 'memory_random_access_file.dart';
 import 'node.dart';
 import 'utils.dart' as utils;
 
@@ -173,8 +174,13 @@ class MemoryFile extends MemoryFileSystemEntity implements File {
       openSync(mode: mode);
 
   @override
-  io.RandomAccessFile openSync({io.FileMode mode = io.FileMode.read}) =>
-      throw UnimplementedError('TODO');
+  io.RandomAccessFile openSync({io.FileMode mode = io.FileMode.read}) {
+    if (utils.isWriteMode(mode) && !existsSync()) {
+      createSync();
+    }
+
+    return MemoryRandomAccessFile(this, resolvedBacking as FileNode, mode);
+  }
 
   @override
   Stream<Uint8List> openRead([int start, int end]) {

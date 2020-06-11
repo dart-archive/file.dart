@@ -254,6 +254,15 @@ class FileNode extends RealNode {
     _content.setRange(existing.length, _content.length, bytes);
   }
 
+  /// Truncates this node's [content] to the specified length.
+  ///
+  /// [length] must be in the range \[0, [size]\].
+  void truncate(int length) {
+    assert(length >= 0);
+    assert(length <= _content.length);
+    _content = _content.sublist(0, length);
+  }
+
   /// Clears the [content] of the node.
   void clear() {
     _content = Uint8List(0);

@@ -15,12 +15,7 @@ void main() {
       fs = MemoryFileSystem();
     });
 
-    runCommonTests(
-      () => fs,
-      skip: <String>[
-        'File > open', // Not yet implemented
-      ],
-    );
+    runCommonTests(() => fs);
 
     group('toString', () {
       test('File', () {
