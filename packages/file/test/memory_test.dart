@@ -92,8 +92,7 @@ void main() {
         fs.file('/test2.txt').statSync().modified, DateTime(2000, 1, 1, 0, 6));
   });
 
-  test('MemoryFile.openSync returns a MemoryRandomAccessFile',
-      () async {
+  test('MemoryFile.openSync returns a MemoryRandomAccessFile', () async {
     final MemoryFileSystem fs = MemoryFileSystem.test();
     final io.File file = fs.file('/test1')..createSync();
 

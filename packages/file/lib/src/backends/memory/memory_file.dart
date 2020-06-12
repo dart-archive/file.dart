@@ -176,6 +176,8 @@ class MemoryFile extends MemoryFileSystemEntity implements File {
   @override
   io.RandomAccessFile openSync({io.FileMode mode = io.FileMode.read}) {
     if (utils.isWriteMode(mode) && !existsSync()) {
+      // [resolvedBacking] requires that the file already exists, so we must
+      // create it here first.
       createSync();
     }
 
