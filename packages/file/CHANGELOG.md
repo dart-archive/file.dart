@@ -1,4 +1,4 @@
-#### 5.2.0-dev
+#### 5.2.0
 
 * Added a `MemoryRandomAccessFile` class and implemented
   `MemoryFile.open()`/`openSync()`.

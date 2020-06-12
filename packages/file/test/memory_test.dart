@@ -2,7 +2,10 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:io' as io;
+
 import 'package:file/memory.dart';
+import 'package:file/src/backends/memory/memory_random_access_file.dart';
 import 'package:test/test.dart';
 
 import 'common_tests.dart';
@@ -42,9 +45,6 @@ void main() {
     runCommonTests(
       () => fs,
       root: () => fs.style.root,
-      skip: <String>[
-        'File > open', // Not yet implemented
-      ],
     );
 
     group('toString', () {
@@ -90,5 +90,25 @@ void main() {
         DateTime(2000, 1, 1, 0, 4)); // didn't touch it
     expect(
         fs.file('/test2.txt').statSync().modified, DateTime(2000, 1, 1, 0, 6));
+  });
+
+  test('MemoryFile.openSync returns a MemoryRandomAccessFile',
+      () async {
+    final MemoryFileSystem fs = MemoryFileSystem.test();
+    final io.File file = fs.file('/test1')..createSync();
+
+    io.RandomAccessFile raf = file.openSync();
+    try {
+      expect(raf, isA<MemoryRandomAccessFile>());
+    } finally {
+      raf.closeSync();
+    }
+
+    raf = await file.open();
+    try {
+      expect(raf, isA<MemoryRandomAccessFile>());
+    } finally {
+      raf.closeSync();
+    }
   });
 }

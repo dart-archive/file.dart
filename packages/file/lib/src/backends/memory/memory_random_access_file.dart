@@ -3,7 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:convert';
-import 'dart:math' show min;
+import 'dart:math' as math show min;
 import 'dart:typed_data';
 
 import 'package:file/src/common.dart' as common;
@@ -12,8 +12,6 @@ import 'package:file/src/io.dart' as io;
 import 'memory_file.dart';
 import 'node.dart';
 import 'utils.dart' as utils;
-
-// TODO(jamesderlin): Currently ignores file permissions.
 
 /// A [MemoryFileSystem]-backed implementation of [io.RandomAccessFile].
 class MemoryRandomAccessFile implements io.RandomAccessFile {
@@ -45,6 +43,9 @@ class MemoryRandomAccessFile implements io.RandomAccessFile {
   bool _isOpen = true;
   int _position = 0;
 
+  /// Whether an asynchronous operation is pending.
+  ///
+  /// See [_asyncWrapper] for details.
   bool get _asyncOperationPending => __asyncOperationPending;
 
   set _asyncOperationPending(bool value) {
@@ -91,6 +92,8 @@ class MemoryRandomAccessFile implements io.RandomAccessFile {
 
   /// Throws a [io.FileSystemException] if attempting to perform an operation
   /// while an asynchronous operation is already in progress.
+  ///
+  /// See [_asyncWrapper] for details.
   void _checkAsync() {
     if (_asyncOperationPending) {
       throw io.FileSystemException(
@@ -100,7 +103,16 @@ class MemoryRandomAccessFile implements io.RandomAccessFile {
 
   /// Wraps a synchronous function to make it appear asynchronous.
   ///
-  /// Verifies that asynchronous operations do not overlap.
+  /// [_asyncOperationPending], [_checkAsync], and [_asyncWrapper] are used to
+  /// mimic [RandomAccessFile]'s enforcement that only one asynchronous
+  /// operation is pending for a [RandomAccessFile] instance.  Since
+  /// [MemoryFileSystem]-based classes are likely to be used in tests, fidelity
+  /// is important to catch errors that might occur in production.
+  ///
+  /// [_asyncWrapper] does not call [f] directly since setting and unsetting
+  /// [_asyncOperationPending] synchronously would not be meaningful.  We
+  /// instead execute [f] through a [Future.delayed] callback to better simulate
+  /// asynchrony.
   Future<R> _asyncWrapper<R>(R Function() f) async {
     _checkAsync();
 
@@ -198,7 +210,7 @@ class MemoryRandomAccessFile implements io.RandomAccessFile {
     _checkAsync();
     _checkReadable('read');
     // TODO(jamesderlin): Check for integer overflow.
-    final int end = min(_position + bytes, lengthSync());
+    final int end = math.min(_position + bytes, lengthSync());
     final Uint8List copy = _node.content.sublist(_position, end);
     _position = end;
     return copy;

@@ -4,7 +4,7 @@
 
 import 'dart:async';
 import 'dart:convert';
-import 'dart:math' show min;
+import 'dart:math' as math show min;
 import 'dart:typed_data';
 
 import 'package:file/file.dart';
@@ -190,7 +190,7 @@ class MemoryFile extends MemoryFileSystemEntity implements File {
       if (start != null) {
         content = end == null
             ? content.sublist(start)
-            : content.sublist(start, min(end, content.length));
+            : content.sublist(start, math.min(end, content.length));
       }
       return Stream<Uint8List>.fromIterable(<Uint8List>[content]);
     } catch (e) {

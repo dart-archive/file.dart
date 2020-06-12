@@ -1769,6 +1769,18 @@ void runCommonTests(
               test('lengthIsResetToZeroIfOpened', () {
                 expect(raf.lengthSync(), equals(0));
               });
+
+              test('throwsIfAsyncUnawaited', () async {
+                try {
+                  final Future<void> future = raf.flush();
+                  expectFileSystemException(null, () => raf.flush());
+                  expectFileSystemException(null, () => raf.flushSync());
+                  await expectLater(future, completes);
+                  raf.flushSync();
+                } finally {
+                  raf.closeSync();
+                }
+              });
             } else {
               test('lengthIsNotModifiedIfOpened', () {
                 expect(raf.lengthSync(), isNot(equals(0)));
