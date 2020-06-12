@@ -153,6 +153,7 @@ abstract class RealNode extends Node {
     accessed = now;
   }
 
+  /// See [NodeBasedFileSystem.clock].
   Clock get clock => parent.clock;
 
   /// Last changed time in milliseconds since the Epoch.
