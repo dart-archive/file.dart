@@ -1,5 +1,5 @@
 name: file
-version: 5.1.0
+version: 5.2.0-dev
 authors:
 - Matan Lurey <matanl@google.com>
 - Yegor Jbanov <yjbanov@google.com>

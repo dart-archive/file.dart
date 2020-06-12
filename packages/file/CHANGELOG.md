@@ -1,3 +1,8 @@
+#### 5.2.0-dev
+
+* Added a `MemoryRandomAccessFile` class and implemented
+  `MemoryFile.open()`/`openSync()`.
+
 #### 5.1.0
 
 * Added a new `MemoryFileSystem` constructor to use a test clock
@@ -12,7 +17,7 @@
 
 #### 5.0.8
 
-* Return Uint8List rather than List<int>.
+* Return `Uint8List` rather than `List<int>`.
 
 #### 5.0.7
 
