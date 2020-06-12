@@ -193,6 +193,18 @@ class MemoryRandomAccessFile implements io.RandomAccessFile {
   Future<Uint8List> read(int bytes) => _asyncWrapper(() => readSync(bytes));
 
   @override
+  Uint8List readSync(int bytes) {
+    _checkOpen();
+    _checkAsync();
+    _checkReadable('read');
+    // TODO(jamesderlin): Check for integer overflow.
+    final int end = min(_position + bytes, lengthSync());
+    final Uint8List copy = _node.content.sublist(_position, end);
+    _position = end;
+    return copy;
+  }
+
+  @override
   Future<int> readByte() => _asyncWrapper(readByteSync);
 
   @override
@@ -217,30 +229,14 @@ class MemoryRandomAccessFile implements io.RandomAccessFile {
     _checkAsync();
     _checkReadable('readInto');
 
-    end ??= buffer.length;
+    end = RangeError.checkValidRange(start, end, buffer.length);
 
-    // TODO(jamesderlin): This could be more efficient.
+    final int length = lengthSync();
     int i;
-    for (i = start; i < end; i += 1) {
-      final int byte = readByteSync();
-      if (byte == -1) {
-        break;
-      }
-      buffer[i] = byte;
+    for (i = start; i < end && _position < length; i += 1, _position += 1) {
+      buffer[i] = _node.content[_position];
     }
     return i - start;
-  }
-
-  @override
-  Uint8List readSync(int bytes) {
-    _checkOpen();
-    _checkAsync();
-    _checkReadable('read');
-    // TODO(jamesderlin): Check for integer overflow.
-    final int end = min(_position + bytes, lengthSync());
-    final Uint8List copy = _node.content.sublist(_position, end);
-    _position = end;
-    return copy;
   }
 
   @override
@@ -352,12 +348,17 @@ class MemoryRandomAccessFile implements io.RandomAccessFile {
     _checkAsync();
     _checkWritable('writeFrom');
 
-    end ??= buffer.length;
+    end = RangeError.checkValidRange(start, end, buffer.length);
 
-    // TODO(jamesderlin): This could be more efficient.
-    for (int i = start; i < end; i += 1) {
-      writeByteSync(buffer[i]);
+    final int writeByteCount = end - start;
+    final int endPosition = _position + writeByteCount;
+
+    if (endPosition > lengthSync()) {
+      truncateSync(endPosition);
     }
+
+    _node.content.setRange(_position, endPosition, buffer, start);
+    _position = endPosition;
   }
 
   @override
