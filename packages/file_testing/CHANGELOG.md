@@ -1,3 +1,7 @@
+#### 2.2.0
+
+* Change dependency on `package:test_api` back to `package:test`.
+
 #### 2.1.0
 
 * Changed dependency on `package:test` to `package:test_api`
