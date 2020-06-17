@@ -2227,7 +2227,7 @@ void runCommonTests(
             f = fs.file(ns('/foo'));
             try {
             sink = f.openWrite();
-            } on FileSystemException catch (e) {
+            } catch (e) {
               print(fs);
               print(f);
               print(f.path);
