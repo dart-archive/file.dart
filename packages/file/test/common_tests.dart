@@ -2225,15 +2225,7 @@ void runCommonTests(
 
           setUp(() {
             f = fs.file(ns('/foo'));
-            try {
             sink = f.openWrite();
-            } catch (e) {
-              print(fs);
-              print(f);
-              print(f.path);
-              print(f.existsSync());
-              rethrow;
-            }
           });
 
           tearDown(() async {
