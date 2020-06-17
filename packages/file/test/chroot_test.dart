@@ -64,7 +64,7 @@ void main() {
           'File > lastModified > throwsIfExistsAsDirectory',
 
           // This is failing on CI only.
-          'File openWrite ioSink addStream blocksCallToWritelnWhileStreamIsActive',
+          'File > openWrite > ioSink > addStream > blocksCallToWritelnWhileStreamIsActive',
 
           // https://github.com/dart-lang/sdk/issues/28174
           '.+ > RandomAccessFile > writeFromWithStart',
