@@ -2225,6 +2225,7 @@ void runCommonTests(
 
           setUp(() {
             f = fs.file(ns('/foo'));
+            f.createSync(recursive: true);
             sink = f.openWrite();
           });
 
