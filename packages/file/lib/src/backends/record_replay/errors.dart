@@ -24,10 +24,10 @@ class NoMatchingInvocationError extends Error {
       buf.write('(');
       int i = 0;
       for (dynamic arg in invocation.positionalArguments) {
-        buf.write(Error.safeToString(encode(arg)));
         if (i++ > 0) {
           buf.write(', ');
         }
+        buf.write(Error.safeToString(encode(arg)));
       }
       invocation.namedArguments.forEach((Symbol name, dynamic value) {
         if (i++ > 0) {
