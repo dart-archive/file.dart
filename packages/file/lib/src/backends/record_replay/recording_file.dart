@@ -153,7 +153,7 @@ class RecordingFile extends RecordingFileSystemEntity<File> implements File {
       file: _newRecordingFile(),
       future: delegate.readAsLines(encoding: encoding),
       writer: (File file, List<String> lines) async {
-        await file.writeAsString(lines.join('\n'), flush: true);
+        await file.writeAsString(_joinLines(lines), flush: true);
       },
     );
   }
@@ -163,7 +163,7 @@ class RecordingFile extends RecordingFileSystemEntity<File> implements File {
       file: _newRecordingFile(),
       value: delegate.readAsLinesSync(encoding: encoding),
       writer: (File file, List<String> lines) {
-        file.writeAsStringSync(lines.join('\n'), flush: true);
+        file.writeAsStringSync(_joinLines(lines), flush: true);
       },
     );
   }
@@ -259,3 +259,10 @@ class _BlobStreamReference<T> extends StreamReference<T> {
   @override
   String get serializedValue => '!${_file.basename}';
 }
+
+/// Flattens a list of lines into a single, newline-delimited string.
+///
+/// Each element of [lines] is assumed to represent a complete line and will
+/// be end with a newline in the resulting string.
+String _joinLines(List<String> lines) =>
+    lines.isEmpty ? '' : (lines.join('\n') + '\n');
