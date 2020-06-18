@@ -1,3 +1,10 @@
+#### 5.2.1
+
+* `MemoryFile.readAsLines()`/`readAsLinesSync()` no longer treat a final newline
+  in the file as the start of a new, empty line.
+* `RecordingFile.readAsLine()`/`readAsLinesSync()` now always record a final
+  newline.
+
 #### 5.2.0
 
 * Added a `MemoryRandomAccessFile` class and implemented
