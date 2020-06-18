@@ -100,8 +100,8 @@ class _StringSinkWrapper implements Sink<String> {
   void close() => _sink.close();
 }
 
-/// An Converter version of the dart:convert LineSplitter (which in
-/// 2.0 no longer implements the Converter interface)
+/// A [Converter] version of the dart:convert [LineSplitter] (which in
+/// 2.0 no longer implements the [Converter] interface).
 class LineSplitterConverter extends Converter<String, List<String>> {
   /// Creates a new [LineSplitterConverter]
   const LineSplitterConverter();
@@ -454,15 +454,6 @@ class Listify<T> extends Converter<T, List<T>> {
 
   @override
   List<T> convert(T input) => <T>[input];
-}
-
-/// Converts a [Uint8List] to a simple [List<int>].
-class Uint8ListToPlainList extends Converter<Uint8List, List<int>> {
-  /// Creates a new [Uint8ListToPlainList]
-  const Uint8ListToPlainList();
-
-  @override
-  List<int> convert(Uint8List input) => List<int>.from(input);
 }
 
 /// Revives a [Directory] entity reference into a [ReplayDirectory].
