@@ -2,6 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'codecs.dart';
 import 'events.dart';
 
 /// Encoded value of the file system in a recording.
@@ -154,4 +155,30 @@ bool _areMapsEqual<K, V>(Map<K, V> map1, Map<K, V> map2) {
         return map1.containsKey(key) == map2.containsKey(key) &&
             deeplyEqual(map1[key], map2[key]);
       });
+}
+
+/// Returns a human-readable representation of an [Invocation].
+String describeInvocation(Invocation invocation) {
+  StringBuffer buf = StringBuffer();
+  buf.write(getSymbolName(invocation.memberName));
+  if (invocation.isMethod) {
+    buf.write('(');
+    int i = 0;
+    for (dynamic arg in invocation.positionalArguments) {
+      if (i++ > 0) {
+        buf.write(', ');
+      }
+      buf.write(Error.safeToString(encode(arg)));
+    }
+    invocation.namedArguments.forEach((Symbol name, dynamic value) {
+      if (i++ > 0) {
+        buf.write(', ');
+      }
+      buf.write('${getSymbolName(name)}: ${encode(value)}');
+    });
+    buf.write(')');
+  } else if (invocation.isSetter) {
+    buf.write(Error.safeToString(encode(invocation.positionalArguments[0])));
+  }
+  return buf.toString();
 }
