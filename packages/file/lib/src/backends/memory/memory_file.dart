@@ -234,7 +234,18 @@ class MemoryFile extends MemoryFileSystemEntity implements File {
   @override
   List<String> readAsLinesSync({Encoding encoding = utf8}) {
     String str = readAsStringSync(encoding: encoding);
-    return str.isEmpty ? <String>[] : str.split('\n');
+
+    if (str.isEmpty) {
+      return <String>[];
+    }
+
+    final List<String> lines = str.split('\n');
+    if (str.endsWith('\n')) {
+      // A final newline should not create an additional line.
+      lines.removeLast();
+    }
+
+    return lines;
   }
 
   @override

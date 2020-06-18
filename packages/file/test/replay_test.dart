@@ -47,6 +47,7 @@ void main() {
         'File > openWrite > ioSink > addStream > blocks.*',
 
         'File > open', // Not yet implemented in MemoryFileSystem
+        'File > readAsLines > isTrailingNewlineAgnostic', // TODO(jamesderlin): Enable this, https://github.com/google/file.dart/issues/146
       ],
     );
 
