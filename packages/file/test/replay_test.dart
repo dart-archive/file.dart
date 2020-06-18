@@ -46,7 +46,7 @@ void main() {
         'File > openWrite > ioSink > throwsIfAddError',
         'File > openWrite > ioSink > addStream > blocks.*',
 
-        'File > open', // Not yet implemented in MemoryFileSystem
+        'File > open', // TODO(jamesderlin): Enable this, https://github.com/google/file.dart/issues/144
       ],
     );
 

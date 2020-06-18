@@ -23,12 +23,7 @@ void main() {
     }
 
     group('memoryBacked', () {
-      runCommonTests(
-        createMemoryBackedChrootFileSystem,
-        skip: <String>[
-          'File > open', // Not yet implemented in MemoryFileSystem
-        ],
-      );
+      runCommonTests(createMemoryBackedChrootFileSystem);
     });
 
     group('localBacked', () {
