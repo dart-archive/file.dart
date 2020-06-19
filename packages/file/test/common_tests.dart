@@ -2215,7 +2215,7 @@ void runCommonTests(
         group('ioSink', () {
           File f;
           IOSink sink;
-          bool isSinkClosed = false;
+          bool isSinkClosed;
 
           Future<dynamic> closeSink() {
             Future<dynamic> future = sink.close();
@@ -2226,6 +2226,7 @@ void runCommonTests(
           setUp(() {
             f = fs.file(ns('/foo'));
             sink = f.openWrite();
+            isSinkClosed = false;
           });
 
           tearDown(() async {
@@ -2303,8 +2304,8 @@ void runCommonTests(
 
           test('returnsAccurateDoneFuture', () async {
             bool done = false;
-            sink.done
-                .then((dynamic _) => done = true); // ignore: unawaited_futures
+            // ignore: unawaited_futures
+            sink.done.then((dynamic _) => done = true);
             expect(done, isFalse);
             sink.write('foo');
             expect(done, isFalse);
@@ -2314,7 +2315,7 @@ void runCommonTests(
 
           group('addStream', () {
             StreamController<List<int>> controller;
-            bool isControllerClosed = false;
+            bool isControllerClosed;
 
             Future<dynamic> closeController() {
               Future<dynamic> future = controller.close();
@@ -2324,6 +2325,7 @@ void runCommonTests(
 
             setUp(() {
               controller = StreamController<List<int>>();
+              isControllerClosed = false;
               sink.addStream(controller.stream);
             });
 
