@@ -465,6 +465,15 @@ class Uint8ListToPlainList extends Converter<Uint8List, List<int>> {
   List<int> convert(Uint8List input) => List<int>.from(input);
 }
 
+/// Converts a simple [List<int>] to a [Uint8List].
+class ToUint8List extends Converter<List<int>, Uint8List> {
+  /// Creates a new [ToUint8List].
+  const ToUint8List();
+
+  @override
+  Uint8List convert(List<int> input) => Uint8List.fromList(input);
+}
+
 /// Revives a [Directory] entity reference into a [ReplayDirectory].
 class ReviveDirectory extends Converter<String, Directory> {
   /// Creates a new [ReviveDirectory].
