@@ -46,7 +46,11 @@ void main() {
         'File > openWrite > ioSink > throwsIfAddError',
         'File > openWrite > ioSink > addStream > blocks.*',
 
-        'File > open', // TODO(jamesderlin): Enable this, https://github.com/google/file.dart/issues/144
+        // TODO(jamesderlin): ReplayFileSystem does not yet support functions
+        // that mutate arguments, and error-checking for async functions is not
+        // implemented (https://github.com/google/file.dart/issues/144)
+        'File > open .* RandomAccessFile .* readInto.*',
+        'File > open .* RandomAccessFile .* throwsIfAsyncUnawaited',
       ],
     );
 
