@@ -23,13 +23,16 @@ class ReplayRandomAccessFile extends Object
     Converter<String, Future<RandomAccessFile>> reviveRandomAccessFileAsFuture =
         ReviveRandomAccessFile(_fileSystem).fuse(toFuture);
 
+    Converter<List<dynamic>, Uint8List> reviveUint8List =
+        const CastList<dynamic, int>().fuse(const ToUint8List());
+
     methods.addAll(<Symbol, Converter<dynamic, dynamic>>{
       #close: reviveRandomAccessFileAsFuture,
       #closeSync: const Passthrough<Null>(),
       #readByte: const ToFuture<int>(),
       #readByteSync: const Passthrough<int>(),
-      #read: const ToFuture<Uint8List>(),
-      #readSync: const Passthrough<Uint8List>(),
+      #read: reviveUint8List.fuse(const ToFuture<Uint8List>()),
+      #readSync: reviveUint8List,
       #readInto: const ToFuture<int>(),
       #readIntoSync: const Passthrough<int>(),
       #writeByte: reviveRandomAccessFileAsFuture,
