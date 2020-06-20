@@ -45,6 +45,7 @@ void main() {
         'File > openWrite > throws.*',
         'File > openWrite > ioSink > throwsIfAddError',
         'File > openWrite > ioSink > addStream > blocks.*',
+        'File > openWrite > ioSink > ignoresDataWrittenAfterClose',
 
         'File > open', // Not yet implemented in MemoryFileSystem
       ],

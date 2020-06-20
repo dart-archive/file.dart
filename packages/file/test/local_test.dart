@@ -98,37 +98,8 @@ void main() {
       () => fs,
       root: () => tmp.path,
       skip: <String>[
-        // API doesn't exit in dart:io until Dart 1.23
-        'File > lastAccessed',
-        'File > setLastAccessed',
-        'File > setLastModified',
-
-        // https://github.com/dart-lang/sdk/issues/28170
-        'File > create > throwsIfAlreadyExistsAsDirectory',
-        'File > create > throwsIfAlreadyExistsAsLinkToDirectory',
-
         // https://github.com/dart-lang/sdk/issues/28171
         'File > rename > throwsIfDestinationExistsAsLinkToDirectory',
-
-        // https://github.com/dart-lang/sdk/issues/28172
-        'File > length > throwsIfExistsAsDirectory',
-
-        // https://github.com/dart-lang/sdk/issues/28173
-        'File > lastModified > throwsIfExistsAsDirectory',
-
-        // https://github.com/dart-lang/sdk/issues/28174
-        '.+ > RandomAccessFile > writeFromWithStart',
-        '.+ > RandomAccessFile > writeFromWithStartAndEnd',
-
-        // https://github.com/dart-lang/sdk/issues/28201
-        'Link > delete > throwsIfLinkDoesntExistAtTail',
-        'Link > delete > throwsIfLinkDoesntExistViaTraversal',
-        'Link > update > throwsIfLinkDoesntExistAtTail',
-        'Link > update > throwsIfLinkDoesntExistViaTraversal',
-
-        // https://github.com/dart-lang/sdk/issues/28202
-        'Link > rename > throwsIfSourceDoesntExistAtTail',
-        'Link > rename > throwsIfSourceDoesntExistViaTraversal',
 
         // https://github.com/dart-lang/sdk/issues/28275
         'Link > rename > throwsIfDestinationExistsAsDirectory',
