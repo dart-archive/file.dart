@@ -17,6 +17,10 @@ import 'node.dart';
 import 'style.dart';
 import 'utils.dart' as utils;
 
+// Tracks a unique name for system temp directories, per filesystem
+// instance.
+final Expando<int> _systemTempCounter = Expando<int>();
+
 /// Internal implementation of [Directory].
 class MemoryDirectory extends MemoryFileSystemEntity
     with common.DirectoryAddOnsMixin
@@ -24,8 +28,6 @@ class MemoryDirectory extends MemoryFileSystemEntity
   /// Instantiates a new [MemoryDirectory].
   MemoryDirectory(NodeBasedFileSystem fileSystem, String path)
       : super(fileSystem, path);
-
-  static int _tempCounter = 0;
 
   @override
   io.FileSystemEntityType get expectedType => io.FileSystemEntityType.directory;
@@ -75,10 +77,12 @@ class MemoryDirectory extends MemoryFileSystemEntity
     DirectoryNode node = fileSystem.findNode(dirname);
     checkExists(node, () => dirname);
     utils.checkIsDir(node, () => dirname);
+    int _tempCounter = _systemTempCounter[fileSystem] ?? 0;
     String name() => '$basename$_tempCounter';
     while (node.children.containsKey(name())) {
       _tempCounter++;
     }
+    _systemTempCounter[fileSystem] = _tempCounter;
     DirectoryNode tempDir = DirectoryNode(node);
     node.children[name()] = tempDir;
     return MemoryDirectory(fileSystem, fileSystem.path.join(dirname, name()));

@@ -1,3 +1,8 @@
+#### 5.2.1
+
+* systemTemp directories created by `MemoryFileSystem` will allot names
+  based on the file system instance instead of globally.
+
 #### 5.2.0
 
 * Added a `MemoryRandomAccessFile` class and implemented
