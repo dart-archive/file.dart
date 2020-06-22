@@ -1,5 +1,7 @@
 #### 5.2.1
 
+* systemTemp directories created by `MemoryFileSystem` will allot names
+  based on the file system instance instead of globally.
 * `MemoryFile.readAsLines()`/`readAsLinesSync()` no longer treat a final newline
   in the file as the start of a new, empty line.
 * `RecordingFile.readAsLine()`/`readAsLinesSync()` now always record a final

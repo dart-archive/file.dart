@@ -341,9 +341,11 @@ class _FileSink implements io.IOSink {
   @override
   void add(List<int> data) {
     _checkNotStreaming();
-    if (!_isClosed) {
-      _addData(data);
+    if (_isClosed) {
+      throw StateError('StreamSink is closed');
     }
+
+    _addData(data);
   }
 
   @override
@@ -398,8 +400,7 @@ class _FileSink implements io.IOSink {
   }
 
   @override
-  // TODO(tvolkert): Change to Future<Null> once Dart 1.22 is stable
-  Future<dynamic> flush() {
+  Future<void> flush() {
     _checkNotStreaming();
     return _pendingWrites;
   }
