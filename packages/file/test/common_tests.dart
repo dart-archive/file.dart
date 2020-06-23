@@ -1567,12 +1567,12 @@ void runCommonTests(
 
       group('lastAccessed', () {
         test('isNowForNewlyCreatedFile', () {
-          DateTime before = floor();
+          DateTime before = downstairs();
           File f = fs.file(ns('/foo'))..createSync();
           DateTime after = ceil();
           DateTime accessed = f.lastAccessedSync();
-          expect(before, isSameOrBefore(accessed));
-          expect(after, isSameOrAfter(accessed));
+          expect(accessed, isSameOrAfter(before));
+          expect(accessed, isSameOrBefore(after));
         });
 
         test('throwsIfDoesntExist', () {
@@ -1589,13 +1589,13 @@ void runCommonTests(
         });
 
         test('succeedsIfExistsAsLinkToFile', () {
-          DateTime before = floor();
+          DateTime before = downstairs();
           fs.file(ns('/foo')).createSync();
           fs.link(ns('/bar')).createSync(ns('/foo'));
           DateTime after = ceil();
           DateTime accessed = fs.file(ns('/bar')).lastAccessedSync();
-          expect(before, isSameOrBefore(accessed));
-          expect(after, isSameOrAfter(accessed));
+          expect(accessed, isSameOrAfter(before));
+          expect(accessed, isSameOrBefore(after));
         });
       });
 
@@ -1631,12 +1631,12 @@ void runCommonTests(
 
       group('lastModified', () {
         test('isNowForNewlyCreatedFile', () {
-          DateTime before = floor();
+          DateTime before = downstairs();
           File f = fs.file(ns('/foo'))..createSync();
           DateTime after = ceil();
           DateTime modified = f.lastModifiedSync();
-          expect(before, isSameOrBefore(modified));
-          expect(after, isSameOrAfter(modified));
+          expect(modified, isSameOrAfter(before));
+          expect(modified, isSameOrBefore(after));
         });
 
         test('throwsIfDoesntExist', () {
@@ -1653,13 +1653,13 @@ void runCommonTests(
         });
 
         test('succeedsIfExistsAsLinkToFile', () {
-          DateTime before = floor();
+          DateTime before = downstairs();
           fs.file(ns('/foo')).createSync();
           fs.link(ns('/bar')).createSync(ns('/foo'));
           DateTime after = ceil();
           DateTime modified = fs.file(ns('/bar')).lastModifiedSync();
-          expect(before, isSameOrBefore(modified));
-          expect(after, isSameOrAfter(modified));
+          expect(modified, isSameOrAfter(before));
+          expect(modified, isSameOrBefore(after));
         });
       });
 

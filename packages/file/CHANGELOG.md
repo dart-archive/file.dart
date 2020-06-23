@@ -6,6 +6,11 @@
   in the file as the start of a new, empty line.
 * `RecordingFile.readAsLine()`/`readAsLinesSync()` now always record a final
   newline.
+* `MemoryFile.flush()` now returns `Future<void>` instead of `Future<dynamic>`.
+* Fixed incorrect formatting in `NoMatchingInvocationError.toString()`.
+* Fixed a lot of test flakiness.
+* Enabled more tests.
+* Internal cleanup.
 
 #### 5.2.0
 
