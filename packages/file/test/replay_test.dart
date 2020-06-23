@@ -7,6 +7,8 @@ import 'dart:async';
 import 'package:file/file.dart';
 import 'package:file/memory.dart';
 import 'package:file/record_replay.dart';
+import 'package:file/src/backends/record_replay/common.dart'
+    show describeInvocation;
 import 'package:file_testing/file_testing.dart';
 import 'package:path/path.dart' as path;
 import 'package:test/test.dart';
@@ -200,6 +202,41 @@ void main() {
         expect(() => fs.typeSync('/'), throwsNoMatchingInvocationError);
         expect(replayType, type);
       });
+    });
+  });
+
+  group('describeInvocation', () {
+    test('noArguments', () {
+      expect(
+        describeInvocation(Invocation.method(#foo, [])),
+        'foo()',
+      );
+    });
+
+    test('onlyPositionalArguments', () {
+      expect(
+        describeInvocation(Invocation.method(#foo, [1, 'bar', null])),
+        'foo(1, "bar", null)',
+      );
+    });
+
+    test('onlyNamedArguments', () {
+      expect(
+        describeInvocation(
+            Invocation.method(#foo, [], {#x: 2, #y: 'baz', #z: null})),
+        'foo(x: 2, y: "baz", z: null)',
+      );
+    });
+
+    test('positionalAndNamedArguments', () {
+      expect(
+        describeInvocation(Invocation.method(
+          #foo,
+          [1, 'bar', null],
+          {#x: 2, #y: 'baz', #z: null},
+        )),
+        'foo(1, "bar", null, x: 2, y: "baz", z: null)',
+      );
     });
   });
 }
