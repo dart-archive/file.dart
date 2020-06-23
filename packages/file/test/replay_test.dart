@@ -210,21 +210,21 @@ void main() {
   });
 
   group('describeInvocation', () {
-    test('noArguments', () {
+    test('methodWithNoArguments', () {
       expect(
         describeInvocation(Invocation.method(#foo, [])),
         'foo()',
       );
     });
 
-    test('onlyPositionalArguments', () {
+    test('methodWithOnlyPositionalArguments', () {
       expect(
         describeInvocation(Invocation.method(#foo, [1, 'bar', null])),
         'foo(1, "bar", null)',
       );
     });
 
-    test('onlyNamedArguments', () {
+    test('methodWithOnlyNamedArguments', () {
       expect(
         describeInvocation(
             Invocation.method(#foo, [], {#x: 2, #y: 'baz', #z: null})),
@@ -232,7 +232,7 @@ void main() {
       );
     });
 
-    test('positionalAndNamedArguments', () {
+    test('methodWithPositionalAndNamedArguments', () {
       expect(
         describeInvocation(Invocation.method(
           #foo,
@@ -240,6 +240,13 @@ void main() {
           {#x: 2, #y: 'baz', #z: null},
         )),
         'foo(1, "bar", null, x: 2, y: "baz", z: null)',
+      );
+    });
+
+    test('setter', () {
+      expect(
+        describeInvocation(Invocation.setter(#property, 'value')),
+        'property = "value"',
       );
     });
   });

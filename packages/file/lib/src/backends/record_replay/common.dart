@@ -159,26 +159,33 @@ bool _areMapsEqual<K, V>(Map<K, V> map1, Map<K, V> map2) {
 
 /// Returns a human-readable representation of an [Invocation].
 String describeInvocation(Invocation invocation) {
-  StringBuffer buf = StringBuffer();
-  buf.write(getSymbolName(invocation.memberName));
+  final StringBuffer buffer = StringBuffer()
+    ..write(getSymbolName(invocation.memberName));
   if (invocation.isMethod) {
-    buf.write('(');
-    int i = 0;
+    buffer.write('(');
+    int printedCount = 0;
     for (dynamic arg in invocation.positionalArguments) {
-      if (i++ > 0) {
-        buf.write(', ');
+      if (printedCount > 0) {
+        buffer.write(', ');
       }
-      buf.write(Error.safeToString(encode(arg)));
+      buffer.write(Error.safeToString(encode(arg)));
+      printedCount += 1;
     }
-    invocation.namedArguments.forEach((Symbol name, dynamic value) {
-      if (i++ > 0) {
-        buf.write(', ');
+    for (final nameValue in invocation.namedArguments.entries) {
+      final Symbol name = nameValue.key;
+      final dynamic value = nameValue.value;
+      if (printedCount > 0) {
+        buffer.write(', ');
       }
-      buf.write('${getSymbolName(name)}: ${Error.safeToString(encode(value))}');
-    });
-    buf.write(')');
+      buffer.write(
+          '${getSymbolName(name)}: ${Error.safeToString(encode(value))}');
+      printedCount += 1;
+    }
+    buffer.write(')');
   } else if (invocation.isSetter) {
-    buf.write(Error.safeToString(encode(invocation.positionalArguments[0])));
+    buffer
+      ..write(' = ')
+      ..write(Error.safeToString(encode(invocation.positionalArguments[0])));
   }
-  return buf.toString();
+  return buffer.toString();
 }
