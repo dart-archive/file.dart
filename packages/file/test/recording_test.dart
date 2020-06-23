@@ -763,7 +763,9 @@ void main() {
         });
 
         test('readAsLines', () async {
-          String content = 'Hello\nWorld';
+          // [readAsLines] is appropriate only for text files, and POSIX
+          // requires that valid text files end with a terminating newline.
+          String content = 'Hello\nWorld\n';
           await delegate.file('/foo').writeAsString(content, flush: true);
           await fs.file('/foo').readAsLines();
           expect(
@@ -792,7 +794,9 @@ void main() {
         });
 
         test('readAsLinesSync', () async {
-          String content = 'Hello\nWorld';
+          // [readAsLinesSync] is appropriate only for text files, and POSIX
+          // requires that valid text files end with a terminating newline.
+          String content = 'Hello\nWorld\n';
           await delegate.file('/foo').writeAsString(content, flush: true);
           fs.file('/foo').readAsLinesSync();
           expect(

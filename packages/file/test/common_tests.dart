@@ -2285,15 +2285,12 @@ void runCommonTests(
             expect(await f.readAsString(), 'Hello world\n');
           });
 
-          // TODO(tvolkert): Fix and re-enable: http://dartbug.com/29554
-          /*
           test('ignoresDataWrittenAfterClose', () async {
             sink.write('Before close');
             await closeSink();
-            sink.write('After close');
+            expect(() => sink.write('After close'), throwsStateError);
             expect(await f.readAsString(), 'Before close');
           });
-          */
 
           test('ignoresCloseAfterAlreadyClosed', () async {
             sink.write('Hello world');
@@ -2468,6 +2465,13 @@ void runCommonTests(
       });
 
       group('readAsLines', () {
+        const String testString = 'Hello world\nHow are you?\nI am fine';
+        final List<String> expectedLines = <String>[
+          'Hello world',
+          'How are you?',
+          'I am fine',
+        ];
+
         test('throwsIfDoesntExist', () {
           expectFileSystemException(ErrorCodes.ENOENT, () {
             fs.file(ns('/foo')).readAsLinesSync();
@@ -2491,28 +2495,32 @@ void runCommonTests(
 
         test('succeedsIfExistsAsFile', () {
           File f = fs.file(ns('/foo'))..createSync();
-          f.writeAsStringSync('Hello world\nHow are you?\nI am fine');
-          expect(f.readAsLinesSync(), <String>[
-            'Hello world',
-            'How are you?',
-            'I am fine',
-          ]);
+          f.writeAsStringSync(testString);
+          expect(f.readAsLinesSync(), expectedLines);
         });
 
         test('succeedsIfExistsAsLinkToFile', () {
           File f = fs.file(ns('/foo'))..createSync();
           fs.link(ns('/bar')).createSync(ns('/foo'));
-          f.writeAsStringSync('Hello world\nHow are you?\nI am fine');
-          expect(f.readAsLinesSync(), <String>[
-            'Hello world',
-            'How are you?',
-            'I am fine',
-          ]);
+          f.writeAsStringSync(testString);
+          expect(f.readAsLinesSync(), expectedLines);
         });
 
         test('returnsEmptyListForZeroByteFile', () {
           File f = fs.file(ns('/foo'))..createSync();
           expect(f.readAsLinesSync(), isEmpty);
+        });
+
+        test('isTrailingNewlineAgnostic', () {
+          File f = fs.file(ns('/foo'))..createSync();
+          f.writeAsStringSync(testString + '\n');
+          expect(f.readAsLinesSync(), expectedLines);
+
+          f.writeAsStringSync('\n');
+          expect(f.readAsLinesSync(), <String>['']);
+
+          f.writeAsStringSync('\n\n');
+          expect(f.readAsLinesSync(), <String>['', '']);
         });
       });
 
