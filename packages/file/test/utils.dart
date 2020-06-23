@@ -5,6 +5,8 @@
 import 'package:meta/meta.dart';
 import 'package:test/test.dart';
 
+const Duration _oneSecond = Duration(seconds: 1);
+
 /// Returns a [DateTime] with an exact second-precision by removing the
 /// milliseconds and microseconds from the specified [time].
 ///
@@ -17,16 +19,22 @@ DateTime floor([DateTime time]) {
   ));
 }
 
-/// Returns a [DateTime] with an exact second precision by adding just enough
-/// milliseconds and microseconds to the specified [time] to reach the next
-/// second.
+/// Returns a [DateTime] with an exact second precision, rounding up to the
+/// nearest second if necessary.
 ///
 /// If [time] is not specified, it will default to the current time.
 DateTime ceil([DateTime time]) {
   time ??= DateTime.now();
   int microseconds = (1000 * time.millisecond) + time.microsecond;
-  return time.add(Duration(microseconds: 1000000 - microseconds));
+  return (microseconds == 0)
+      ? time
+      // Add just enough milliseconds and microseconds to reach the next second.
+      : time.add(Duration(microseconds: 1000000 - microseconds));
 }
+
+/// Returns 1 second before the [floor] of the specified [DateTime].
+// TODO(jamesderlin): Remove this and use [floor], https://github.com/dart-lang/sdk/issues/42444
+DateTime downstairs([DateTime time]) => floor(time).subtract(_oneSecond);
 
 /// Successfully matches against a [DateTime] that is the same moment or before
 /// the specified [time].
