@@ -333,12 +333,7 @@ void main() {
       recording = fs.recording;
     });
 
-    runCommonTests(
-      () => fs,
-      skip: <String>[
-        'File > open', // Not yet implemented in MemoryFileSystem
-      ],
-    );
+    runCommonTests(() => fs);
 
     group('recording', () {
       test('supportsMultipleActions', () {

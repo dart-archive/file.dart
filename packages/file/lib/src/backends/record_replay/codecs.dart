@@ -456,6 +456,15 @@ class Listify<T> extends Converter<T, List<T>> {
   List<T> convert(T input) => <T>[input];
 }
 
+/// Converts a simple [List<int>] to a [Uint8List].
+class ToUint8List extends Converter<List<int>, Uint8List> {
+  /// Creates a new [ToUint8List].
+  const ToUint8List();
+
+  @override
+  Uint8List convert(List<int> input) => Uint8List.fromList(input);
+}
+
 /// Revives a [Directory] entity reference into a [ReplayDirectory].
 class ReviveDirectory extends Converter<String, Directory> {
   /// Creates a new [ReviveDirectory].
