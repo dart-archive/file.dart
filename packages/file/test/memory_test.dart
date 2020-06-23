@@ -110,4 +110,25 @@ void main() {
       raf.closeSync();
     }
   });
+
+  test('MemoryFileSystem.systemTempDirectory test', () {
+    final MemoryFileSystem fs = MemoryFileSystem.test();
+
+    final io.Directory fooA = fs.systemTempDirectory.createTempSync('foo');
+    final io.Directory fooB = fs.systemTempDirectory.createTempSync('foo');
+
+    expect(fooA.path, '/.tmp_rand0/foorand0');
+    expect(fooB.path, '/.tmp_rand0/foorand1');
+
+    final MemoryFileSystem secondFs = MemoryFileSystem.test();
+
+    final io.Directory fooAA =
+        secondFs.systemTempDirectory.createTempSync('foo');
+    final io.Directory fooBB =
+        secondFs.systemTempDirectory.createTempSync('foo');
+
+    // Names are recycled with a new instance
+    expect(fooAA.path, '/.tmp_rand0/foorand0');
+    expect(fooBB.path, '/.tmp_rand0/foorand1');
+  });
 }

@@ -45,6 +45,7 @@ void main() {
         'File > openWrite > throws.*',
         'File > openWrite > ioSink > throwsIfAddError',
         'File > openWrite > ioSink > addStream > blocks.*',
+        'File > openWrite > ioSink > ignoresDataWrittenAfterClose',
 
         // TODO(jamesderlin): ReplayFileSystem does not yet support functions
         // that mutate arguments, and error-checking for async functions is not

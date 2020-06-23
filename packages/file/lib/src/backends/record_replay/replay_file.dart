@@ -25,7 +25,7 @@ class ReplayFile extends ReplayFileSystemEntity implements File {
     Converter<String, Future<Uint8List>> blobToBytesFuture =
         blobToBytes.fuse(const ToFuture<Uint8List>());
     Converter<String, String> blobToString =
-        blobToBytes.fuse(const Uint8ListToPlainList()).fuse(utf8.decoder);
+        blobToBytes.cast<String, List<int>>().fuse(utf8.decoder);
     Converter<String, Future<String>> blobToStringFuture =
         blobToString.fuse(const ToFuture<String>());
     Converter<String, RandomAccessFile> reviveRandomAccessFile =

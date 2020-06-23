@@ -188,6 +188,7 @@ class MemoryRandomAccessFile implements io.RandomAccessFile {
   ]) {
     _checkOpen();
     _checkAsync();
+    // TODO(jamesderlin): Implement, https://github.com/google/file.dart/issues/140
     throw UnimplementedError('TODO');
   }
 
@@ -310,6 +311,7 @@ class MemoryRandomAccessFile implements io.RandomAccessFile {
   void unlockSync([int start = 0, int end = -1]) {
     _checkOpen();
     _checkAsync();
+    // TODO(jamesderlin): Implement, https://github.com/google/file.dart/issues/140
     throw UnimplementedError('TODO');
   }
 

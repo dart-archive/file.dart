@@ -33,7 +33,7 @@ class MethodProxy {
       // The method is being invoked. Capture the arguments, and invoke the
       // method on the proxy object. We have to synthesize an invocation, since
       // our current `invocation` object represents the invocation of `call()`.
-      return _proxyObject.noSuchMethod(_MethodInvocationProxy(
+      return _proxyObject.noSuchMethod(Invocation.method(
         _methodName,
         invocation.positionalArguments,
         invocation.namedArguments,
@@ -41,31 +41,4 @@ class MethodProxy {
     }
     return super.noSuchMethod(invocation);
   }
-}
-
-// TODO(tvolkert): remove (https://github.com/dart-lang/sdk/issues/28706)
-class _MethodInvocationProxy extends Invocation {
-  _MethodInvocationProxy(
-    this.memberName,
-    this.positionalArguments,
-    this.namedArguments,
-  );
-
-  @override
-  final Symbol memberName;
-
-  @override
-  final List<dynamic> positionalArguments;
-
-  @override
-  final Map<Symbol, dynamic> namedArguments;
-
-  @override
-  final bool isMethod = true;
-
-  @override
-  final bool isGetter = false;
-
-  @override
-  final bool isSetter = false;
 }
