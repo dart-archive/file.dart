@@ -2,7 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'codecs.dart';
 import 'common.dart';
 
 /// Error thrown during replay when there is no matching invocation in the
@@ -16,31 +15,8 @@ class NoMatchingInvocationError extends Error {
   final Invocation invocation;
 
   @override
-  String toString() {
-    StringBuffer buf = StringBuffer();
-    buf.write('No matching invocation found: ');
-    buf.write(getSymbolName(invocation.memberName));
-    if (invocation.isMethod) {
-      buf.write('(');
-      int i = 0;
-      for (dynamic arg in invocation.positionalArguments) {
-        buf.write(Error.safeToString(encode(arg)));
-        if (i++ > 0) {
-          buf.write(', ');
-        }
-      }
-      invocation.namedArguments.forEach((Symbol name, dynamic value) {
-        if (i++ > 0) {
-          buf.write(', ');
-        }
-        buf.write('${getSymbolName(name)}: ${encode(value)}');
-      });
-      buf.write(')');
-    } else if (invocation.isSetter) {
-      buf.write(Error.safeToString(encode(invocation.positionalArguments[0])));
-    }
-    return buf.toString();
-  }
+  String toString() =>
+      'No matching invocation found: ${describeInvocation(invocation)}';
 }
 
 /// Exception thrown during replay when an invocation recorded error, but we
