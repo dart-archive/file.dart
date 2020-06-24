@@ -1273,10 +1273,11 @@ void runCommonTests(
         });
 
         test('succeedsIfDestinationDoesntExistAtTail', () {
-          File f = fs.file(ns('/foo'))..createSync();
-          f.renameSync(ns('/bar'));
+          File src = fs.file(ns('/foo'))..createSync();
+          File dest = src.renameSync(ns('/bar'));
           expect(fs.file(ns('/foo')), isNot(exists));
           expect(fs.file(ns('/bar')), exists);
+          expect(dest.path, ns('/bar'));
         });
 
         test('throwsIfDestinationDoesntExistViaTraversal', () {
@@ -3254,7 +3255,8 @@ void runCommonTests(
         test('succeedsIfSourceIsLinkToFile', () {
           Link l = fs.link(ns('/foo'))..createSync(ns('/bar'));
           fs.file(ns('/bar')).createSync();
-          l.renameSync(ns('/baz'));
+          Link renamed = l.renameSync(ns('/baz'));
+          expect(renamed.path, ns('/baz'));
           expect(fs.typeSync(ns('/foo'), followLinks: false),
               FileSystemEntityType.notFound);
           expect(fs.typeSync(ns('/bar'), followLinks: false),
@@ -3266,7 +3268,8 @@ void runCommonTests(
 
         test('succeedsIfSourceIsLinkToNotFound', () {
           Link l = fs.link(ns('/foo'))..createSync(ns('/bar'));
-          l.renameSync(ns('/baz'));
+          Link renamed = l.renameSync(ns('/baz'));
+          expect(renamed.path, ns('/baz'));
           expect(fs.typeSync(ns('/foo'), followLinks: false),
               FileSystemEntityType.notFound);
           expect(fs.typeSync(ns('/baz'), followLinks: false),
@@ -3277,7 +3280,8 @@ void runCommonTests(
         test('succeedsIfSourceIsLinkToDirectory', () {
           Link l = fs.link(ns('/foo'))..createSync(ns('/bar'));
           fs.directory(ns('/bar')).createSync();
-          l.renameSync(ns('/baz'));
+          Link renamed = l.renameSync(ns('/baz'));
+          expect(renamed.path, ns('/baz'));
           expect(fs.typeSync(ns('/foo'), followLinks: false),
               FileSystemEntityType.notFound);
           expect(fs.typeSync(ns('/bar'), followLinks: false),
@@ -3290,7 +3294,8 @@ void runCommonTests(
         test('succeedsIfSourceIsLinkLoop', () {
           Link l = fs.link(ns('/foo'))..createSync(ns('/bar'));
           fs.link(ns('/bar')).createSync(ns('/foo'));
-          l.renameSync(ns('/baz'));
+          Link renamed = l.renameSync(ns('/baz'));
+          expect(renamed.path, ns('/baz'));
           expect(fs.typeSync(ns('/foo'), followLinks: false),
               FileSystemEntityType.notFound);
           expect(fs.typeSync(ns('/bar'), followLinks: false),
@@ -3302,7 +3307,8 @@ void runCommonTests(
 
         test('succeedsIfDestinationDoesntExistAtTail', () {
           Link l = fs.link(ns('/foo'))..createSync(ns('/bar'));
-          l.renameSync(ns('/baz'));
+          Link renamed = l.renameSync(ns('/baz'));
+          expect(renamed.path, ns('/baz'));
           expect(fs.link(ns('/foo')), isNot(exists));
           expect(fs.link(ns('/baz')), exists);
         });
