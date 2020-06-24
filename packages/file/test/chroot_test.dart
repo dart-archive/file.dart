@@ -22,8 +22,15 @@ void main() {
       return ChrootFileSystem(fs, '/tmp');
     }
 
+    // TODO(jamesderlin): Make ChrootFile.openSync return a delegating
+    // RandomAccessFile that uses the chroot'd path.
+    List<String> skipCommon = <String>[
+      'File > open > .* > RandomAccessFile > read > openReadHandleDoesNotChange',
+      'File > open > .* > RandomAccessFile > openWriteHandleDoesNotChange',
+    ];
+
     group('memoryBacked', () {
-      runCommonTests(createMemoryBackedChrootFileSystem);
+      runCommonTests(createMemoryBackedChrootFileSystem, skip: skipCommon);
     });
 
     group('localBacked', () {
@@ -48,6 +55,8 @@ void main() {
 
           // https://github.com/dart-lang/sdk/issues/28277
           'Link > rename > throwsIfDestinationExistsAsFile',
+
+          ...skipCommon,
         ],
       );
     }, skip: io.Platform.isWindows);

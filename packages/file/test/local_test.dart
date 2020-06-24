@@ -91,6 +91,10 @@ void main() {
         'File > open > APPEND > RandomAccessFile > truncate > throwsIfSetToNegativeNumber',
         'File > open > WRITE_ONLY > RandomAccessFile > truncate > throwsIfSetToNegativeNumber',
         'File > open > WRITE_ONLY_APPEND > RandomAccessFile > truncate > throwsIfSetToNegativeNumber',
+
+        // Windows does not allow removing or renaming open files.
+        '.* > openReadHandleDoesNotChange',
+        '.* > openWriteHandleDoesNotChange',
       ],
     };
 

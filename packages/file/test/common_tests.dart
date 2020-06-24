@@ -1856,6 +1856,21 @@ void runCommonTests(
                   expect(numRead, 3);
                   expect(utf8.decode(buffer.sublist(2, 5)), 'pre');
                 });
+
+                test('openReadHandleDoesNotChange', () {
+                  final String initial = utf8.decode(raf.readSync(4));
+                  expect(initial, 'pre-');
+                  final File newFile = f.renameSync(ns('/bar'));
+                  String rest = utf8.decode(raf.readSync(1024));
+                  expect(rest, 'existing content\n');
+
+                  assert(newFile.path != f.path);
+                  expect(f, isNot(exists));
+                  expect(newFile, exists);
+
+                  // [RandomAccessFile.path] always returns the original path.
+                  expect(raf.path, f.path);
+                });
               });
             }
 
@@ -1942,6 +1957,26 @@ void runCommonTests(
                   expect(f.readAsStringSync(),
                       'pre-existing content\nHello world');
                 }
+              });
+
+              test('openWriteHandleDoesNotChange', () {
+                raf.writeStringSync('Hello ');
+                final File newFile = f.renameSync(ns('/bar'));
+                raf.writeStringSync('world');
+
+                final String contents = newFile.readAsStringSync();
+                if (mode == FileMode.write || mode == FileMode.writeOnly) {
+                  expect(contents, 'Hello world');
+                } else {
+                  expect(contents, 'pre-existing content\nHello world');
+                }
+
+                assert(newFile.path != f.path);
+                expect(f, isNot(exists));
+                expect(newFile, exists);
+
+                // [RandomAccessFile.path] always returns the original path.
+                expect(raf.path, f.path);
               });
             }
 

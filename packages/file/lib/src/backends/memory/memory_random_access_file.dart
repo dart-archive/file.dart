@@ -18,7 +18,7 @@ class MemoryRandomAccessFile implements io.RandomAccessFile {
   /// Constructs a [MemoryRandomAccessFile].
   ///
   /// This should be used only by [MemoryFile.open] or [MemoryFile.openSync].
-  MemoryRandomAccessFile(this._memoryFile, this._node, this._mode) {
+  MemoryRandomAccessFile(this.path, this._node, this._mode) {
     switch (_mode) {
       case io.FileMode.read:
         break;
@@ -36,7 +36,9 @@ class MemoryRandomAccessFile implements io.RandomAccessFile {
     }
   }
 
-  final MemoryFile _memoryFile;
+  @override
+  final String path;
+
   final FileNode _node;
   final io.FileMode _mode;
 
@@ -137,9 +139,6 @@ class MemoryRandomAccessFile implements io.RandomAccessFile {
   }
 
   @override
-  String get path => _memoryFile.path;
-
-  @override
   Future<void> close() async => _asyncWrapper(closeSync);
 
   @override
@@ -167,7 +166,7 @@ class MemoryRandomAccessFile implements io.RandomAccessFile {
   int lengthSync() {
     _checkOpen();
     _checkAsync();
-    return _memoryFile.lengthSync();
+    return _node.size;
   }
 
   @override

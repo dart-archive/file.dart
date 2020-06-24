@@ -1,4 +1,5 @@
 #### 5.2.2-dev
+
 * Fixed incorrect formatting in `NoMatchingInvocationError.toString()`.
 * Fixed more test flakiness.
 * Enabled more tests.

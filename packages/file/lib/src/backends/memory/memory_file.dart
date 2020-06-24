@@ -181,7 +181,7 @@ class MemoryFile extends MemoryFileSystemEntity implements File {
       createSync();
     }
 
-    return MemoryRandomAccessFile(this, resolvedBacking as FileNode, mode);
+    return MemoryRandomAccessFile(path, resolvedBacking as FileNode, mode);
   }
 
   @override
