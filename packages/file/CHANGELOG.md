@@ -1,3 +1,9 @@
+#### 5.2.2-dev
+* Fixed incorrect formatting in `NoMatchingInvocationError.toString()`.
+* Fixed more test flakiness.
+* Enabled more tests.
+* Internal cleanup.
+
 #### 5.2.1
 
 * systemTemp directories created by `MemoryFileSystem` will allot names
@@ -7,8 +13,7 @@
 * `RecordingFile.readAsLine()`/`readAsLinesSync()` now always record a final
   newline.
 * `MemoryFile.flush()` now returns `Future<void>` instead of `Future<dynamic>`.
-* Fixed incorrect formatting in `NoMatchingInvocationError.toString()`.
-* Fixed a lot of test flakiness.
+* Fixed some test flakiness.
 * Enabled more tests.
 * Internal cleanup.
 
