@@ -252,7 +252,7 @@ void runCommonTests(
         test('existsAsDirectory', () {
           Directory tmp = fs.systemTempDirectory;
           expect(tmp, isDirectory);
-          expect(tmp.existsSync(), isTrue);
+          expect(tmp, exists);
         });
       });
 
@@ -510,40 +510,40 @@ void runCommonTests(
 
       group('exists', () {
         test('falseIfNotExists', () {
-          expect(fs.directory(ns('/foo')).existsSync(), false);
-          expect(fs.directory('foo').existsSync(), false);
-          expect(fs.directory(ns('/foo/bar')).existsSync(), false);
+          expect(fs.directory(ns('/foo')), isNot(exists));
+          expect(fs.directory('foo'), isNot(exists));
+          expect(fs.directory(ns('/foo/bar')), isNot(exists));
         });
 
         test('trueIfExistsAsDirectory', () {
           fs.directory(ns('/foo')).createSync();
-          expect(fs.directory(ns('/foo')).existsSync(), true);
-          expect(fs.directory('foo').existsSync(), true);
+          expect(fs.directory(ns('/foo')), exists);
+          expect(fs.directory('foo'), exists);
         });
 
         test('falseIfExistsAsFile', () {
           fs.file(ns('/foo')).createSync();
-          expect(fs.directory(ns('/foo')).existsSync(), false);
-          expect(fs.directory('foo').existsSync(), false);
+          expect(fs.directory(ns('/foo')), isNot(exists));
+          expect(fs.directory('foo'), isNot(exists));
         });
 
         test('trueIfExistsAsLinkToDirectory', () {
           fs.directory(ns('/foo')).createSync();
           fs.link(ns('/bar')).createSync(ns('/foo'));
-          expect(fs.directory(ns('/bar')).existsSync(), true);
-          expect(fs.directory('bar').existsSync(), true);
+          expect(fs.directory(ns('/bar')), exists);
+          expect(fs.directory('bar'), exists);
         });
 
         test('falseIfExistsAsLinkToFile', () {
           fs.file(ns('/foo')).createSync();
           fs.link(ns('/bar')).createSync(ns('/foo'));
-          expect(fs.directory(ns('/bar')).existsSync(), false);
-          expect(fs.directory('bar').existsSync(), false);
+          expect(fs.directory(ns('/bar')), isNot(exists));
+          expect(fs.directory('bar'), isNot(exists));
         });
 
         test('falseIfNotFoundSegmentExistsThenIsBackedOut', () {
           fs.directory(ns('/foo')).createSync();
-          expect(fs.directory(ns('/bar/../foo')).existsSync(), isFalse);
+          expect(fs.directory(ns('/bar/../foo')), isNot(exists));
         });
       });
 
@@ -607,9 +607,9 @@ void runCommonTests(
         });
 
         test('succeedsIfTailDoesntExist', () {
-          expect(fs.directory(ns('/')).existsSync(), true);
+          expect(fs.directory(ns('/')), exists);
           fs.directory(ns('/foo')).createSync();
-          expect(fs.directory(ns('/foo')).existsSync(), true);
+          expect(fs.directory(ns('/foo')), exists);
         });
 
         test('throwsIfAncestorDoesntExistRecursiveFalse', () {
@@ -620,8 +620,8 @@ void runCommonTests(
 
         test('succeedsIfAncestorDoesntExistRecursiveTrue', () {
           fs.directory(ns('/foo/bar')).createSync(recursive: true);
-          expect(fs.directory(ns('/foo')).existsSync(), true);
-          expect(fs.directory(ns('/foo/bar')).existsSync(), true);
+          expect(fs.directory(ns('/foo')), exists);
+          expect(fs.directory(ns('/foo/bar')), exists);
         });
       });
 
@@ -636,15 +636,15 @@ void runCommonTests(
           Directory src = fs.directory(ns('/foo'))..createSync();
           Directory dest = src.renameSync(ns('/bar'));
           expect(dest.path, ns('/bar'));
-          expect(dest.existsSync(), true);
+          expect(dest, exists);
         });
 
         test('succeedsIfDestinationIsEmptyDirectory', () {
           fs.directory(ns('/bar')).createSync();
           Directory src = fs.directory(ns('/foo'))..createSync();
           Directory dest = src.renameSync(ns('/bar'));
-          expect(src.existsSync(), false);
-          expect(dest.existsSync(), true);
+          expect(src, isNot(exists));
+          expect(dest, exists);
         });
 
         test('throwsIfDestinationIsFile', () {
@@ -749,13 +749,13 @@ void runCommonTests(
         test('succeedsIfEmptyDirectoryExistsAndRecursiveFalse', () {
           Directory dir = fs.directory(ns('/foo'))..createSync();
           dir.deleteSync();
-          expect(dir.existsSync(), false);
+          expect(dir, isNot(exists));
         });
 
         test('succeedsIfEmptyDirectoryExistsAndRecursiveTrue', () {
           Directory dir = fs.directory(ns('/foo'))..createSync();
           dir.deleteSync(recursive: true);
-          expect(dir.existsSync(), false);
+          expect(dir, isNot(exists));
         });
 
         test('throwsIfNonEmptyDirectoryExistsAndRecursiveFalse', () {
@@ -770,8 +770,8 @@ void runCommonTests(
           Directory dir = fs.directory(ns('/foo'))..createSync();
           fs.file(ns('/foo/bar')).createSync();
           dir.deleteSync(recursive: true);
-          expect(fs.directory(ns('/foo')).existsSync(), false);
-          expect(fs.file(ns('/foo/bar')).existsSync(), false);
+          expect(fs.directory(ns('/foo')), isNot(exists));
+          expect(fs.file(ns('/foo/bar')), isNot(exists));
         });
 
         test('throwsIfDirectoryDoesntExistAndRecursiveFalse', () {
@@ -1183,13 +1183,13 @@ void runCommonTests(
 
         test('succeedsIfTailDoesntAlreadyExist', () {
           fs.file(ns('/foo')).createSync();
-          expect(fs.file(ns('/foo')).existsSync(), true);
+          expect(fs.file(ns('/foo')), exists);
         });
 
         test('succeedsIfAlreadyExistsAsFile', () {
           fs.file(ns('/foo')).createSync();
           fs.file(ns('/foo')).createSync();
-          expect(fs.file(ns('/foo')).existsSync(), true);
+          expect(fs.file(ns('/foo')), exists);
         });
 
         test('throwsIfAncestorDoesntExistRecursiveFalse', () {
@@ -1200,7 +1200,7 @@ void runCommonTests(
 
         test('succeedsIfAncestorDoesntExistRecursiveTrue', () {
           fs.file(ns('/foo/bar')).createSync(recursive: true);
-          expect(fs.file(ns('/foo/bar')).existsSync(), true);
+          expect(fs.file(ns('/foo/bar')), exists);
         });
 
         test('throwsIfAlreadyExistsAsDirectory', () {
@@ -1222,7 +1222,7 @@ void runCommonTests(
           fs.file(ns('/foo')).createSync();
           fs.link(ns('/bar')).createSync(ns('/foo'));
           fs.file(ns('/bar')).createSync();
-          expect(fs.file(ns('/bar')).existsSync(), true);
+          expect(fs.file(ns('/bar')), exists);
         });
 
         test('succeedsIfAlreadyExistsAsLinkToNotFoundAtTail', () {
@@ -1275,8 +1275,8 @@ void runCommonTests(
         test('succeedsIfDestinationDoesntExistAtTail', () {
           File f = fs.file(ns('/foo'))..createSync();
           f.renameSync(ns('/bar'));
-          expect(fs.file(ns('/foo')).existsSync(), false);
-          expect(fs.file(ns('/bar')).existsSync(), true);
+          expect(fs.file(ns('/foo')), isNot(exists));
+          expect(fs.file(ns('/bar')), exists);
         });
 
         test('throwsIfDestinationDoesntExistViaTraversal', () {
@@ -1290,8 +1290,8 @@ void runCommonTests(
           File f = fs.file(ns('/foo'))..createSync();
           fs.file(ns('/bar')).createSync();
           f.renameSync(ns('/bar'));
-          expect(fs.file(ns('/foo')).existsSync(), false);
-          expect(fs.file(ns('/bar')).existsSync(), true);
+          expect(fs.file(ns('/foo')), isNot(exists));
+          expect(fs.file(ns('/bar')), exists);
         });
 
         test('throwsIfDestinationExistsAsDirectory', () {
@@ -1384,8 +1384,8 @@ void runCommonTests(
             ..createSync()
             ..writeAsStringSync('foo');
           f.copySync(ns('/bar'));
-          expect(fs.file(ns('/foo')).existsSync(), true);
-          expect(fs.file(ns('/bar')).existsSync(), true);
+          expect(fs.file(ns('/foo')), exists);
+          expect(fs.file(ns('/bar')), exists);
           expect(fs.file(ns('/foo')).readAsStringSync(), 'foo');
         });
 
@@ -1404,8 +1404,8 @@ void runCommonTests(
             ..createSync()
             ..writeAsStringSync('bar');
           f.copySync(ns('/bar'));
-          expect(fs.file(ns('/foo')).existsSync(), true);
-          expect(fs.file(ns('/bar')).existsSync(), true);
+          expect(fs.file(ns('/foo')), exists);
+          expect(fs.file(ns('/bar')), exists);
           expect(fs.file(ns('/foo')).readAsStringSync(), 'foo');
           expect(fs.file(ns('/bar')).readAsStringSync(), 'foo');
         });
@@ -1481,8 +1481,8 @@ void runCommonTests(
             ..writeAsStringSync('foo');
           fs.directory(ns('/baz')).createSync();
           f.copySync(ns('/baz/qux'));
-          expect(fs.file(ns('/foo/bar')).existsSync(), isTrue);
-          expect(fs.file(ns('/baz/qux')).existsSync(), isTrue);
+          expect(fs.file(ns('/foo/bar')), exists);
+          expect(fs.file(ns('/baz/qux')), exists);
           expect(fs.file(ns('/foo/bar')).readAsStringSync(), 'foo');
           expect(fs.file(ns('/baz/qux')).readAsStringSync(), 'foo');
         });
@@ -1705,7 +1705,7 @@ void runCommonTests(
             test('createsFileIfDoesntExistAtTail', () {
               RandomAccessFile raf = fs.file(ns('/bar')).openSync(mode: mode);
               raf.closeSync();
-              expect(fs.file(ns('/bar')).existsSync(), true);
+              expect(fs.file(ns('/bar')), exists);
             });
           }
         }
@@ -2152,7 +2152,7 @@ void runCommonTests(
       group('openWrite', () {
         test('createsFileIfDoesntExist', () async {
           await fs.file(ns('/foo')).openWrite().close();
-          expect(fs.file(ns('/foo')).existsSync(), true);
+          expect(fs.file(ns('/foo')), exists);
         });
 
         test('throwsIfExistsAsDirectory', () {
@@ -2531,9 +2531,9 @@ void runCommonTests(
 
         test('createsFileIfDoesntExist', () {
           File f = fs.file(ns('/foo'));
-          expect(f.existsSync(), isFalse);
+          expect(f, isNot(exists));
           f.writeAsBytesSync(<int>[1, 2, 3, 4]);
-          expect(f.existsSync(), isTrue);
+          expect(f, exists);
         });
 
         test('throwsIfExistsAsDirectory', () {
@@ -2604,9 +2604,9 @@ void runCommonTests(
 
         test('createsFileIfDoesntExist', () {
           File f = fs.file(ns('/foo'));
-          expect(f.existsSync(), isFalse);
+          expect(f, isNot(exists));
           f.writeAsStringSync('Hello world');
-          expect(f.existsSync(), isTrue);
+          expect(f, exists);
         });
 
         test('throwsIfExistsAsDirectory', () {
@@ -2670,37 +2670,37 @@ void runCommonTests(
       group('exists', () {
         test('trueIfExists', () {
           fs.file(ns('/foo')).createSync();
-          expect(fs.file(ns('/foo')).existsSync(), isTrue);
+          expect(fs.file(ns('/foo')), exists);
         });
 
         test('falseIfDoesntExistAtTail', () {
-          expect(fs.file(ns('/foo')).existsSync(), isFalse);
+          expect(fs.file(ns('/foo')), isNot(exists));
         });
 
         test('falseIfDoesntExistViaTraversal', () {
-          expect(fs.file(ns('/foo/bar')).existsSync(), isFalse);
+          expect(fs.file(ns('/foo/bar')), isNot(exists));
         });
 
         test('falseIfExistsAsDirectory', () {
           fs.directory(ns('/foo')).createSync();
-          expect(fs.file(ns('/foo')).existsSync(), isFalse);
+          expect(fs.file(ns('/foo')), isNot(exists));
         });
 
         test('falseIfExistsAsLinkToDirectory', () {
           fs.directory(ns('/foo')).createSync();
           fs.link(ns('/bar')).createSync(ns('/foo'));
-          expect(fs.file(ns('/bar')).existsSync(), isFalse);
+          expect(fs.file(ns('/bar')), isNot(exists));
         });
 
         test('trueIfExistsAsLinkToFile', () {
           fs.file(ns('/foo')).createSync();
           fs.link(ns('/bar')).createSync(ns('/foo'));
-          expect(fs.file(ns('/bar')).existsSync(), isTrue);
+          expect(fs.file(ns('/bar')), exists);
         });
 
         test('falseIfNotFoundSegmentExistsThenIsBackedOut', () {
           fs.file(ns('/foo/bar')).createSync(recursive: true);
-          expect(fs.directory(ns('/baz/../foo/bar')).existsSync(), isFalse);
+          expect(fs.directory(ns('/baz/../foo/bar')), isNot(exists));
         });
       });
 
@@ -2743,9 +2743,9 @@ void runCommonTests(
 
         test('succeedsIfExistsAsFile', () {
           fs.file(ns('/foo')).createSync();
-          expect(fs.file(ns('/foo')).existsSync(), isTrue);
+          expect(fs.file(ns('/foo')), exists);
           fs.file(ns('/foo')).deleteSync();
-          expect(fs.file(ns('/foo')).existsSync(), isFalse);
+          expect(fs.file(ns('/foo')), isNot(exists));
         });
 
         test('throwsIfDoesntExistAndRecursiveFalse', () {
@@ -2776,17 +2776,17 @@ void runCommonTests(
         test('succeedsIfExistsAsLinkToFileAndRecursiveTrue', () {
           fs.file(ns('/foo')).createSync();
           fs.link(ns('/bar')).createSync(ns('/foo'));
-          expect(fs.file(ns('/bar')).existsSync(), isTrue);
+          expect(fs.file(ns('/bar')), exists);
           fs.file(ns('/bar')).deleteSync(recursive: true);
-          expect(fs.file(ns('/bar')).existsSync(), isFalse);
+          expect(fs.file(ns('/bar')), isNot(exists));
         });
 
         test('succeedsIfExistsAsLinkToFileAndRecursiveFalse', () {
           fs.file(ns('/foo')).createSync();
           fs.link(ns('/bar')).createSync(ns('/foo'));
-          expect(fs.file(ns('/bar')).existsSync(), isTrue);
+          expect(fs.file(ns('/bar')), exists);
           fs.file(ns('/bar')).deleteSync();
-          expect(fs.file(ns('/bar')).existsSync(), isFalse);
+          expect(fs.file(ns('/bar')), isNot(exists));
         });
 
         test('succeedsIfExistsAsLinkToDirectoryAndRecursiveTrue', () {
@@ -2832,44 +2832,44 @@ void runCommonTests(
 
       group('exists', () {
         test('isFalseIfLinkDoesntExistAtTail', () {
-          expect(fs.link(ns('/foo')).existsSync(), isFalse);
+          expect(fs.link(ns('/foo')), isNot(exists));
         });
 
         test('isFalseIfLinkDoesntExistViaTraversal', () {
-          expect(fs.link(ns('/foo/bar')).existsSync(), isFalse);
+          expect(fs.link(ns('/foo/bar')), isNot(exists));
         });
 
         test('isFalseIfPathReferencesFile', () {
           fs.file(ns('/foo')).createSync();
-          expect(fs.link(ns('/foo')).existsSync(), isFalse);
+          expect(fs.link(ns('/foo')), isNot(exists));
         });
 
         test('isFalseIfPathReferencesDirectory', () {
           fs.directory(ns('/foo')).createSync();
-          expect(fs.link(ns('/foo')).existsSync(), isFalse);
+          expect(fs.link(ns('/foo')), isNot(exists));
         });
 
         test('isTrueIfTargetIsNotFound', () {
           Link l = fs.link(ns('/foo'))..createSync(ns('/bar'));
-          expect(l.existsSync(), isTrue);
+          expect(l, exists);
         });
 
         test('isTrueIfTargetIsFile', () {
           Link l = fs.link(ns('/foo'))..createSync(ns('/bar'));
           fs.file(ns('/bar')).createSync();
-          expect(l.existsSync(), isTrue);
+          expect(l, exists);
         });
 
         test('isTrueIfTargetIsDirectory', () {
           Link l = fs.link(ns('/foo'))..createSync(ns('/bar'));
           fs.directory(ns('/bar')).createSync();
-          expect(l.existsSync(), isTrue);
+          expect(l, exists);
         });
 
         test('isTrueIfTargetIsLinkLoop', () {
           Link l = fs.link(ns('/foo'))..createSync(ns('/bar'));
           fs.link(ns('/bar')).createSync(ns('/foo'));
-          expect(l.existsSync(), isTrue);
+          expect(l, exists);
         });
       });
 
@@ -3303,8 +3303,8 @@ void runCommonTests(
         test('succeedsIfDestinationDoesntExistAtTail', () {
           Link l = fs.link(ns('/foo'))..createSync(ns('/bar'));
           l.renameSync(ns('/baz'));
-          expect(fs.link(ns('/foo')).existsSync(), false);
-          expect(fs.link(ns('/baz')).existsSync(), true);
+          expect(fs.link(ns('/foo')), isNot(exists));
+          expect(fs.link(ns('/baz')), exists);
         });
 
         test('throwsIfDestinationDoesntExistViaTraversal', () {

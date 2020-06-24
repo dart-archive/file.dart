@@ -66,7 +66,7 @@ void main() {
           test('staysInJailIfSetToParentOfRoot', () {
             fs.currentDirectory = '../../../..';
             fs.file('foo').createSync();
-            expect(mem.file('/tmp/foo').existsSync(), isTrue);
+            expect(mem.file('/tmp/foo'), exists);
           });
 
           test('throwsIfSetToSymlinkToDirectoryOutsideJail', () {
@@ -135,8 +135,8 @@ void main() {
         group('create', () {
           test('createsAtRootIfPathReferencesJailbreakFile', () {
             fs.file('../foo').createSync();
-            expect(mem.file('/foo').existsSync(), isFalse);
-            expect(mem.file('/tmp/foo').existsSync(), isTrue);
+            expect(mem.file('/foo'), isNot(exists));
+            expect(mem.file('/tmp/foo'), exists);
           });
         });
 
@@ -144,8 +144,8 @@ void main() {
           test('copiesToRootDirectoryIfDestinationIsJailbreakPath', () {
             File f = fs.file('/foo')..createSync();
             f.copySync('../bar');
-            expect(mem.file('/bar').existsSync(), isFalse);
-            expect(mem.file('/tmp/bar').existsSync(), isTrue);
+            expect(mem.file('/bar'), isNot(exists));
+            expect(mem.file('/tmp/bar'), exists);
           });
         });
       });
