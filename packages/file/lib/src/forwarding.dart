@@ -8,3 +8,4 @@ export 'forwarding/forwarding_file.dart';
 export 'forwarding/forwarding_file_system.dart';
 export 'forwarding/forwarding_file_system_entity.dart';
 export 'forwarding/forwarding_link.dart';
+export 'forwarding/forwarding_random_access_file.dart';

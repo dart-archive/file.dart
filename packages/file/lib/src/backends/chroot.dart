@@ -20,3 +20,4 @@ part 'chroot/chroot_file.dart';
 part 'chroot/chroot_file_system.dart';
 part 'chroot/chroot_file_system_entity.dart';
 part 'chroot/chroot_link.dart';
+part 'chroot/chroot_random_access_file.dart';
