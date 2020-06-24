@@ -2183,6 +2183,48 @@ void runCommonTests(
           expect(stream.isBroadcast, isFalse);
           await stream.drain<void>();
         });
+
+        test('openReadHandleDoesNotChange', () async {
+          // Ideally, `data` should be large enough so that its contents are
+          // split across multiple chunks in the [Stream].  However, there
+          // doesn't seem to be a good way to determine the chunk size used by
+          // [io.File].
+          final List<int> data = List<int>.generate(
+            1024 * 256,
+            (int index) => index & 0xFF,
+            growable: false,
+          );
+
+          final File f = fs.file(ns('/foo'))..createSync();
+
+          f.writeAsBytesSync(data, flush: true);
+          final Stream<List<int>> stream = f.openRead();
+
+          File newFile;
+          List<int> initialChunk;
+          final List<int> remainingChunks = <int>[];
+
+          await for (List<int> chunk in stream) {
+            if (initialChunk == null) {
+              initialChunk = chunk;
+              assert(initialChunk.isNotEmpty);
+              expect(initialChunk, data.getRange(0, initialChunk.length));
+
+              newFile = f.renameSync(ns('/bar'));
+            } else {
+              remainingChunks.addAll(chunk);
+            }
+          }
+
+          expect(
+            remainingChunks,
+            data.getRange(initialChunk.length, data.length),
+          );
+
+          assert(newFile.path != f.path);
+          expect(f, isNot(exists));
+          expect(newFile, exists);
+        });
       });
 
       group('openWrite', () {
@@ -2246,6 +2288,24 @@ void runCommonTests(
           await sink.flush();
           await sink.close();
           expect(fs.file(ns('/foo')).readAsStringSync(), 'HelloGoodbye');
+        });
+
+        test('openWriteHandleDoesNotChange', () async {
+          File f = fs.file(ns('/foo'))..createSync();
+          IOSink sink = f.openWrite();
+          sink.write('Hello');
+          await sink.flush();
+
+          final File newFile = f.renameSync(ns('/bar'));
+          sink.write('Goodbye');
+          await sink.flush();
+          await sink.close();
+
+          expect(newFile.readAsStringSync(), 'HelloGoodbye');
+
+          assert(newFile.path != f.path);
+          expect(f, isNot(exists));
+          expect(newFile, exists);
         });
 
         group('ioSink', () {
