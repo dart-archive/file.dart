@@ -212,22 +212,25 @@ void main() {
   group('describeInvocation', () {
     test('methodWithNoArguments', () {
       expect(
-        describeInvocation(Invocation.method(#foo, [])),
+        describeInvocation(Invocation.method(#foo, <Object>[])),
         'foo()',
       );
     });
 
     test('methodWithOnlyPositionalArguments', () {
       expect(
-        describeInvocation(Invocation.method(#foo, [1, 'bar', null])),
+        describeInvocation(Invocation.method(#foo, <Object>[1, 'bar', null])),
         'foo(1, "bar", null)',
       );
     });
 
     test('methodWithOnlyNamedArguments', () {
       expect(
-        describeInvocation(
-            Invocation.method(#foo, [], {#x: 2, #y: 'baz', #z: null})),
+        describeInvocation(Invocation.method(
+          #foo,
+          <Object>[],
+          <Symbol, Object>{#x: 2, #y: 'baz', #z: null},
+        )),
         'foo(x: 2, y: "baz", z: null)',
       );
     });
@@ -236,8 +239,8 @@ void main() {
       expect(
         describeInvocation(Invocation.method(
           #foo,
-          [1, 'bar', null],
-          {#x: 2, #y: 'baz', #z: null},
+          <Object>[1, 'bar', null],
+          <Symbol, Object>{#x: 2, #y: 'baz', #z: null},
         )),
         'foo(1, "bar", null, x: 2, y: "baz", z: null)',
       );
