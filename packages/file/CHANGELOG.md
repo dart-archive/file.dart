@@ -1,4 +1,7 @@
 #### 5.2.2-dev
+
+* Made `MemoryRandomAccessFile` and `MemoryFile.openWrite` handle the file
+  being removed or renamed while open.
 * Fixed incorrect formatting in `NoMatchingInvocationError.toString()`.
 * Fixed more test flakiness.
 * Enabled more tests.

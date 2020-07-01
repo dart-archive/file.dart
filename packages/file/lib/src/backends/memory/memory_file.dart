@@ -181,7 +181,7 @@ class MemoryFile extends MemoryFileSystemEntity implements File {
       createSync();
     }
 
-    return MemoryRandomAccessFile(this, resolvedBacking as FileNode, mode);
+    return MemoryRandomAccessFile(path, resolvedBacking as FileNode, mode);
   }
 
   @override
@@ -314,12 +314,28 @@ class _FileSink implements io.IOSink {
     io.FileMode mode,
     Encoding encoding,
   ) {
-    Future<FileNode> node = Future<FileNode>.microtask(() {
-      FileNode node = file._resolvedBackingOrCreate;
+    FileNode node;
+    Exception deferredException;
+
+    // Resolve the backing immediately to ensure that the [FileNode] we write
+    // to is the same as when [openWrite] was called.  This can matter if the
+    // file is moved or removed while open.
+    try {
+      node = file._resolvedBackingOrCreate;
+    } on Exception catch (e) {
+      // For behavioral consistency with [LocalFile], do not report failures
+      // immediately.
+      deferredException = e;
+    }
+
+    Future<FileNode> future = Future<FileNode>.microtask(() {
+      if (deferredException != null) {
+        throw deferredException;
+      }
       file._truncateIfNecessary(node, mode);
       return node;
     });
-    return _FileSink._(node, encoding);
+    return _FileSink._(future, encoding);
   }
 
   _FileSink._(this._node, this.encoding) {

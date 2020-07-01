@@ -171,7 +171,8 @@ String describeInvocation(Invocation invocation) {
       buffer.write(Error.safeToString(encode(arg)));
       printedCount += 1;
     }
-    for (final nameValue in invocation.namedArguments.entries) {
+    for (final MapEntry<Symbol, dynamic> nameValue
+        in invocation.namedArguments.entries) {
       final Symbol name = nameValue.key;
       final dynamic value = nameValue.value;
       if (printedCount > 0) {

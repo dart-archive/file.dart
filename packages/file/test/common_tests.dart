@@ -1273,10 +1273,11 @@ void runCommonTests(
         });
 
         test('succeedsIfDestinationDoesntExistAtTail', () {
-          File f = fs.file(ns('/foo'))..createSync();
-          f.renameSync(ns('/bar'));
+          File src = fs.file(ns('/foo'))..createSync();
+          File dest = src.renameSync(ns('/bar'));
           expect(fs.file(ns('/foo')), isNot(exists));
           expect(fs.file(ns('/bar')), exists);
+          expect(dest.path, ns('/bar'));
         });
 
         test('throwsIfDestinationDoesntExistViaTraversal', () {
@@ -1855,6 +1856,21 @@ void runCommonTests(
                   expect(numRead, 3);
                   expect(utf8.decode(buffer.sublist(2, 5)), 'pre');
                 });
+
+                test('openReadHandleDoesNotChange', () {
+                  final String initial = utf8.decode(raf.readSync(4));
+                  expect(initial, 'pre-');
+                  final File newFile = f.renameSync(ns('/bar'));
+                  String rest = utf8.decode(raf.readSync(1024));
+                  expect(rest, 'existing content\n');
+
+                  assert(newFile.path != f.path);
+                  expect(f, isNot(exists));
+                  expect(newFile, exists);
+
+                  // [RandomAccessFile.path] always returns the original path.
+                  expect(raf.path, f.path);
+                });
               });
             }
 
@@ -1941,6 +1957,26 @@ void runCommonTests(
                   expect(f.readAsStringSync(),
                       'pre-existing content\nHello world');
                 }
+              });
+
+              test('openWriteHandleDoesNotChange', () {
+                raf.writeStringSync('Hello ');
+                final File newFile = f.renameSync(ns('/bar'));
+                raf.writeStringSync('world');
+
+                final String contents = newFile.readAsStringSync();
+                if (mode == FileMode.write || mode == FileMode.writeOnly) {
+                  expect(contents, 'Hello world');
+                } else {
+                  expect(contents, 'pre-existing content\nHello world');
+                }
+
+                assert(newFile.path != f.path);
+                expect(f, isNot(exists));
+                expect(newFile, exists);
+
+                // [RandomAccessFile.path] always returns the original path.
+                expect(raf.path, f.path);
               });
             }
 
@@ -2147,6 +2183,48 @@ void runCommonTests(
           expect(stream.isBroadcast, isFalse);
           await stream.drain<void>();
         });
+
+        test('openReadHandleDoesNotChange', () async {
+          // Ideally, `data` should be large enough so that its contents are
+          // split across multiple chunks in the [Stream].  However, there
+          // doesn't seem to be a good way to determine the chunk size used by
+          // [io.File].
+          final List<int> data = List<int>.generate(
+            1024 * 256,
+            (int index) => index & 0xFF,
+            growable: false,
+          );
+
+          final File f = fs.file(ns('/foo'))..createSync();
+
+          f.writeAsBytesSync(data, flush: true);
+          final Stream<List<int>> stream = f.openRead();
+
+          File newFile;
+          List<int> initialChunk;
+          final List<int> remainingChunks = <int>[];
+
+          await for (List<int> chunk in stream) {
+            if (initialChunk == null) {
+              initialChunk = chunk;
+              assert(initialChunk.isNotEmpty);
+              expect(initialChunk, data.getRange(0, initialChunk.length));
+
+              newFile = f.renameSync(ns('/bar'));
+            } else {
+              remainingChunks.addAll(chunk);
+            }
+          }
+
+          expect(
+            remainingChunks,
+            data.getRange(initialChunk.length, data.length),
+          );
+
+          assert(newFile.path != f.path);
+          expect(f, isNot(exists));
+          expect(newFile, exists);
+        });
       });
 
       group('openWrite', () {
@@ -2210,6 +2288,24 @@ void runCommonTests(
           await sink.flush();
           await sink.close();
           expect(fs.file(ns('/foo')).readAsStringSync(), 'HelloGoodbye');
+        });
+
+        test('openWriteHandleDoesNotChange', () async {
+          File f = fs.file(ns('/foo'))..createSync();
+          IOSink sink = f.openWrite();
+          sink.write('Hello');
+          await sink.flush();
+
+          final File newFile = f.renameSync(ns('/bar'));
+          sink.write('Goodbye');
+          await sink.flush();
+          await sink.close();
+
+          expect(newFile.readAsStringSync(), 'HelloGoodbye');
+
+          assert(newFile.path != f.path);
+          expect(f, isNot(exists));
+          expect(newFile, exists);
         });
 
         group('ioSink', () {
@@ -3254,7 +3350,8 @@ void runCommonTests(
         test('succeedsIfSourceIsLinkToFile', () {
           Link l = fs.link(ns('/foo'))..createSync(ns('/bar'));
           fs.file(ns('/bar')).createSync();
-          l.renameSync(ns('/baz'));
+          Link renamed = l.renameSync(ns('/baz'));
+          expect(renamed.path, ns('/baz'));
           expect(fs.typeSync(ns('/foo'), followLinks: false),
               FileSystemEntityType.notFound);
           expect(fs.typeSync(ns('/bar'), followLinks: false),
@@ -3266,7 +3363,8 @@ void runCommonTests(
 
         test('succeedsIfSourceIsLinkToNotFound', () {
           Link l = fs.link(ns('/foo'))..createSync(ns('/bar'));
-          l.renameSync(ns('/baz'));
+          Link renamed = l.renameSync(ns('/baz'));
+          expect(renamed.path, ns('/baz'));
           expect(fs.typeSync(ns('/foo'), followLinks: false),
               FileSystemEntityType.notFound);
           expect(fs.typeSync(ns('/baz'), followLinks: false),
@@ -3277,7 +3375,8 @@ void runCommonTests(
         test('succeedsIfSourceIsLinkToDirectory', () {
           Link l = fs.link(ns('/foo'))..createSync(ns('/bar'));
           fs.directory(ns('/bar')).createSync();
-          l.renameSync(ns('/baz'));
+          Link renamed = l.renameSync(ns('/baz'));
+          expect(renamed.path, ns('/baz'));
           expect(fs.typeSync(ns('/foo'), followLinks: false),
               FileSystemEntityType.notFound);
           expect(fs.typeSync(ns('/bar'), followLinks: false),
@@ -3290,7 +3389,8 @@ void runCommonTests(
         test('succeedsIfSourceIsLinkLoop', () {
           Link l = fs.link(ns('/foo'))..createSync(ns('/bar'));
           fs.link(ns('/bar')).createSync(ns('/foo'));
-          l.renameSync(ns('/baz'));
+          Link renamed = l.renameSync(ns('/baz'));
+          expect(renamed.path, ns('/baz'));
           expect(fs.typeSync(ns('/foo'), followLinks: false),
               FileSystemEntityType.notFound);
           expect(fs.typeSync(ns('/bar'), followLinks: false),
@@ -3302,7 +3402,8 @@ void runCommonTests(
 
         test('succeedsIfDestinationDoesntExistAtTail', () {
           Link l = fs.link(ns('/foo'))..createSync(ns('/bar'));
-          l.renameSync(ns('/baz'));
+          Link renamed = l.renameSync(ns('/baz'));
+          expect(renamed.path, ns('/baz'));
           expect(fs.link(ns('/foo')), isNot(exists));
           expect(fs.link(ns('/baz')), exists);
         });
