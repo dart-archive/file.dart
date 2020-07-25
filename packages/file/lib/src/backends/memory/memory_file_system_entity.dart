@@ -73,7 +73,9 @@ abstract class MemoryFileSystemEntity implements FileSystemEntity {
   @protected
   Node get resolvedBacking {
     Node node = backing;
-    node = utils.isLink(node) ? utils.resolveLinks(node, () => path) : node;
+    node = utils.isLink(node)
+        ? utils.resolveLinks(node as LinkNode, () => path)
+        : node;
     utils.checkType(expectedType, node.type, () => path);
     return node;
   }
@@ -262,7 +264,7 @@ abstract class MemoryFileSystemEntity implements FileSystemEntity {
               utils.checkType(expectedType, child.type, () => newPath);
             }
             if (validateOverwriteExistingEntity != null) {
-              validateOverwriteExistingEntity(child);
+              validateOverwriteExistingEntity(child as T);
             }
             parent.children.remove(childName);
           }

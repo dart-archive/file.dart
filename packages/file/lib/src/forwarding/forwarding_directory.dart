@@ -11,7 +11,7 @@ import 'package:file/file.dart';
 abstract class ForwardingDirectory<T extends Directory>
     implements ForwardingFileSystemEntity<T, io.Directory>, Directory {
   @override
-  T wrap(io.Directory delegate) => wrapDirectory(delegate);
+  T wrap(io.Directory delegate) => wrapDirectory(delegate) as T;
 
   @override
   Future<Directory> create({bool recursive = false}) async =>

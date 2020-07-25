@@ -88,10 +88,10 @@ abstract class LiveInvocationEvent<T> implements InvocationEvent<T> {
   T get result {
     dynamic result = _result;
     while (result is ResultReference) {
-      ResultReference<dynamic> reference = result;
+      ResultReference<dynamic> reference = result as ResultReference<dynamic>;
       result = reference.recordedValue;
     }
-    return result;
+    return result as T;
   }
 
   @override
@@ -115,7 +115,7 @@ abstract class LiveInvocationEvent<T> implements InvocationEvent<T> {
   Future<void> get done async {
     dynamic result = _result;
     while (result is ResultReference) {
-      ResultReference<dynamic> reference = result;
+      ResultReference<dynamic> reference = result as ResultReference<dynamic>;
       await reference.complete;
       result = reference.recordedValue;
     }

@@ -192,7 +192,7 @@ class _MemoryFileSystem extends FileSystem
   /// Gets the node backing for the current working directory. Note that this
   /// can return null if the directory has been deleted or moved from under our
   /// feet.
-  DirectoryNode get _current => findNode(cwd);
+  DirectoryNode get _current => findNode(cwd) as DirectoryNode;
 
   @override
   Node findNode(
@@ -248,10 +248,11 @@ class _MemoryFileSystem extends FileSystem
           if (segmentVisitor != null) {
             child = segmentVisitor(directory, basename, child, i, finalSegment);
           }
-          child = utils.resolveLinks(child, subpath, ledger: pathWithSymlinks);
+          child = utils.resolveLinks(child as LinkNode, subpath,
+              ledger: pathWithSymlinks);
         } else {
           child = utils.resolveLinks(
-            child,
+            child as LinkNode,
             subpath,
             ledger: pathWithSymlinks,
             tailVisitor: (DirectoryNode parent, String childName, Node child) {
@@ -266,7 +267,7 @@ class _MemoryFileSystem extends FileSystem
       if (i < finalSegment) {
         checkExists(child, subpath);
         utils.checkIsDir(child, subpath);
-        directory = child;
+        directory = child as DirectoryNode;
       }
     }
     return child;

@@ -67,7 +67,7 @@ void main() {
 
       setUp(() {
         fs = createMemoryBackedChrootFileSystem();
-        mem = fs.delegate;
+        mem = fs.delegate as MemoryFileSystem;
       });
 
       group('FileSystem', () {

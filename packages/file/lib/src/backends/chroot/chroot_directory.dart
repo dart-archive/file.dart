@@ -137,7 +137,7 @@ class _ChrootDirectory extends _ChrootFileSystemEntity<Directory, io.Directory>
     bool recursive = false,
     bool followLinks = true,
   }) {
-    Directory delegate = this.delegate;
+    Directory delegate = this.delegate as Directory;
     String dirname = delegate.path;
     return delegate
         .list(recursive: recursive, followLinks: followLinks)
@@ -149,7 +149,7 @@ class _ChrootDirectory extends _ChrootFileSystemEntity<Directory, io.Directory>
     bool recursive = false,
     bool followLinks = true,
   }) {
-    Directory delegate = this.delegate;
+    Directory delegate = this.delegate as Directory;
     String dirname = delegate.path;
     return delegate
         .listSync(recursive: recursive, followLinks: followLinks)

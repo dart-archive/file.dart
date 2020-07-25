@@ -6,6 +6,8 @@
 * Fixed more test flakiness.
 * Enabled more tests.
 * Internal cleanup.
+* Remove implicit dynamic in preparation for null safety.
+* Remove dependency on Intl
 
 #### 5.2.1
 

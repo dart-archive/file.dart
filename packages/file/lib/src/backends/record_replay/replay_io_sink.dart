@@ -46,8 +46,9 @@ class ReplayIOSink extends Object with ReplayProxyMixin implements IOSink {
   @override
   dynamic onResult(Invocation invocation, dynamic result) {
     if (invocation.memberName == #addStream) {
-      Stream<List<int>> stream = invocation.positionalArguments.first;
-      Future<dynamic> future = result;
+      Stream<List<int>> stream =
+          invocation.positionalArguments.first as Stream<List<int>>;
+      Future<dynamic> future = result as Future<dynamic>;
       return future.then<void>(stream.drain);
     }
     return result;

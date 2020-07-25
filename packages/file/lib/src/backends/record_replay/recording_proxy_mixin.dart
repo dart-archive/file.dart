@@ -90,12 +90,6 @@ mixin RecordingProxyMixin on Object implements ProxyObject, ReplayAware {
   @protected
   Stopwatch get stopwatch;
 
-  // This check is used in noSuchMethod to detect if this code is running in a
-  // Dart 1 runtime, or Dart 2.
-  // TODO(srawlins): Remove this after the minimum SDK constraint is such that
-  // there is no "Dart 1" runtime mode. 2.0.0 or something.
-  bool get _runningDart1Runtime => <dynamic>[] is List<String>;
-
   /// Handles invocations for which there is no concrete implementation
   /// function.
   ///
@@ -137,7 +131,7 @@ mixin RecordingProxyMixin on Object implements ProxyObject, ReplayAware {
     try {
       value = Function.apply(method, args, namedArgs);
     } catch (error) {
-      recording.add(createEvent(error: error));
+      recording.add(createEvent(error: error) as LiveInvocationEvent<dynamic>);
       rethrow;
     }
 
@@ -146,45 +140,43 @@ mixin RecordingProxyMixin on Object implements ProxyObject, ReplayAware {
     // We have to instantiate the correct type of StreamReference or
     // FutureReference, so that types are not lost when we unwrap the references
     // afterward.
-    if (_runningDart1Runtime && value is Stream<dynamic>) {
-      // This one is here for Dart 1 runtime mode.
-      value = StreamReference<dynamic>(value);
-    } else if (value is Stream<FileSystemEntity>) {
-      value = StreamReference<FileSystemEntity>(value);
+    if (value is Stream<FileSystemEntity>) {
+      value =
+          StreamReference<FileSystemEntity>(value as Stream<FileSystemEntity>);
     } else if (value is Stream<String>) {
-      value = StreamReference<String>(value);
+      value = StreamReference<String>(value as Stream<String>);
     } else if (value is Stream) {
       throw UnimplementedError(
           'Cannot record method with return type ${value.runtimeType}');
-    } else if (_runningDart1Runtime && value is Future<dynamic>) {
-      // This one is here for Dart 1 runtime mode.
-      value = FutureReference<dynamic>(value);
     } else if (value is Future<bool>) {
-      value = FutureReference<bool>(value);
+      value = FutureReference<bool>(value as Future<bool>);
     } else if (value is Future<Directory>) {
-      value = FutureReference<Directory>(value);
+      value = FutureReference<Directory>(value as Future<Directory>);
     } else if (value is Future<File>) {
-      value = FutureReference<File>(value);
+      value = FutureReference<File>(value as Future<File>);
     } else if (value is Future<FileNode>) {
-      value = FutureReference<FileNode>(value);
+      value = FutureReference<FileNode>(value as Future<FileNode>);
     } else if (value is Future<FileStat>) {
-      value = FutureReference<FileStat>(value);
+      value = FutureReference<FileStat>(value as Future<FileStat>);
     } else if (value is Future<Link>) {
-      value = FutureReference<Link>(value);
+      value = FutureReference<Link>(value as Future<Link>);
     } else if (value is Future<FileSystemEntity>) {
-      value = FutureReference<FileSystemEntity>(value);
+      value =
+          FutureReference<FileSystemEntity>(value as Future<FileSystemEntity>);
     } else if (value is Future<FileSystemEntityType>) {
-      value = FutureReference<FileSystemEntityType>(value);
+      value = FutureReference<FileSystemEntityType>(
+          value as Future<FileSystemEntityType>);
     } else if (value is Future<String>) {
-      value = FutureReference<String>(value);
+      value = FutureReference<String>(value as Future<String>);
     } else if (value is Future<RandomAccessFile>) {
-      value = FutureReference<RandomAccessFile>(value);
+      value =
+          FutureReference<RandomAccessFile>(value as Future<RandomAccessFile>);
     } else if (value is Future<void>) {
-      value = FutureReference<void>(value);
+      value = FutureReference<void>(value as Future<void>);
     }
 
     // Record the invocation event associated with this invocation.
-    recording.add(createEvent(result: value));
+    recording.add(createEvent(result: value) as LiveInvocationEvent<dynamic>);
 
     // Unwrap any result references before returning to the caller.
     dynamic result = value;

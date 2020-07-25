@@ -13,7 +13,7 @@ import 'package:file/file.dart';
 abstract class ForwardingFile
     implements ForwardingFileSystemEntity<File, io.File>, File {
   @override
-  ForwardingFile wrap(io.File delegate) => wrapFile(delegate);
+  ForwardingFile wrap(io.File delegate) => wrapFile(delegate) as ForwardingFile;
 
   @override
   Future<File> create({bool recursive = false}) async =>

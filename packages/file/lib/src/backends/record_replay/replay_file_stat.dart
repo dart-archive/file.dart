@@ -16,24 +16,27 @@ class ReplayFileStat implements FileStat {
   final Map<String, dynamic> _data;
 
   @override
-  DateTime get changed => DateTimeCodec.deserialize.convert(_data['changed']);
+  DateTime get changed =>
+      DateTimeCodec.deserialize.convert(_data['changed'] as int);
 
   @override
-  DateTime get modified => DateTimeCodec.deserialize.convert(_data['modified']);
+  DateTime get modified =>
+      DateTimeCodec.deserialize.convert(_data['modified'] as int);
 
   @override
-  DateTime get accessed => DateTimeCodec.deserialize.convert(_data['accessed']);
+  DateTime get accessed =>
+      DateTimeCodec.deserialize.convert(_data['accessed'] as int);
 
   @override
   FileSystemEntityType get type =>
-      EntityTypeCodec.deserialize.convert(_data['type']);
+      EntityTypeCodec.deserialize.convert(_data['type'] as String);
 
   @override
-  int get mode => _data['mode'];
+  int get mode => _data['mode'] as int;
 
   @override
-  int get size => _data['size'];
+  int get size => _data['size'] as int;
 
   @override
-  String modeString() => _data['modeString'];
+  String modeString() => _data['modeString'] as String;
 }

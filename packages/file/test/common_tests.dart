@@ -144,7 +144,7 @@ void runCommonTests(
 
     setUp(() async {
       root = rootfn != null ? rootfn() : '/';
-      fs = await createFs();
+      fs = await createFs() as FileSystem;
       assert(fs.path.isAbsolute(root));
       assert(!root.endsWith(fs.path.separator) ||
           fs.path.rootPrefix(root) == root);

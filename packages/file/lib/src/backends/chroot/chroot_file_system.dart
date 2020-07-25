@@ -112,9 +112,9 @@ class ChrootFileSystem extends FileSystem {
       case FileSystemEntityType.directory:
         break;
       case FileSystemEntityType.notFound:
-        throw common.noSuchFileOrDirectory(path);
+        throw common.noSuchFileOrDirectory(path as String);
       default:
-        throw common.notADirectory(path);
+        throw common.notADirectory(path as String);
     }
     assert(() {
       p.Context ctx = delegate.path;

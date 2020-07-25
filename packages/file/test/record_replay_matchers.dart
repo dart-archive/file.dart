@@ -72,7 +72,7 @@ abstract class RecordedInvocation<T extends RecordedInvocation<T>>
   /// Returns this matcher for chaining.
   T on(dynamic object) {
     _fieldMatchers.add(_Target(object));
-    return this;
+    return this as T;
   }
 
   /// Limits the scope of the match to invocations that produced the specified
@@ -90,7 +90,7 @@ abstract class RecordedInvocation<T extends RecordedInvocation<T>>
   /// Returns this matcher for chaining.
   T withResult(dynamic result) {
     _fieldMatchers.add(_Result(result));
-    return this;
+    return this as T;
   }
 
   /// Limits the scope of the match to invocations that were recorded with the
@@ -102,7 +102,7 @@ abstract class RecordedInvocation<T extends RecordedInvocation<T>>
   /// Returns this matcher for chaining.
   T withTimestamp(dynamic timestamp) {
     _fieldMatchers.add(_Timestamp(timestamp));
-    return this;
+    return this as T;
   }
 
   /// @nodoc
@@ -129,8 +129,9 @@ abstract class RecordedInvocation<T extends RecordedInvocation<T>>
     Map<dynamic, dynamic> matchState,
     bool verbose,
   ) {
-    Matcher matcher = matchState['matcher'];
-    matcher.describeMismatch(item, description, matchState['state'], verbose);
+    Matcher matcher = matchState['matcher'] as Matcher;
+    matcher.describeMismatch(item, description,
+        matchState['state'] as Map<String, dynamic>, verbose);
     return description;
   }
 
@@ -369,7 +370,7 @@ class _MethodName extends Matcher {
 
   @override
   bool matches(dynamic item, Map<dynamic, dynamic> matchState) =>
-      _matcher.matches(getSymbolName(item.method), matchState);
+      _matcher.matches(getSymbolName(item.method as Symbol), matchState);
 
   @override
   Description describeMismatch(
@@ -378,7 +379,7 @@ class _MethodName extends Matcher {
     Map<dynamic, dynamic> matchState,
     bool verbose,
   ) {
-    String methodName = getSymbolName(item.method);
+    String methodName = getSymbolName(item.method as Symbol);
     description.add('invoked method: \'$methodName\'');
     Description matcherDesc = StringDescription();
     _matcher.describeMismatch(methodName, matcherDesc, matchState, verbose);
@@ -482,7 +483,7 @@ class _GetPropertyName extends Matcher {
 
   @override
   bool matches(dynamic item, Map<dynamic, dynamic> matchState) =>
-      _matcher.matches(getSymbolName(item.property), matchState);
+      _matcher.matches(getSymbolName(item.property as Symbol), matchState);
 
   @override
   Description describeMismatch(
@@ -491,7 +492,7 @@ class _GetPropertyName extends Matcher {
     Map<dynamic, dynamic> matchState,
     bool verbose,
   ) {
-    String propertyName = getSymbolName(item.property);
+    String propertyName = getSymbolName(item.property as Symbol);
     description.add('got property: \'$propertyName\'');
     Description matcherDesc = StringDescription();
     _matcher.describeMismatch(propertyName, matcherDesc, matchState, verbose);
@@ -515,7 +516,7 @@ class _SetPropertyName extends Matcher {
 
   /// Strips the trailing `=` off the symbol name to get the property name.
   String _getPropertyName(dynamic item) {
-    String symbolName = getSymbolName(item.property);
+    String symbolName = getSymbolName(item.property as Symbol);
     return symbolName.substring(0, symbolName.length - 1);
   }
 
