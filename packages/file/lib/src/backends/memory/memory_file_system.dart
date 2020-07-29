@@ -241,7 +241,8 @@ class _MemoryFileSystem extends FileSystem
       if (utils.isLink(child) && (i < finalSegment || followTailLink)) {
         if (visitLinks || segmentVisitor == null) {
           if (segmentVisitor != null) {
-            child = segmentVisitor(directory!, basename, child, i, finalSegment);
+            child =
+                segmentVisitor(directory!, basename, child, i, finalSegment);
           }
           child = utils.resolveLinks(child as LinkNode, subpath,
               ledger: pathWithSymlinks);
