@@ -6,7 +6,6 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:file/file.dart';
-import 'package:intl/intl.dart';
 
 import 'codecs.dart';
 import 'common.dart';
@@ -64,7 +63,7 @@ class MutableRecording implements LiveRecording {
   /// It is up to the caller to create the file - it will not exist in the
   /// file system when it is returned from this method.
   File newFile(String name) {
-    String basename = '${NumberFormat('000').format(newUid())}.$name';
+    String basename = '${newUid().toString().padLeft(3, '0')}.$name';
     String dirname = destination.path;
     String path = destination.fileSystem.path.join(dirname, basename);
     return destination.fileSystem.file(path);
