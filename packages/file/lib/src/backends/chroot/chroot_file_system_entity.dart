@@ -52,7 +52,8 @@ abstract class _ChrootFileSystemEntity<T extends FileSystemEntity,
 
   @override
   Directory wrapDirectory(io.Directory delegate) =>
-      _ChrootDirectory.wrapped(fileSystem, delegate, relative: !isAbsolute);
+      _ChrootDirectory.wrapped(fileSystem, delegate as Directory,
+          relative: !isAbsolute);
 
   @override
   File wrapFile(io.File delegate) =>

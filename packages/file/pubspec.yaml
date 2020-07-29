@@ -13,7 +13,6 @@ description:
 homepage: https://github.com/google/file.dart
 
 dependencies:
-  intl: '>=0.14.0 <1.0.0'
   meta: ^1.1.2
   path: ^1.5.1
 

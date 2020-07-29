@@ -25,7 +25,7 @@ typedef TypeChecker = void Function(Node node);
 /// Throws a [io.FileSystemException] if [node] is not a directory.
 void checkIsDir(Node node, PathGenerator path) {
   if (!isDirectory(node)) {
-    throw common.notADirectory(path());
+    throw common.notADirectory(path() as String);
   }
 }
 
@@ -39,12 +39,12 @@ void checkType(
   if (expectedType != actualType) {
     switch (expectedType) {
       case FileSystemEntityType.directory:
-        throw common.notADirectory(path());
+        throw common.notADirectory(path() as String);
       case FileSystemEntityType.file:
         assert(actualType == FileSystemEntityType.directory);
-        throw common.isADirectory(path());
+        throw common.isADirectory(path() as String);
       case FileSystemEntityType.link:
-        throw common.invalidArgument(path());
+        throw common.invalidArgument(path() as String);
       default:
         // Should not happen
         throw AssertionError();
@@ -89,9 +89,9 @@ Node resolveLinks(
 
   Node node = link;
   while (isLink(node)) {
-    link = node;
-    if (!breadcrumbs.add(node)) {
-      throw common.tooManyLevelsOfSymbolicLinks(path());
+    link = node as LinkNode;
+    if (!breadcrumbs.add(link)) {
+      throw common.tooManyLevelsOfSymbolicLinks(path() as String);
     }
     if (ledger != null) {
       if (link.fs.path.isAbsolute(link.target)) {

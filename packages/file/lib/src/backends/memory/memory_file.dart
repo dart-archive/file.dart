@@ -29,10 +29,12 @@ class MemoryFile extends MemoryFileSystemEntity implements File {
     if (node == null) {
       node = _doCreate();
     } else {
-      node = utils.isLink(node) ? utils.resolveLinks(node, () => path) : node;
+      node = utils.isLink(node)
+          ? utils.resolveLinks(node as LinkNode, () => path)
+          : node;
       utils.checkType(expectedType, node.type, () => path);
     }
-    return node;
+    return node as FileNode;
   }
 
   @override
@@ -87,14 +89,14 @@ class MemoryFile extends MemoryFileSystemEntity implements File {
                 : common.isADirectory(path);
           }
         },
-      );
+      ) as File;
 
   @override
   Future<File> copy(String newPath) async => copySync(newPath);
 
   @override
   File copySync(String newPath) {
-    FileNode sourceNode = resolvedBacking;
+    FileNode sourceNode = resolvedBacking as FileNode;
     fileSystem.findNode(
       newPath,
       segmentVisitor: (
@@ -108,7 +110,8 @@ class MemoryFile extends MemoryFileSystemEntity implements File {
           if (child != null) {
             if (utils.isLink(child)) {
               List<String> ledger = <String>[];
-              child = utils.resolveLinks(child, () => newPath, ledger: ledger);
+              child = utils.resolveLinks(child as LinkNode, () => newPath,
+                  ledger: ledger);
               checkExists(child, () => newPath);
               parent = child.parent;
               childName = ledger.last;
@@ -134,7 +137,7 @@ class MemoryFile extends MemoryFileSystemEntity implements File {
   int lengthSync() => (resolvedBacking as FileNode).size;
 
   @override
-  File get absolute => super.absolute;
+  File get absolute => super.absolute as File;
 
   @override
   Future<DateTime> lastAccessed() async => lastAccessedSync();
@@ -148,7 +151,7 @@ class MemoryFile extends MemoryFileSystemEntity implements File {
 
   @override
   void setLastAccessedSync(DateTime time) {
-    FileNode node = resolvedBacking;
+    FileNode node = resolvedBacking as FileNode;
     node.accessed = time.millisecondsSinceEpoch;
   }
 
@@ -164,7 +167,7 @@ class MemoryFile extends MemoryFileSystemEntity implements File {
 
   @override
   void setLastModifiedSync(DateTime time) {
-    FileNode node = resolvedBacking;
+    FileNode node = resolvedBacking as FileNode;
     node.modified = time.millisecondsSinceEpoch;
   }
 
@@ -187,7 +190,7 @@ class MemoryFile extends MemoryFileSystemEntity implements File {
   @override
   Stream<Uint8List> openRead([int start, int end]) {
     try {
-      FileNode node = resolvedBacking;
+      FileNode node = resolvedBacking as FileNode;
       Uint8List content = node.content;
       if (start != null) {
         content = end == null

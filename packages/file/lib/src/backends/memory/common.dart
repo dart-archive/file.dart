@@ -10,6 +10,6 @@ typedef PathGenerator = dynamic Function();
 /// Throws a `FileSystemException` if [object] is null.
 void checkExists(Object object, PathGenerator path) {
   if (object == null) {
-    throw common.noSuchFileOrDirectory(path());
+    throw common.noSuchFileOrDirectory(path() as String);
   }
 }

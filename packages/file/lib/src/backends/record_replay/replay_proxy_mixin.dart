@@ -146,8 +146,10 @@ mixin ReplayProxyMixin on Object implements ProxyObject, ReplayAware {
 
   _InvocationMatcher _getMatcher(Invocation invocation) {
     String name = getSymbolName(invocation.memberName);
-    List<dynamic> args = encode(invocation.positionalArguments);
-    Map<String, dynamic> namedArgs = encode(invocation.namedArguments);
+    List<dynamic> args =
+        encode(invocation.positionalArguments) as List<dynamic>;
+    Map<String, dynamic> namedArgs =
+        encode(invocation.namedArguments) as Map<String, dynamic>;
 
     if (invocation.isGetter) {
       return (Map<String, dynamic> entry) =>
@@ -165,7 +167,9 @@ mixin ReplayProxyMixin on Object implements ProxyObject, ReplayAware {
         return entry[kManifestTypeKey] == kInvokeType &&
             entry[kManifestMethodKey] == name &&
             deeplyEqual(entry[kManifestPositionalArgumentsKey], args) &&
-            deeplyEqual(_asNamedArgsType(entry[kManifestNamedArgumentsKey]),
+            deeplyEqual(
+                _asNamedArgsType(
+                    entry[kManifestNamedArgumentsKey] as Map<String, dynamic>),
                 namedArgs) &&
             entry[kManifestObjectKey] == identifier;
       };

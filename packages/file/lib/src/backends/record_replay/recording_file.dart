@@ -36,7 +36,7 @@ typedef _BlobDataAsyncWriter<T> = Future<void> Function(File file, T data);
 class RecordingFile extends RecordingFileSystemEntity<File> implements File {
   /// Creates a new `RecordingFile`.
   RecordingFile(RecordingFileSystem fileSystem, io.File delegate)
-      : super(fileSystem, delegate) {
+      : super(fileSystem as RecordingFileSystemImpl, delegate as File) {
     methods.addAll(<Symbol, Function>{
       #create: _create,
       #createSync: delegate.createSync,
@@ -93,7 +93,7 @@ class RecordingFile extends RecordingFileSystemEntity<File> implements File {
   StreamReference<Uint8List> _openRead([int start, int end]) {
     return _BlobStreamReference<Uint8List>(
       file: _newRecordingFile(),
-      stream: delegate.openRead(start, end),
+      stream: delegate.openRead(start, end).cast<Uint8List>(),
       writer: (File file, Uint8List bytes) {
         file.writeAsBytesSync(bytes, mode: FileMode.append, flush: true);
       },

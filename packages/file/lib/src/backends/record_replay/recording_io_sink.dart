@@ -50,7 +50,7 @@ class RecordingIOSink extends Object
   String get identifier => '$runtimeType@$uid';
 
   @override
-  MutableRecording get recording => fileSystem.recording;
+  MutableRecording get recording => fileSystem.recording as MutableRecording;
 
   @override
   Stopwatch get stopwatch => fileSystem.stopwatch;
