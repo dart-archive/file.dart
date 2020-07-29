@@ -32,7 +32,7 @@ import 'style.dart';
 ///
 /// [finalSegment] is the index of the final segment that will be walked by
 /// [NodeBasedFileSystem.findNode].
-typedef SegmentVisitor = Node Function(
+typedef SegmentVisitor = Node? Function(
   DirectoryNode parent,
   String childName,
   Node? childNode,
@@ -158,13 +158,13 @@ abstract class RealNode extends Node {
   Clock get clock => parent.clock;
 
   /// Last changed time in milliseconds since the Epoch.
-  late final int changed;
+  late int changed;
 
   /// Last modified time in milliseconds since the Epoch.
-  late final int modified;
+  late int modified;
 
   /// Last accessed time in milliseconds since the Epoch.
-  late final int accessed;
+  late int accessed;
 
   /// Bitmask representing the file read/write/execute mode.
   int mode = 0x777;
@@ -304,7 +304,7 @@ class LinkNode extends Node {
   /// target cannot be traversed into, a [FileSystemException] will be thrown,
   /// and [tailVisitor] will not be invoked.
   Node getReferent({
-    Node tailVisitor(DirectoryNode parent, String childName, Node? child)?,
+    Node? tailVisitor(DirectoryNode parent, String childName, Node? child)?,
   }) {
     Node? referent = fs.findNode(
       target,
@@ -319,7 +319,7 @@ class LinkNode extends Node {
         if (tailVisitor != null && currentSegment == finalSegment) {
           child = tailVisitor(parent, childName, child);
         }
-        return child!;
+        return child;
       },
     );
     checkExists(referent, () => target);

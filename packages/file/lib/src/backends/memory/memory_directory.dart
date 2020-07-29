@@ -50,7 +50,7 @@ class MemoryDirectory extends MemoryFileSystemEntity
 
   @override
   void createSync({bool recursive = false}) {
-    Node node = internalCreateSync(
+    Node? node = internalCreateSync(
       followTailLink: true,
       visitLinks: true,
       createChild: (DirectoryNode parent, bool isFinalSegment) {
@@ -60,7 +60,7 @@ class MemoryDirectory extends MemoryFileSystemEntity
         return null;
       },
     );
-    if (node.type != expectedType) {
+    if (node?.type != expectedType) {
       // There was an existing non-directory node at this object's path
       throw common.notADirectory(path);
     }

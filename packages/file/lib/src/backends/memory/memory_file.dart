@@ -55,8 +55,8 @@ class MemoryFile extends MemoryFileSystemEntity implements File {
     _doCreate(recursive: recursive);
   }
 
-  Node _doCreate({bool recursive = false}) {
-    Node node = internalCreateSync(
+  Node? _doCreate({bool recursive = false}) {
+    Node? node = internalCreateSync(
       followTailLink: true,
       createChild: (DirectoryNode parent, bool isFinalSegment) {
         if (isFinalSegment) {
@@ -67,9 +67,9 @@ class MemoryFile extends MemoryFileSystemEntity implements File {
         return null;
       },
     );
-    if (node.type != expectedType) {
+    if (node?.type != expectedType) {
       // There was an existing non-file entity at this object's path
-      assert(node.type == FileSystemEntityType.directory);
+      assert(node?.type == FileSystemEntityType.directory);
       throw common.isADirectory(path);
     }
     return node;
@@ -125,7 +125,7 @@ class MemoryFile extends MemoryFileSystemEntity implements File {
           newNode.copyFrom(sourceNode);
           parent.children[childName] = newNode;
         }
-        return child!;
+        return child;
       },
     );
     return clone(newPath);

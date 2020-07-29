@@ -76,13 +76,13 @@ class _MemoryFileSystem extends FileSystem
     this.style = FileSystemStyle.posix,
     required this.clock,
   }) {
-    _root = RootNode(this);
     _context = style.contextFor(style.root);
+    _root = RootNode(this);
   }
 
-  late final RootNode _root;
+  RootNode? _root;
   String? _systemTemp;
-  late final p.Context _context;
+  late p.Context _context;
 
   @override
   final Clock clock;
@@ -91,7 +91,7 @@ class _MemoryFileSystem extends FileSystem
   final FileSystemStyle style;
 
   @override
-  RootNode get root => _root;
+  RootNode? get root => _root;
 
   @override
   String get cwd => _context.current;
@@ -211,8 +211,8 @@ class _MemoryFileSystem extends FileSystem
 
     List<String> parts = path.split(style.separator)
       ..removeWhere(utils.isEmpty);
-    DirectoryNode directory = reference.directory;
-    Node child = directory;
+    DirectoryNode? directory = reference?.directory;
+    Node? child = directory;
 
     int finalSegment = parts.length - 1;
     for (int i = 0; i <= finalSegment; i++) {
@@ -224,11 +224,11 @@ class _MemoryFileSystem extends FileSystem
           child = directory;
           break;
         case _parentDir:
-          child = directory.parent;
-          directory = directory.parent;
+          child = directory?.parent;
+          directory = directory?.parent;
           break;
         default:
-          child = directory.children[basename]!;
+          child = directory?.children[basename];
       }
 
       if (pathWithSymlinks != null) {
@@ -241,7 +241,7 @@ class _MemoryFileSystem extends FileSystem
       if (utils.isLink(child) && (i < finalSegment || followTailLink)) {
         if (visitLinks || segmentVisitor == null) {
           if (segmentVisitor != null) {
-            child = segmentVisitor(directory, basename, child, i, finalSegment);
+            child = segmentVisitor(directory!, basename, child, i, finalSegment);
           }
           child = utils.resolveLinks(child as LinkNode, subpath,
               ledger: pathWithSymlinks);
@@ -256,12 +256,12 @@ class _MemoryFileSystem extends FileSystem
           );
         }
       } else if (segmentVisitor != null) {
-        child = segmentVisitor(directory, basename, child, i, finalSegment);
+        child = segmentVisitor(directory!, basename, child, i, finalSegment);
       }
 
       if (i < finalSegment) {
         checkExists(child, subpath);
-        utils.checkIsDir(child, subpath);
+        utils.checkIsDir(child!, subpath);
         directory = child as DirectoryNode;
       }
     }

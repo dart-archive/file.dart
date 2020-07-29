@@ -11,7 +11,7 @@ elif [[ "$SHARD" == "analyze" ]]; then
   for package in "${PACKAGES[@]}"; do
     echo "Analyzing packages/$package"
     cd $ROOT/packages/$package
-    dartanalyzer --options=$ROOT/analysis_options.yaml . || exit $?
+    dartanalyzer --enable-experiment=non-nullable --options=$ROOT/analysis_options.yaml . || exit $?
   done
 else
   # tests shard

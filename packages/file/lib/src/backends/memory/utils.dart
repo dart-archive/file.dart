@@ -83,7 +83,7 @@ Node resolveLinks(
   LinkNode link,
   PathGenerator path, {
   List<String>? ledger,
-  Node tailVisitor(DirectoryNode parent, String childName, Node? child)?,
+  Node? tailVisitor(DirectoryNode parent, String childName, Node? child)?,
 }) {
   // Record a breadcrumb trail to guard against symlink loops.
   Set<LinkNode> breadcrumbs = Set<LinkNode>();
@@ -108,7 +108,7 @@ Node resolveLinks(
           // Only invoke [tailListener] on the final resolution pass.
           child = tailVisitor(parent, childName, child);
         }
-        return child!;
+        return child;
       },
     );
   }

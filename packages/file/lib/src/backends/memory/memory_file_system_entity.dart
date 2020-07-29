@@ -182,7 +182,7 @@ abstract class MemoryFileSystemEntity implements FileSystemEntity {
   /// If [followTailLink] is true and the result node is a link, this will
   /// resolve it to its target prior to returning it.
   @protected
-  Node internalCreateSync({
+  Node? internalCreateSync({
     required Node? createChild(DirectoryNode parent, bool isFinalSegment),
     bool followTailLink = false,
     bool visitLinks = false,
@@ -205,9 +205,9 @@ abstract class MemoryFileSystemEntity implements FileSystemEntity {
             parent.children[childName] = child;
           }
         }
-        return child!;
+        return child;
       },
-    ) as Node;
+    );
   }
 
   /// Helper method for subclasses wishing to synchronously rename this entity.
@@ -273,7 +273,7 @@ abstract class MemoryFileSystemEntity implements FileSystemEntity {
           parent.children[childName] = node;
           node.parent = parent;
         }
-        return child!;
+        return child;
       },
     );
     return clone(newPath);
