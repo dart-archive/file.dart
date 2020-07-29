@@ -2,6 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+// @dart=2.10
 import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
@@ -72,7 +73,7 @@ abstract class ForwardingFile
       delegate.openSync(mode: mode);
 
   @override
-  Stream<Uint8List> openRead([int start, int end]) => delegate
+  Stream<Uint8List> openRead([int? start, int? end]) => delegate
       .openRead(start, end)
       .cast<List<int>>()
       .transform(const _ToUint8List());

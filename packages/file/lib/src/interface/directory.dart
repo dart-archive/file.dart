@@ -2,6 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+// @dart=2.10
 import 'dart:async';
 
 import '../io.dart' as io;
@@ -17,10 +18,10 @@ abstract class Directory implements FileSystemEntity, io.Directory {
   Future<Directory> create({bool recursive = false});
 
   @override
-  Future<Directory> createTemp([String prefix]);
+  Future<Directory> createTemp([String? prefix]);
 
   @override
-  Directory createTempSync([String prefix]);
+  Directory createTempSync([String? prefix]);
 
   @override
   Future<Directory> rename(String newPath);

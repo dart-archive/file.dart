@@ -2,6 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+// @dart=2.10
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math' as math show min;
@@ -25,7 +26,7 @@ class MemoryFile extends MemoryFileSystemEntity implements File {
       : super(fileSystem, path);
 
   FileNode get _resolvedBackingOrCreate {
-    Node node = backingOrNull;
+    Node? node = backingOrNull;
     if (node == null) {
       node = _doCreate();
     } else {
@@ -41,7 +42,7 @@ class MemoryFile extends MemoryFileSystemEntity implements File {
   io.FileSystemEntityType get expectedType => io.FileSystemEntityType.file;
 
   @override
-  bool existsSync() => backingOrNull?.stat?.type == expectedType;
+  bool existsSync() => backingOrNull?.stat.type == expectedType;
 
   @override
   Future<File> create({bool recursive = false}) async {
@@ -54,8 +55,8 @@ class MemoryFile extends MemoryFileSystemEntity implements File {
     _doCreate(recursive: recursive);
   }
 
-  Node _doCreate({bool recursive = false}) {
-    Node node = internalCreateSync(
+  Node? _doCreate({bool recursive = false}) {
+    Node? node = internalCreateSync(
       followTailLink: true,
       createChild: (DirectoryNode parent, bool isFinalSegment) {
         if (isFinalSegment) {
@@ -66,9 +67,9 @@ class MemoryFile extends MemoryFileSystemEntity implements File {
         return null;
       },
     );
-    if (node.type != expectedType) {
+    if (node?.type != expectedType) {
       // There was an existing non-file entity at this object's path
-      assert(node.type == FileSystemEntityType.directory);
+      assert(node?.type == FileSystemEntityType.directory);
       throw common.isADirectory(path);
     }
     return node;
@@ -102,7 +103,7 @@ class MemoryFile extends MemoryFileSystemEntity implements File {
       segmentVisitor: (
         DirectoryNode parent,
         String childName,
-        Node child,
+        Node? child,
         int currentSegment,
         int finalSegment,
       ) {
@@ -188,7 +189,7 @@ class MemoryFile extends MemoryFileSystemEntity implements File {
   }
 
   @override
-  Stream<Uint8List> openRead([int start, int end]) {
+  Stream<Uint8List> openRead([int? start, int? end]) {
     try {
       FileNode node = resolvedBacking as FileNode;
       Uint8List content = node.content;
@@ -317,8 +318,8 @@ class _FileSink implements io.IOSink {
     io.FileMode mode,
     Encoding encoding,
   ) {
-    FileNode node;
-    Exception deferredException;
+    late FileNode node;
+    Exception? deferredException;
 
     // Resolve the backing immediately to ensure that the [FileNode] we write
     // to is the same as when [openWrite] was called.  This can matter if the
@@ -341,15 +342,12 @@ class _FileSink implements io.IOSink {
     return _FileSink._(future, encoding);
   }
 
-  _FileSink._(this._node, this.encoding) {
-    _pendingWrites = _node;
-  }
+  _FileSink._(Future<FileNode> _node, this.encoding) : _pendingWrites = _node;
 
-  final Future<FileNode> _node;
   final Completer<void> _completer = Completer<void>();
 
   Future<FileNode> _pendingWrites;
-  Completer<void> _streamCompleter;
+  Completer<void>? _streamCompleter;
   bool _isClosed = false;
 
   @override
@@ -368,13 +366,13 @@ class _FileSink implements io.IOSink {
   }
 
   @override
-  void write(Object obj) => add(encoding.encode(obj?.toString() ?? 'null'));
+  void write(Object? obj) => add(encoding.encode(obj?.toString() ?? 'null'));
 
   @override
   void writeAll(Iterable<dynamic> objects, [String separator = '']) {
     bool firstIter = true;
     for (dynamic obj in objects) {
-      if (!firstIter && separator != null) {
+      if (!firstIter) {
         write(separator);
       }
       firstIter = false;
@@ -383,7 +381,7 @@ class _FileSink implements io.IOSink {
   }
 
   @override
-  void writeln([Object obj = '']) {
+  void writeln([Object? obj = '']) {
     write(obj);
     write('\n');
   }
@@ -392,7 +390,7 @@ class _FileSink implements io.IOSink {
   void writeCharCode(int charCode) => write(String.fromCharCode(charCode));
 
   @override
-  void addError(dynamic error, [StackTrace stackTrace]) {
+  void addError(Object error, [StackTrace? stackTrace]) {
     _checkNotStreaming();
     _completer.completeError(error, stackTrace);
   }
@@ -402,20 +400,20 @@ class _FileSink implements io.IOSink {
     _checkNotStreaming();
     _streamCompleter = Completer<void>();
     void finish() {
-      _streamCompleter.complete();
+      _streamCompleter!.complete();
       _streamCompleter = null;
     }
 
     stream.listen(
       (List<int> data) => _addData(data),
       cancelOnError: true,
-      onError: (dynamic error, StackTrace stackTrace) {
+      onError: (Object error, StackTrace stackTrace) {
         _completer.completeError(error, stackTrace);
         finish();
       },
       onDone: finish,
     );
-    return _streamCompleter.future;
+    return _streamCompleter!.future;
   }
 
   @override
@@ -431,7 +429,7 @@ class _FileSink implements io.IOSink {
       _isClosed = true;
       _pendingWrites.then(
         (_) => _completer.complete(),
-        onError: (dynamic error, StackTrace stackTrace) =>
+        onError: (Object error, StackTrace stackTrace) =>
             _completer.completeError(error, stackTrace),
       );
     }

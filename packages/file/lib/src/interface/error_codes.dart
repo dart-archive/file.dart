@@ -2,6 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+// @dart=2.10
 import 'error_codes_internal.dart'
     if (dart.library.io) 'error_codes_dart_io.dart';
 
@@ -168,7 +169,7 @@ class ErrorCodes {
   static int get EXDEV => _platform((_Codes codes) => codes.exdev);
 
   static int _platform(int getCode(_Codes codes)) {
-    _Codes codes = _platforms[operatingSystem] ?? _platforms['linux'];
+    _Codes codes = (_platforms[operatingSystem] ?? _platforms['linux'])!;
     return getCode(codes);
   }
 }

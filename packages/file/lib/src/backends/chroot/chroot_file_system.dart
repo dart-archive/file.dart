@@ -2,6 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+// @dart=2.10
 part of file.src.backends.chroot;
 
 const String _thisDir = '.';
@@ -51,10 +52,10 @@ class ChrootFileSystem extends FileSystem {
   /// Directory in [delegate] file system that is treated as the root here.
   final String root;
 
-  String _systemTemp;
+  String? _systemTemp;
 
   /// Path to the synthetic current working directory in this file system.
-  String _cwd;
+  late String _cwd;
 
   /// Gets the root path, as seen by entities in this file system.
   String get _localRoot => delegate.path.rootPrefix(root);
@@ -255,7 +256,7 @@ class ChrootFileSystem extends FileSystem {
   ///     the partially resolved path will be returned.
   String _resolve(
     String path, {
-    String from,
+    String? from,
     bool followLinks = true,
     _NotFoundBehavior notFound = _NotFoundBehavior.allow,
   }) {
@@ -366,14 +367,16 @@ enum _NotFoundBehavior {
 class _NotFoundFileStat implements FileStat {
   const _NotFoundFileStat();
 
-  @override
-  DateTime get changed => null;
+  static final DateTime _empty = DateTime(0);
 
   @override
-  DateTime get modified => null;
+  DateTime get changed => _empty;
 
   @override
-  DateTime get accessed => null;
+  DateTime get modified => _empty;
+
+  @override
+  DateTime get accessed => _empty;
 
   @override
   FileSystemEntityType get type => FileSystemEntityType.notFound;

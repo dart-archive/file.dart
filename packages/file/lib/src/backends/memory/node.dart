@@ -2,6 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+// @dart=2.10
+
 import 'dart:typed_data';
 
 import 'package:file/file.dart';
@@ -30,10 +32,10 @@ import 'style.dart';
 ///
 /// [finalSegment] is the index of the final segment that will be walked by
 /// [NodeBasedFileSystem.findNode].
-typedef SegmentVisitor = Node Function(
+typedef SegmentVisitor = Node? Function(
   DirectoryNode parent,
   String childName,
-  Node childNode,
+  Node? childNode,
   int currentSegment,
   int finalSegment,
 );
@@ -42,7 +44,7 @@ typedef SegmentVisitor = Node Function(
 /// instances, rooted at a single node.
 abstract class NodeBasedFileSystem implements StyleableFileSystem {
   /// The root node.
-  RootNode get root;
+  RootNode? get root;
 
   /// The path of the current working directory.
   String get cwd;
@@ -80,7 +82,7 @@ abstract class NodeBasedFileSystem implements StyleableFileSystem {
   /// If [pathWithSymlinks] is specified, the path to the node with symbolic
   /// links explicitly broken out will be appended to the buffer. `..` and `.`
   /// path segments will *not* be resolved and are left to the caller.
-  Node findNode(
+  Node? findNode(
     String path, {
     Node reference,
     SegmentVisitor segmentVisitor,
@@ -104,14 +106,13 @@ abstract class Node {
     }
   }
 
-  DirectoryNode _parent;
+  DirectoryNode? _parent;
 
   /// Gets the directory that holds this node.
-  DirectoryNode get parent => _parent;
+  DirectoryNode get parent => _parent!;
 
   /// Reparents this node to live in the specified directory.
   set parent(DirectoryNode parent) {
-    assert(parent != null);
     DirectoryNode ancestor = parent;
     while (!ancestor.isRoot) {
       if (ancestor == this) {
@@ -132,13 +133,13 @@ abstract class Node {
   /// Returns the closest directory in the ancestry hierarchy starting with
   /// this node. For directory nodes, it returns the node itself; for other
   /// nodes, it returns the parent node.
-  DirectoryNode get directory => _parent;
+  DirectoryNode get directory => _parent!;
 
   /// Tells if this node is a root node.
   bool get isRoot => false;
 
   /// Returns the file system responsible for this node.
-  NodeBasedFileSystem get fs => _parent.fs;
+  NodeBasedFileSystem get fs => _parent!.fs;
 }
 
 /// Base class that represents the backing for those nodes that have
@@ -146,7 +147,7 @@ abstract class Node {
 /// you call [stat] on them).
 abstract class RealNode extends Node {
   /// Constructs a new [RealNode] as a child of the specified [parent].
-  RealNode(DirectoryNode parent) : super(parent) {
+  RealNode(DirectoryNode? parent) : super(parent) {
     int now = clock.now.millisecondsSinceEpoch;
     changed = now;
     modified = now;
@@ -157,13 +158,13 @@ abstract class RealNode extends Node {
   Clock get clock => parent.clock;
 
   /// Last changed time in milliseconds since the Epoch.
-  int changed;
+  late int changed;
 
   /// Last modified time in milliseconds since the Epoch.
-  int modified;
+  late int modified;
 
   /// Last accessed time in milliseconds since the Epoch.
-  int accessed;
+  late int accessed;
 
   /// Bitmask representing the file read/write/execute mode.
   int mode = 0x777;
@@ -192,7 +193,7 @@ abstract class RealNode extends Node {
 /// Class that represents the backing for an in-memory directory.
 class DirectoryNode extends RealNode {
   /// Constructs a new [DirectoryNode] as a child of the specified [parent].
-  DirectoryNode(DirectoryNode parent) : super(parent);
+  DirectoryNode(DirectoryNode? parent) : super(parent);
 
   /// Child nodes, indexed by their basename.
   final Map<String, Node> children = <String, Node>{};
@@ -211,8 +212,7 @@ class DirectoryNode extends RealNode {
 class RootNode extends DirectoryNode {
   /// Constructs a new [RootNode] tied to the specified file system.
   RootNode(this.fs)
-      : assert(fs != null),
-        assert(fs.root == null),
+      : assert(fs.root == null),
         super(null);
 
   @override
@@ -285,7 +285,7 @@ class LinkNode extends Node {
   /// Constructs a new [LinkNode] as a child of the specified [parent] and
   /// linking to the specified [target] path.
   LinkNode(DirectoryNode parent, this.target)
-      : assert(target != null && target.isNotEmpty),
+      : assert(target.isNotEmpty),
         super(parent);
 
   /// The path to which this link points.
@@ -304,15 +304,15 @@ class LinkNode extends Node {
   /// target cannot be traversed into, a [FileSystemException] will be thrown,
   /// and [tailVisitor] will not be invoked.
   Node getReferent({
-    Node tailVisitor(DirectoryNode parent, String childName, Node child),
+    Node? tailVisitor(DirectoryNode parent, String childName, Node? child)?,
   }) {
-    Node referent = fs.findNode(
+    Node? referent = fs.findNode(
       target,
       reference: this,
       segmentVisitor: (
         DirectoryNode parent,
         String childName,
-        Node child,
+        Node? child,
         int currentSegment,
         int finalSegment,
       ) {
@@ -323,12 +323,12 @@ class LinkNode extends Node {
       },
     );
     checkExists(referent, () => target);
-    return referent;
+    return referent!;
   }
 
   /// Gets the node backing for this link's target, or null if this link
   /// references a non-existent file system entity.
-  Node get referentOrNull {
+  Node? get referentOrNull {
     try {
       return getReferent();
     } on io.FileSystemException {
@@ -346,7 +346,7 @@ class LinkNode extends Node {
     }
     _reentrant = true;
     try {
-      Node node = referentOrNull;
+      Node? node = referentOrNull;
       return node == null ? MemoryFileStat.notFound : node.stat;
     } finally {
       _reentrant = false;

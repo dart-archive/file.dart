@@ -2,6 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+// @dart=2.10
 import 'dart:convert';
 import 'dart:math' as math show min;
 import 'dart:typed_data';
@@ -232,11 +233,11 @@ class MemoryRandomAccessFile implements io.RandomAccessFile {
   }
 
   @override
-  Future<int> readInto(List<int> buffer, [int start = 0, int end]) =>
+  Future<int> readInto(List<int> buffer, [int start = 0, int? end]) =>
       _asyncWrapper(() => readIntoSync(buffer, start, end));
 
   @override
-  int readIntoSync(List<int> buffer, [int start = 0, int end]) {
+  int readIntoSync(List<int> buffer, [int start = 0, int? end]) {
     _checkOpen();
     _checkAsync();
     _checkReadable('readInto');
@@ -349,14 +350,14 @@ class MemoryRandomAccessFile implements io.RandomAccessFile {
   Future<io.RandomAccessFile> writeFrom(
     List<int> buffer, [
     int start = 0,
-    int end,
+    int? end,
   ]) async {
     await _asyncWrapper(() => writeFromSync(buffer, start, end));
     return this;
   }
 
   @override
-  void writeFromSync(List<int> buffer, [int start = 0, int end]) {
+  void writeFromSync(List<int> buffer, [int start = 0, int? end]) {
     _checkOpen();
     _checkAsync();
     _checkWritable('writeFrom');

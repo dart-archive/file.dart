@@ -2,6 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+// @dart=2.10
+
 /// Interface describing clocks used by the [MemoryFileSystem].
 ///
 /// The [MemoryFileSystem] uses a clock to determine the modification times of
@@ -39,7 +41,7 @@ class _RealtimeClock extends Clock {
 
 class _MonotonicTestClock extends Clock {
   _MonotonicTestClock({
-    DateTime start,
+    DateTime? start,
   }) : _current = start ?? DateTime(2000);
 
   DateTime _current;

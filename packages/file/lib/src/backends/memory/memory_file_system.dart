@@ -2,11 +2,11 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+// @dart=2.10
 import 'dart:async';
 
 import 'package:file/file.dart';
 import 'package:file/src/io.dart' as io;
-import 'package:meta/meta.dart';
 import 'package:path/path.dart' as p;
 
 import 'clock.dart';
@@ -74,16 +74,15 @@ class _MemoryFileSystem extends FileSystem
     implements MemoryFileSystem, NodeBasedFileSystem {
   _MemoryFileSystem({
     this.style = FileSystemStyle.posix,
-    @required this.clock,
-  })  : assert(style != null),
-        assert(clock != null) {
-    _root = RootNode(this);
+    required this.clock,
+  }) {
     _context = style.contextFor(style.root);
+    _root = RootNode(this);
   }
 
-  RootNode _root;
-  String _systemTemp;
-  p.Context _context;
+  RootNode? _root;
+  String? _systemTemp;
+  late p.Context _context;
 
   @override
   final Clock clock;
@@ -92,7 +91,7 @@ class _MemoryFileSystem extends FileSystem
   final FileSystemStyle style;
 
   @override
-  RootNode get root => _root;
+  RootNode? get root => _root;
 
   @override
   String get cwd => _context.current;
@@ -133,9 +132,9 @@ class _MemoryFileSystem extends FileSystem
     }
 
     value = directory(value).resolveSymbolicLinksSync();
-    Node node = findNode(value);
+    Node? node = findNode(value);
     checkExists(node, () => value);
-    utils.checkIsDir(node, () => value);
+    utils.checkIsDir(node!, () => value);
     assert(_context.isAbsolute(value));
     _context = style.contextFor(value);
   }
@@ -158,9 +157,9 @@ class _MemoryFileSystem extends FileSystem
 
   @override
   bool identicalSync(String path1, String path2) {
-    Node node1 = findNode(path1);
+    Node? node1 = findNode(path1);
     checkExists(node1, () => path1);
-    Node node2 = findNode(path2);
+    Node? node2 = findNode(path2);
     checkExists(node2, () => path2);
     return node1 != null && node1 == node2;
   }
@@ -177,7 +176,7 @@ class _MemoryFileSystem extends FileSystem
 
   @override
   io.FileSystemEntityType typeSync(String path, {bool followLinks = true}) {
-    Node node;
+    Node? node;
     try {
       node = findNode(path, followTailLink: followLinks);
     } on io.FileSystemException {
@@ -195,18 +194,14 @@ class _MemoryFileSystem extends FileSystem
   DirectoryNode get _current => findNode(cwd) as DirectoryNode;
 
   @override
-  Node findNode(
+  Node? findNode(
     String path, {
-    Node reference,
-    SegmentVisitor segmentVisitor,
+    Node? reference,
+    SegmentVisitor? segmentVisitor,
     bool visitLinks = false,
-    List<String> pathWithSymlinks,
+    List<String>? pathWithSymlinks,
     bool followTailLink = false,
   }) {
-    if (path == null) {
-      throw ArgumentError.notNull('path');
-    }
-
     if (_context.isAbsolute(path)) {
       reference = _root;
       path = path.substring(style.drive.length);
@@ -216,8 +211,8 @@ class _MemoryFileSystem extends FileSystem
 
     List<String> parts = path.split(style.separator)
       ..removeWhere(utils.isEmpty);
-    DirectoryNode directory = reference.directory;
-    Node child = directory;
+    DirectoryNode? directory = reference?.directory;
+    Node? child = directory;
 
     int finalSegment = parts.length - 1;
     for (int i = 0; i <= finalSegment; i++) {
@@ -229,11 +224,11 @@ class _MemoryFileSystem extends FileSystem
           child = directory;
           break;
         case _parentDir:
-          child = directory.parent;
-          directory = directory.parent;
+          child = directory?.parent;
+          directory = directory?.parent;
           break;
         default:
-          child = directory.children[basename];
+          child = directory?.children[basename];
       }
 
       if (pathWithSymlinks != null) {
@@ -246,7 +241,8 @@ class _MemoryFileSystem extends FileSystem
       if (utils.isLink(child) && (i < finalSegment || followTailLink)) {
         if (visitLinks || segmentVisitor == null) {
           if (segmentVisitor != null) {
-            child = segmentVisitor(directory, basename, child, i, finalSegment);
+            child =
+                segmentVisitor(directory!, basename, child, i, finalSegment);
           }
           child = utils.resolveLinks(child as LinkNode, subpath,
               ledger: pathWithSymlinks);
@@ -255,18 +251,18 @@ class _MemoryFileSystem extends FileSystem
             child as LinkNode,
             subpath,
             ledger: pathWithSymlinks,
-            tailVisitor: (DirectoryNode parent, String childName, Node child) {
+            tailVisitor: (DirectoryNode parent, String childName, Node? child) {
               return segmentVisitor(parent, childName, child, i, finalSegment);
             },
           );
         }
       } else if (segmentVisitor != null) {
-        child = segmentVisitor(directory, basename, child, i, finalSegment);
+        child = segmentVisitor(directory!, basename, child, i, finalSegment);
       }
 
       if (i < finalSegment) {
         checkExists(child, subpath);
-        utils.checkIsDir(child, subpath);
+        utils.checkIsDir(child!, subpath);
         directory = child as DirectoryNode;
       }
     }

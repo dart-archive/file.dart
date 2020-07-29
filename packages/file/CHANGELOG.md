@@ -1,6 +1,8 @@
-#### 5.2.2-dev
+#### 6.0.0-nullsafety
 
-* Made `MemoryRandomAccessFile` and `MemoryFile.openWrite` handle the file
+* Update to null safety.
+* Remove record/replay functionality.
+* Made `MemoryRandomAccessFile` and `MemoryFile.openWrite` handle the file.
   being removed or renamed while open.
 * Fixed incorrect formatting in `NoMatchingInvocationError.toString()`.
 * Fixed more test flakiness.

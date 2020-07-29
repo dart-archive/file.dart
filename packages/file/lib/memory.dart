@@ -2,6 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+// @dart=2.10
+
 /// An implementation of `FileSystem` that exists entirely in memory with an
 /// internal representation loosely based on the Filesystem Hierarchy Standard.
 export 'src/backends/memory.dart';

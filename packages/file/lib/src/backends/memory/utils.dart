@@ -2,6 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+// @dart=2.10
 import 'package:file/file.dart';
 import 'package:file/src/common.dart' as common;
 import 'package:file/src/io.dart' as io;
@@ -10,13 +11,13 @@ import 'common.dart';
 import 'node.dart';
 
 /// Checks if `node.type` returns [io.FileSystemEntityType.FILE].
-bool isFile(Node node) => node?.type == io.FileSystemEntityType.file;
+bool isFile(Node? node) => node?.type == io.FileSystemEntityType.file;
 
 /// Checks if `node.type` returns [io.FileSystemEntityType.DIRECTORY].
-bool isDirectory(Node node) => node?.type == io.FileSystemEntityType.directory;
+bool isDirectory(Node? node) => node?.type == io.FileSystemEntityType.directory;
 
 /// Checks if `node.type` returns [io.FileSystemEntityType.LINK].
-bool isLink(Node node) => node?.type == io.FileSystemEntityType.link;
+bool isLink(Node? node) => node?.type == io.FileSystemEntityType.link;
 
 /// Validator function that is expected to throw a [FileSystemException] if
 /// the node does not represent the type that is expected in any given context.
@@ -81,8 +82,8 @@ bool isEmpty(String str) => str.isEmpty;
 Node resolveLinks(
   LinkNode link,
   PathGenerator path, {
-  List<String> ledger,
-  Node tailVisitor(DirectoryNode parent, String childName, Node child),
+  List<String>? ledger,
+  Node? tailVisitor(DirectoryNode parent, String childName, Node? child)?,
 }) {
   // Record a breadcrumb trail to guard against symlink loops.
   Set<LinkNode> breadcrumbs = Set<LinkNode>();
@@ -102,7 +103,7 @@ Node resolveLinks(
       ledger.addAll(link.target.split(link.fs.path.separator));
     }
     node = link.getReferent(
-      tailVisitor: (DirectoryNode parent, String childName, Node child) {
+      tailVisitor: (DirectoryNode parent, String childName, Node? child) {
         if (tailVisitor != null && !isLink(child)) {
           // Only invoke [tailListener] on the final resolution pass.
           child = tailVisitor(parent, childName, child);
