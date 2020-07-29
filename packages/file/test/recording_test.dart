@@ -4,6 +4,7 @@
 
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:file/file.dart';
 import 'package:file/memory.dart';
@@ -197,7 +198,8 @@ void main() {
         await rc.futureMethod('qux', namedArg: 'quz');
         await rc.streamMethod('quux', namedArg: 'quuz').drain<void>();
         List<Map<String, dynamic>> manifest =
-            await encode(recording.events).cast<Map<String, dynamic>>();
+            (await encode(recording.events) as List<dynamic>)
+                .cast<Map<String, dynamic>>();
         expect(manifest[0], <String, dynamic>{
           'type': 'set',
           'property': 'basicProperty=',
@@ -435,7 +437,7 @@ void main() {
             List<InvocationEvent<dynamic>> events = recording.events;
             expect(events.length, greaterThanOrEqualTo(2));
             expect(events[0], invokesMethod().withResult(isDirectory));
-            Directory directory = events[0].result;
+            Directory directory = events[0].result as Directory;
             expect(
                 events,
                 contains(setsProperty('currentDirectory')
@@ -624,7 +626,8 @@ void main() {
                 containsPair('namedArguments', isEmpty),
                 containsPair('result', matches(r'^![0-9]+.foo$')),
               ));
-          File file = _getRecordingFile(recording, manifest[1]['result']);
+          File file =
+              _getRecordingFile(recording, manifest[1]['result'] as String);
           expect(file, exists);
           expect(await file.readAsString(), content);
         });
@@ -654,7 +657,8 @@ void main() {
                 containsPair('namedArguments', isEmpty),
                 containsPair('result', matches(r'^![0-9]+.foo$')),
               ));
-          File file = _getRecordingFile(recording, manifest[1]['result']);
+          File file =
+              _getRecordingFile(recording, manifest[1]['result'] as String);
           expect(file, exists);
           expect(await file.readAsString(), content);
         });
@@ -682,7 +686,8 @@ void main() {
                 containsPair('namedArguments', isEmpty),
                 containsPair('result', matches(r'^![0-9]+.foo$')),
               ));
-          File file = _getRecordingFile(recording, manifest[1]['result']);
+          File file =
+              _getRecordingFile(recording, manifest[1]['result'] as String);
           expect(file, exists);
           expect(await file.readAsString(), content);
         });
@@ -717,7 +722,8 @@ void main() {
                       containsPair('encoding', 'iso-8859-1'),
                     )),
               ));
-          File file = _getRecordingFile(recording, manifest[1]['result']);
+          File file =
+              _getRecordingFile(recording, manifest[1]['result'] as String);
           expect(file, exists);
           expect(await file.readAsString(), content);
         });
@@ -752,7 +758,8 @@ void main() {
                       containsPair('encoding', 'iso-8859-1'),
                     )),
               ));
-          File file = _getRecordingFile(recording, manifest[1]['result']);
+          File file =
+              _getRecordingFile(recording, manifest[1]['result'] as String);
           expect(file, exists);
           expect(await file.readAsString(), content);
         });
@@ -783,7 +790,8 @@ void main() {
                 containsPair(
                     'namedArguments', <String, String>{'encoding': 'utf-8'}),
               ));
-          File file = _getRecordingFile(recording, manifest[1]['result']);
+          File file =
+              _getRecordingFile(recording, manifest[1]['result'] as String);
           expect(file, exists);
           expect(await file.readAsString(), content);
         });
@@ -814,7 +822,8 @@ void main() {
                 containsPair(
                     'namedArguments', <String, String>{'encoding': 'utf-8'}),
               ));
-          File file = _getRecordingFile(recording, manifest[1]['result']);
+          File file =
+              _getRecordingFile(recording, manifest[1]['result'] as String);
           expect(file, exists);
           expect(await file.readAsString(), content);
         });
@@ -836,9 +845,9 @@ void main() {
 List<Map<String, dynamic>> _loadManifest(LiveRecording recording) {
   List<FileSystemEntity> files = recording.destination.listSync();
   File manifestFile = files.singleWhere(
-      (FileSystemEntity entity) => entity.basename == kManifestName);
-  return const JsonDecoder()
-      .convert(manifestFile.readAsStringSync())
+      (FileSystemEntity entity) => entity.basename == kManifestName) as File;
+  return (const JsonDecoder().convert(manifestFile.readAsStringSync())
+          as List<dynamic>)
       .cast<Map<String, dynamic>>();
 }
 

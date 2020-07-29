@@ -38,7 +38,7 @@ class MemoryLink extends MemoryFileSystemEntity implements Link {
                 : common.invalidArgument(newPath);
           }
         },
-      );
+      ) as Link;
 
   @override
   Future<Link> create(String target, {bool recursive = false}) async {
@@ -99,7 +99,7 @@ class MemoryLink extends MemoryFileSystemEntity implements Link {
   }
 
   @override
-  Link get absolute => super.absolute;
+  Link get absolute => super.absolute as Link;
 
   @override
   @protected

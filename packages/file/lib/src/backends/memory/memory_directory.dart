@@ -74,7 +74,7 @@ class MemoryDirectory extends MemoryFileSystemEntity
     String fullPath = fileSystem.path.join(path, prefix);
     String dirname = fileSystem.path.dirname(fullPath);
     String basename = fileSystem.path.basename(fullPath);
-    DirectoryNode node = fileSystem.findNode(dirname);
+    DirectoryNode node = fileSystem.findNode(dirname) as DirectoryNode;
     checkExists(node, () => dirname);
     utils.checkIsDir(node, () => dirname);
     int _tempCounter = _systemTempCounter[fileSystem] ?? 0;
@@ -99,14 +99,14 @@ class MemoryDirectory extends MemoryFileSystemEntity
             throw common.directoryNotEmpty(newPath);
           }
         },
-      );
+      ) as Directory;
 
   @override
   Directory get parent =>
       (backingOrNull?.isRoot ?? false) ? this : super.parent;
 
   @override
-  Directory get absolute => super.absolute;
+  Directory get absolute => super.absolute as Directory;
 
   @override
   Stream<FileSystemEntity> list({
@@ -123,7 +123,7 @@ class MemoryDirectory extends MemoryFileSystemEntity
     bool recursive = false,
     bool followLinks = true,
   }) {
-    DirectoryNode node = backing;
+    DirectoryNode node = backing as DirectoryNode;
     List<FileSystemEntity> listing = <FileSystemEntity>[];
     List<_PendingListTask> tasks = <_PendingListTask>[
       _PendingListTask(
@@ -139,7 +139,9 @@ class MemoryDirectory extends MemoryFileSystemEntity
       task.dir.children.forEach((String name, Node child) {
         Set<LinkNode> breadcrumbs = Set<LinkNode>.from(task.breadcrumbs);
         String childPath = fileSystem.path.join(task.path, name);
-        while (followLinks && utils.isLink(child) && breadcrumbs.add(child)) {
+        while (followLinks &&
+            utils.isLink(child) &&
+            breadcrumbs.add(child as LinkNode)) {
           Node referent = (child as LinkNode).referentOrNull;
           if (referent != null) {
             child = referent;
@@ -148,7 +150,8 @@ class MemoryDirectory extends MemoryFileSystemEntity
         if (utils.isDirectory(child)) {
           listing.add(MemoryDirectory(fileSystem, childPath));
           if (recursive) {
-            tasks.add(_PendingListTask(child, childPath, breadcrumbs));
+            tasks.add(_PendingListTask(
+                child as DirectoryNode, childPath, breadcrumbs));
           }
         } else if (utils.isLink(child)) {
           listing.add(MemoryLink(fileSystem, childPath));

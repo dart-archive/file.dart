@@ -11,7 +11,7 @@ import 'package:file/file.dart';
 abstract class ForwardingLink
     implements ForwardingFileSystemEntity<Link, io.Link>, Link {
   @override
-  ForwardingLink wrap(io.Link delegate) => wrapLink(delegate);
+  ForwardingLink wrap(io.Link delegate) => wrapLink(delegate) as ForwardingLink;
 
   @override
   Future<Link> create(String target, {bool recursive = false}) async =>

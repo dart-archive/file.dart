@@ -147,7 +147,7 @@ class _MapEncoder
     _GenericEncoder generic = const _GenericEncoder();
     Map<String, dynamic> encoded = <String, dynamic>{};
     for (dynamic key in input.keys) {
-      String encodedKey = generic.convert(key);
+      String encodedKey = generic.convert(key) as String;
       encoded[encodedKey] = generic.convert(input[key]);
     }
     return encoded;
@@ -212,11 +212,11 @@ class UriCodec extends Codec<Uri, String> {
 }
 
 /// A [PathContextCodec] serializes and deserializes [path.Context] instances.
-class PathContextCodec extends Codec<path.Context, Map<String, String>> {
+class PathContextCodec extends Codec<path.Context, Map<String, dynamic>> {
   /// Creates a new [PathContextCodec].
   const PathContextCodec();
 
-  static Map<String, String> _encode(path.Context input) {
+  static Map<String, dynamic> _encode(path.Context input) {
     return <String, String>{
       'style': input.style.name,
       'cwd': input.current,
@@ -230,23 +230,23 @@ class PathContextCodec extends Codec<path.Context, Map<String, String>> {
         'windows': path.Style.windows,
         'url': path.Style.url,
       }[input['style']],
-      current: input['cwd'],
+      current: input['cwd'] as String,
     );
   }
 
   /// Converter that serializes [path.Context] instances.
-  static const Converter<path.Context, Map<String, String>> serialize =
-      _ForwardingConverter<path.Context, Map<String, String>>(_encode);
+  static const Converter<path.Context, Map<String, dynamic>> serialize =
+      _ForwardingConverter<path.Context, Map<String, dynamic>>(_encode);
 
   /// Converter that deserializes [path.Context] instances.
   static const Converter<Map<String, dynamic>, path.Context> deserialize =
       _ForwardingConverter<Map<String, dynamic>, path.Context>(_decode);
 
   @override
-  Converter<path.Context, Map<String, String>> get encoder => serialize;
+  Converter<path.Context, Map<String, dynamic>> get encoder => serialize;
 
   @override
-  Converter<Map<String, String>, path.Context> get decoder => deserialize;
+  Converter<Map<String, dynamic>, path.Context> get decoder => deserialize;
 }
 
 class _ResultEncoder extends Converter<ResultReference<dynamic>, Object> {
@@ -429,13 +429,13 @@ class _FileSystemEvent implements FileSystemEvent {
   final Map<String, Object> _data;
 
   @override
-  int get type => _data['type'];
+  int get type => _data['type'] as int;
 
   @override
-  String get path => _data['path'];
+  String get path => _data['path'] as String;
 
   @override
-  bool get isDirectory => _data['isDirectory'];
+  bool get isDirectory => _data['isDirectory'] as bool;
 }
 
 /// Converts an object into a [Future] that completes with that object.
@@ -617,7 +617,7 @@ class ToError extends Converter<dynamic, dynamic> {
   @override
   dynamic convert(dynamic input) {
     if (input is Map) {
-      String errorType = input[kManifestErrorTypeKey];
+      String errorType = input[kManifestErrorTypeKey] as String;
       if (_decoders.containsKey(errorType)) {
         return _decoders[errorType].convert(input);
       }
@@ -644,9 +644,9 @@ class _FSExceptionCodec
   static FileSystemException _decode(Map<String, Object> input) {
     Object osError = input['osError'];
     return FileSystemException(
-      input['message'],
-      input['path'],
-      osError == null ? null : const ToError().convert(osError),
+      input['message'] as String,
+      input['path'] as String,
+      osError == null ? null : const ToError().convert(osError) as OSError,
     );
   }
 
@@ -678,7 +678,7 @@ class _OSErrorCodec extends Codec<OSError, Map<String, Object>> {
   }
 
   static OSError _decode(Map<String, Object> input) {
-    return OSError(input['message'], input['errorCode']);
+    return OSError(input['message'] as String, input['errorCode'] as int);
   }
 
   static const Converter<OSError, Map<String, Object>> serialize =
@@ -711,7 +711,7 @@ class _ArgumentErrorCodec extends Codec<ArgumentError, Map<String, Object>> {
   static ArgumentError _decode(Map<String, Object> input) {
     dynamic message = input['message'];
     dynamic invalidValue = input['invalidValue'];
-    String name = input['name'];
+    String name = input['name'] as String;
     if (invalidValue != null) {
       return ArgumentError.value(invalidValue, name, message);
     } else if (name != null) {
@@ -748,7 +748,7 @@ class _NoSuchMethodErrorCodec
   }
 
   static NoSuchMethodError _decode(Map<String, Object> input) {
-    return _NoSuchMethodError(input['toString']);
+    return _NoSuchMethodError(input['toString'] as String);
   }
 
   static const Converter<NoSuchMethodError, Map<String, Object>> serialize =

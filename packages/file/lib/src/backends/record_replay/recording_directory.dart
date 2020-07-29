@@ -16,7 +16,7 @@ class RecordingDirectory extends RecordingFileSystemEntity<Directory>
     implements Directory {
   /// Creates a new `RecordingDirectory`.
   RecordingDirectory(RecordingFileSystem fileSystem, io.Directory delegate)
-      : super(fileSystem, delegate) {
+      : super(fileSystem as RecordingFileSystemImpl, delegate as Directory) {
     methods.addAll(<Symbol, Function>{
       #create: _create,
       #createSync: delegate.createSync,

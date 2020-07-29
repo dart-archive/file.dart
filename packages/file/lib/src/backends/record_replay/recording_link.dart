@@ -15,7 +15,7 @@ import 'recording_file_system_entity.dart';
 class RecordingLink extends RecordingFileSystemEntity<Link> implements Link {
   /// Creates a new `RecordingLink`.
   RecordingLink(RecordingFileSystem fileSystem, io.Link delegate)
-      : super(fileSystem, delegate) {
+      : super(fileSystem as RecordingFileSystemImpl, delegate as Link) {
     methods.addAll(<Symbol, Function>{
       #create: _create,
       #createSync: delegate.createSync,
