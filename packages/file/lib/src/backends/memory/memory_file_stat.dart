@@ -2,6 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+// @dart=2.10
 import 'package:file/src/io.dart' as io;
 
 /// Internal implementation of [io.FileStat].
@@ -16,16 +17,16 @@ class MemoryFileStat implements io.FileStat {
     this.size,
   );
 
-  const MemoryFileStat._internalNotFound()
-      : changed = null,
-        modified = null,
-        accessed = null,
+  MemoryFileStat._internalNotFound()
+      : changed = DateTime(0),
+        modified = DateTime(0),
+        accessed = DateTime(0),
         type = io.FileSystemEntityType.notFound,
         mode = 0,
         size = -1;
 
   /// Shared instance representing a non-existent entity.
-  static const MemoryFileStat notFound = MemoryFileStat._internalNotFound();
+  static final MemoryFileStat notFound = MemoryFileStat._internalNotFound();
 
   @override
   final DateTime changed;

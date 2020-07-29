@@ -16,5 +16,5 @@ elif [[ "$SHARD" == "analyze" ]]; then
 else
   # tests shard
   cd $ROOT/packages/file
-  pub run test -j1 -rexpanded || exit $?
+  pub run --enable-experiment=non-nullable test -j1 -rexpanded || exit $?
 fi

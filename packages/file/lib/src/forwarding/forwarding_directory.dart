@@ -2,6 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+// @dart=2.10
 import 'dart:async';
 
 import 'package:file/src/io.dart' as io;
@@ -22,11 +23,11 @@ abstract class ForwardingDirectory<T extends Directory>
       delegate.createSync(recursive: recursive);
 
   @override
-  Future<Directory> createTemp([String prefix]) async =>
+  Future<Directory> createTemp([String? prefix]) async =>
       wrap(await delegate.createTemp(prefix));
 
   @override
-  Directory createTempSync([String prefix]) =>
+  Directory createTempSync([String? prefix]) =>
       wrap(delegate.createTempSync(prefix));
 
   @override

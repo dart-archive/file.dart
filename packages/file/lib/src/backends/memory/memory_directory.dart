@@ -2,6 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+// @dart=2.10
 import 'dart:async';
 
 import 'package:file/file.dart';
@@ -39,7 +40,7 @@ class MemoryDirectory extends MemoryFileSystemEntity
   }
 
   @override
-  bool existsSync() => backingOrNull?.stat?.type == expectedType;
+  bool existsSync() => backingOrNull?.stat.type == expectedType;
 
   @override
   Future<Directory> create({bool recursive = false}) async {
@@ -66,10 +67,11 @@ class MemoryDirectory extends MemoryFileSystemEntity
   }
 
   @override
-  Future<Directory> createTemp([String prefix]) async => createTempSync(prefix);
+  Future<Directory> createTemp([String? prefix]) async =>
+      createTempSync(prefix);
 
   @override
-  Directory createTempSync([String prefix]) {
+  Directory createTempSync([String? prefix]) {
     prefix = (prefix ?? '') + 'rand';
     String fullPath = fileSystem.path.join(path, prefix);
     String dirname = fileSystem.path.dirname(fullPath);
@@ -142,7 +144,7 @@ class MemoryDirectory extends MemoryFileSystemEntity
         while (followLinks &&
             utils.isLink(child) &&
             breadcrumbs.add(child as LinkNode)) {
-          Node referent = (child as LinkNode).referentOrNull;
+          Node? referent = child.referentOrNull;
           if (referent != null) {
             child = referent;
           }

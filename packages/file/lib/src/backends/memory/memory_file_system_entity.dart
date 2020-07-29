@@ -2,6 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+// @dart=2.10
 import 'dart:async';
 
 import 'package:file/file.dart';
@@ -47,7 +48,7 @@ abstract class MemoryFileSystemEntity implements FileSystemEntity {
   /// Gets the node that backs this file system entity, or null if this
   /// entity does not exist.
   @protected
-  Node get backingOrNull {
+  Node? get backingOrNull {
     try {
       return fileSystem.findNode(path);
     } on io.FileSystemException {
@@ -61,9 +62,9 @@ abstract class MemoryFileSystemEntity implements FileSystemEntity {
   /// The type of the node is not guaranteed to match [expectedType].
   @protected
   Node get backing {
-    Node node = fileSystem.findNode(path);
+    Node? node = fileSystem.findNode(path);
     checkExists(node, () => path);
-    return node;
+    return node!;
   }
 
   /// Gets the node that backs this file system entity, or if that node is
@@ -112,7 +113,7 @@ abstract class MemoryFileSystemEntity implements FileSystemEntity {
     if (isAbsolute) {
       ledger.add(fileSystem.style.drive);
     }
-    Node node = fileSystem.findNode(path,
+    Node? node = fileSystem.findNode(path,
         pathWithSymlinks: ledger, followTailLink: true);
     checkExists(node, () => path);
     String resolved = ledger.join(fileSystem.path.separator);
@@ -182,7 +183,7 @@ abstract class MemoryFileSystemEntity implements FileSystemEntity {
   /// resolve it to its target prior to returning it.
   @protected
   Node internalCreateSync({
-    Node createChild(DirectoryNode parent, bool isFinalSegment),
+    required Node? createChild(DirectoryNode parent, bool isFinalSegment),
     bool followTailLink = false,
     bool visitLinks = false,
   }) {
@@ -193,7 +194,7 @@ abstract class MemoryFileSystemEntity implements FileSystemEntity {
       segmentVisitor: (
         DirectoryNode parent,
         String childName,
-        Node child,
+        Node? child,
         int currentSegment,
         int finalSegment,
       ) {
@@ -204,9 +205,9 @@ abstract class MemoryFileSystemEntity implements FileSystemEntity {
             parent.children[childName] = child;
           }
         }
-        return child;
+        return child!;
       },
-    );
+    ) as Node;
   }
 
   /// Helper method for subclasses wishing to synchronously rename this entity.
@@ -238,9 +239,9 @@ abstract class MemoryFileSystemEntity implements FileSystemEntity {
   @protected
   FileSystemEntity internalRenameSync<T extends Node>(
     String newPath, {
-    RenameOverwriteValidator<T> validateOverwriteExistingEntity,
+    RenameOverwriteValidator<T>? validateOverwriteExistingEntity,
     bool followTailLink = false,
-    utils.TypeChecker checkType,
+    utils.TypeChecker? checkType,
   }) {
     Node node = backing;
     (checkType ?? defaultCheckType)(node);
@@ -249,7 +250,7 @@ abstract class MemoryFileSystemEntity implements FileSystemEntity {
       segmentVisitor: (
         DirectoryNode parent,
         String childName,
-        Node child,
+        Node? child,
         int currentSegment,
         int finalSegment,
       ) {
@@ -272,7 +273,7 @@ abstract class MemoryFileSystemEntity implements FileSystemEntity {
           parent.children[childName] = node;
           node.parent = parent;
         }
-        return child;
+        return child!;
       },
     );
     return clone(newPath);
@@ -286,7 +287,7 @@ abstract class MemoryFileSystemEntity implements FileSystemEntity {
   @protected
   void internalDeleteSync({
     bool recursive = false,
-    utils.TypeChecker checkType,
+    utils.TypeChecker? checkType,
   }) {
     Node node = backing;
     if (!recursive) {
