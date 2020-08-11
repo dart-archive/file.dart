@@ -13,9 +13,9 @@ import 'common_tests.dart';
 
 void main() {
   group('LocalFileSystem', () {
-    LocalFileSystem fs;
-    io.Directory tmp;
-    String cwd;
+    late LocalFileSystem fs;
+    late io.Directory tmp;
+    late String cwd;
 
     setUp(() {
       fs = const LocalFileSystem();

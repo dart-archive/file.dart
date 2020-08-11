@@ -1,4 +1,4 @@
-#### 6.0.0-nullsafety
+#### 6.0.0-nullsafety.1
 
 * Update to null safety.
 * Remove record/replay functionality.

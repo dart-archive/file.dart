@@ -12,7 +12,7 @@ import 'common_tests.dart';
 
 void main() {
   group('MemoryFileSystem unix style', () {
-    MemoryFileSystem fs;
+    late MemoryFileSystem fs;
 
     setUp(() {
       fs = MemoryFileSystem();
@@ -36,7 +36,7 @@ void main() {
   });
 
   group('MemoryFileSystem windows style', () {
-    MemoryFileSystem fs;
+    late MemoryFileSystem fs;
 
     setUp(() {
       fs = MemoryFileSystem(style: FileSystemStyle.windows);

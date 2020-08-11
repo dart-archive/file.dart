@@ -11,7 +11,7 @@ const Duration _oneSecond = Duration(seconds: 1);
 /// milliseconds and microseconds from the specified [time].
 ///
 /// If [time] is not specified, it will default to the current time.
-DateTime floor([DateTime time]) {
+DateTime floor([DateTime? time]) {
   time ??= DateTime.now();
   return time.subtract(Duration(
     milliseconds: time.millisecond,
@@ -23,7 +23,7 @@ DateTime floor([DateTime time]) {
 /// nearest second if necessary.
 ///
 /// If [time] is not specified, it will default to the current time.
-DateTime ceil([DateTime time]) {
+DateTime ceil([DateTime? time]) {
   time ??= DateTime.now();
   int microseconds = (1000 * time.millisecond) + time.microsecond;
   return (microseconds == 0)
@@ -34,7 +34,7 @@ DateTime ceil([DateTime time]) {
 
 /// Returns 1 second before the [floor] of the specified [DateTime].
 // TODO(jamesderlin): Remove this and use [floor], https://github.com/dart-lang/sdk/issues/42444
-DateTime downstairs([DateTime time]) => floor(time).subtract(_oneSecond);
+DateTime downstairs([DateTime? time]) => floor(time).subtract(_oneSecond);
 
 /// Successfully matches against a [DateTime] that is the same moment or before
 /// the specified [time].
