@@ -11,4 +11,4 @@ install:
 build: off
 
 test_script:
-  - pub run --enable-experiment=non-nullable test -j1
+  - pub run test -j1
