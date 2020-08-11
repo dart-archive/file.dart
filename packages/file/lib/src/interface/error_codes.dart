@@ -2,7 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-// @dart=2.10
 import 'error_codes_internal.dart'
     if (dart.library.io) 'error_codes_dart_io.dart';
 
