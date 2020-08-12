@@ -1,4 +1,4 @@
-# file_testing
+[![pub package](https://img.shields.io/pub/v/file_testing.svg)](https://pub.dev/packages/file_testing)
 
 Testing utilities intended to work with `package:file`
 
@@ -11,22 +11,28 @@ system types.
 
 ```dart
 import 'package:file/file.dart';
+import 'package:file/memory.dart';
 import 'package:file_testing/file_testing.dart';
 import 'package:test/test.dart';
 
-test('some test', () {
+void main() {
   MemoryFileSystem fs;
 
   setUp(() {
-    fs = new MemoryFileSystem();
+    fs = MemoryFileSystem();
     fs.file('/foo').createSync();
   });
 
-  expectFileSystemException(ErrorCodes.ENOENT, () {
-    fs.directory('').resolveSymbolicLinksSync();
+  test('some test', () {
+    expectFileSystemException(
+      ErrorCodes.ENOENT,
+      () {
+        fs.directory('').resolveSymbolicLinksSync();
+      },
+    );
+    expect(fs.file('/path/to/file'), isFile);
+    expect(fs.file('/path/to/directory'), isDirectory);
+    expect(fs.file('/foo'), exists);
   });
-  expect(fs.file('/path/to/file'), isFile);
-  expect(fs.file('/path/to/directory'), isDirectory);
-  expect(fs.file('/foo'), exists);
-});
+}
 ```
