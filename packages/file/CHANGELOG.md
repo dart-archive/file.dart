@@ -1,8 +1,14 @@
+#### 6.0.0-nullsafety.2
+
+* Make `ForwardingFile.openRead`'s return type again match the return type from
+  `dart:io`.
+* Remove some unnecessary `Uint8List` conversions in `ForwardingFile`.
+
 #### 6.0.0-nullsafety.1
 
 * Update to null safety.
 * Remove record/replay functionality.
-* Made `MemoryRandomAccessFile` and `MemoryFile.openWrite` handle the file.
+* Made `MemoryRandomAccessFile` and `MemoryFile.openWrite` handle the file
   being removed or renamed while open.
 * Fixed incorrect formatting in `NoMatchingInvocationError.toString()`.
 * Fixed more test flakiness.

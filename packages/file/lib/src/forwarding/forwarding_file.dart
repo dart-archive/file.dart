@@ -64,7 +64,7 @@ abstract class ForwardingFile
   @override
   Future<RandomAccessFile> open({
     FileMode mode = FileMode.read,
-  }) async =>
+  }) =>
       delegate.open(mode: mode);
 
   @override
@@ -72,10 +72,8 @@ abstract class ForwardingFile
       delegate.openSync(mode: mode);
 
   @override
-  Stream<Uint8List> openRead([int? start, int? end]) => delegate
-      .openRead(start, end)
-      .cast<List<int>>()
-      .transform(const _ToUint8List());
+  Stream<List<int>> openRead([int? start, int? end]) =>
+      delegate.openRead(start, end);
 
   @override
   IOSink openWrite({
@@ -85,14 +83,10 @@ abstract class ForwardingFile
       delegate.openWrite(mode: mode, encoding: encoding);
 
   @override
-  Future<Uint8List> readAsBytes() {
-    return delegate.readAsBytes().then<Uint8List>((List<int> bytes) {
-      return Uint8List.fromList(bytes);
-    });
-  }
+  Future<Uint8List> readAsBytes() => delegate.readAsBytes();
 
   @override
-  Uint8List readAsBytesSync() => Uint8List.fromList(delegate.readAsBytesSync());
+  Uint8List readAsBytesSync() => delegate.readAsBytesSync();
 
   @override
   Future<String> readAsString({Encoding encoding = utf8}) =>
@@ -157,32 +151,4 @@ abstract class ForwardingFile
         encoding: encoding,
         flush: flush,
       );
-}
-
-class _ToUint8List extends Converter<List<int>, Uint8List> {
-  const _ToUint8List();
-
-  @override
-  Uint8List convert(List<int> input) => Uint8List.fromList(input);
-
-  @override
-  Sink<List<int>> startChunkedConversion(Sink<Uint8List> sink) {
-    return _Uint8ListConversionSink(sink);
-  }
-}
-
-class _Uint8ListConversionSink implements Sink<List<int>> {
-  const _Uint8ListConversionSink(this._target);
-
-  final Sink<Uint8List> _target;
-
-  @override
-  void add(List<int> data) {
-    _target.add(Uint8List.fromList(data));
-  }
-
-  @override
-  void close() {
-    _target.close();
-  }
 }
