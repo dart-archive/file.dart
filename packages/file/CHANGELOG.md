@@ -1,3 +1,7 @@
+#### 6.0.0-nullsafety.3
+
+* Update upper bound of SDK constraint.
+
 #### 6.0.0-nullsafety.2
 
 * Make `ForwardingFile.openRead`'s return type again match the return type from
