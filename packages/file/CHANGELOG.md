@@ -1,3 +1,7 @@
+#### 6.0.0-nullsafety.4
+
+* Update upper bound of SDK constraint.
+
 #### 6.0.0-nullsafety.3
 
 * Update upper bound of SDK constraint.
