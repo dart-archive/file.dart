@@ -242,11 +242,13 @@ class _ChrootFile extends _ChrootFileSystemEntity<File, io.File>
   Future<RandomAccessFile> open({
     FileMode mode = FileMode.read,
   }) async =>
-      getDelegate(followLinks: true).open(mode: mode);
+      _ChrootRandomAccessFile(
+          path, await getDelegate(followLinks: true).open(mode: mode));
 
   @override
   RandomAccessFile openSync({FileMode mode = FileMode.read}) =>
-      getDelegate(followLinks: true).openSync(mode: mode);
+      _ChrootRandomAccessFile(
+          path, getDelegate(followLinks: true).openSync(mode: mode));
 
   @override
   Stream<Uint8List> openRead([int? start, int? end]) =>
