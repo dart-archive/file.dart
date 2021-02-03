@@ -1,3 +1,7 @@
+#### 6.0.0
+
+* First stable null safe release.
+
 #### 6.0.0-nullsafety.4
 
 * Update upper bound of SDK constraint.
