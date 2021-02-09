@@ -2,7 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-// @dart = 2.8
 @TestOn('vm')
 import 'dart:async';
 import 'dart:convert';
@@ -51,18 +50,18 @@ typedef SetUpTearDown = dynamic Function();
 /// the invocation(s) must first be made.
 void runCommonTests(
   FileSystemGenerator createFileSystem, {
-  RootPathGenerator root,
+  RootPathGenerator? root,
   List<String> skip = const <String>[],
-  FileSystemGenerator replay,
+  FileSystemGenerator? replay,
 }) {
-  RootPathGenerator rootfn = root;
+  RootPathGenerator? rootfn = root;
 
   group('common', () {
-    FileSystemGenerator createFs;
-    List<SetUpTearDown> setUps;
-    List<SetUpTearDown> tearDowns;
-    FileSystem fs;
-    String root;
+    late FileSystemGenerator createFs;
+    late List<SetUpTearDown> setUps;
+    late List<SetUpTearDown> tearDowns;
+    late FileSystem fs;
+    late String root;
 
     List<String> stack = <String>[];
 
@@ -80,8 +79,6 @@ void runCommonTests(
       createFs = createFileSystem;
       setUps = <SetUpTearDown>[];
       tearDowns = <SetUpTearDown>[];
-      fs = null;
-      root = null;
     });
 
     void setUp(FutureOr<void> callback()) {
@@ -990,7 +987,7 @@ void runCommonTests(
       });
 
       group('parent', () {
-        String root;
+        late String root;
 
         setUp(() {
           root = fs.path.style.name == 'windows' ? r'C:\' : '/';
@@ -1052,7 +1049,7 @@ void runCommonTests(
       });
 
       group('list', () {
-        Directory dir;
+        late Directory dir;
 
         setUp(() {
           dir = fs.currentDirectory = fs.directory(ns('/foo'))..createSync();
@@ -1722,8 +1719,8 @@ void runCommonTests(
 
         void testRandomAccessFileOperations(FileMode mode) {
           group('RandomAccessFile', () {
-            File f;
-            RandomAccessFile raf;
+            late File f;
+            late RandomAccessFile raf;
 
             setUp(() {
               f = fs.file(ns('/foo'))..createSync();
@@ -1805,7 +1802,7 @@ void runCommonTests(
 
               test('throwsIfReadInto', () {
                 expectFileSystemException(ErrorCodes.EBADF, () {
-                  raf.readIntoSync(List<int>(5));
+                  raf.readIntoSync(<int>[]);
                 });
               });
             } else {
@@ -1830,7 +1827,7 @@ void runCommonTests(
                 });
 
                 test('readIntoWithBufferLargerThanContent', () {
-                  List<int> buffer = List<int>(1024);
+                  List<int> buffer = List<int>.filled(1024, 0);
                   int numRead = raf.readIntoSync(buffer);
                   expect(numRead, 21);
                   expect(utf8.decode(buffer.sublist(0, 21)),
@@ -1838,21 +1835,21 @@ void runCommonTests(
                 });
 
                 test('readIntoWithBufferSmallerThanContent', () {
-                  List<int> buffer = List<int>(10);
+                  List<int> buffer = List<int>.filled(10, 0);
                   int numRead = raf.readIntoSync(buffer);
                   expect(numRead, 10);
                   expect(utf8.decode(buffer), 'pre-existi');
                 });
 
                 test('readIntoWithStart', () {
-                  List<int> buffer = List<int>(10);
+                  List<int> buffer = List<int>.filled(10, 0);
                   int numRead = raf.readIntoSync(buffer, 2);
                   expect(numRead, 8);
                   expect(utf8.decode(buffer.sublist(2)), 'pre-exis');
                 });
 
                 test('readIntoWithStartAndEnd', () {
-                  List<int> buffer = List<int>(10);
+                  List<int> buffer = List<int>.filled(10, 0);
                   int numRead = raf.readIntoSync(buffer, 2, 5);
                   expect(numRead, 3);
                   expect(utf8.decode(buffer.sublist(2, 5)), 'pre');
@@ -2201,8 +2198,8 @@ void runCommonTests(
           f.writeAsBytesSync(data, flush: true);
           final Stream<List<int>> stream = f.openRead();
 
-          File newFile;
-          List<int> initialChunk;
+          late File newFile;
+          List<int>? initialChunk;
           final List<int> remainingChunks = <int>[];
 
           await for (List<int> chunk in stream) {
@@ -2219,7 +2216,7 @@ void runCommonTests(
 
           expect(
             remainingChunks,
-            data.getRange(initialChunk.length, data.length),
+            data.getRange(initialChunk!.length, data.length),
           );
 
           assert(newFile.path != f.path);
@@ -2310,9 +2307,9 @@ void runCommonTests(
         });
 
         group('ioSink', () {
-          File f;
-          IOSink sink;
-          bool isSinkClosed;
+          late File f;
+          late IOSink sink;
+          late bool isSinkClosed;
 
           Future<dynamic> closeSink() {
             Future<dynamic> future = sink.close();
@@ -2336,11 +2333,6 @@ void runCommonTests(
             sink.addError(ArgumentError());
             expect(sink.done, throwsArgumentError);
             isSinkClosed = true;
-          });
-
-          test('throwsIfEncodingIsNullAndWriteObject', () async {
-            sink.encoding = null;
-            expect(() => sink.write('Hello world'), throwsNoSuchMethodError);
           });
 
           test('allowsChangingEncoding', () async {
@@ -2408,8 +2400,8 @@ void runCommonTests(
           });
 
           group('addStream', () {
-            StreamController<List<int>> controller;
-            bool isControllerClosed;
+            late StreamController<List<int>> controller;
+            late bool isControllerClosed;
 
             Future<dynamic> closeController() {
               Future<dynamic> future = controller.close();
@@ -2551,13 +2543,6 @@ void runCommonTests(
         test('returnsEmptyStringForZeroByteFile', () {
           File f = fs.file(ns('/foo'))..createSync();
           expect(f.readAsStringSync(), isEmpty);
-        });
-
-        test('throwsIfEncodingIsNull', () {
-          File f = fs.file(ns('/foo'))..createSync();
-          f.writeAsStringSync('Hello world');
-          expect(() => f.readAsStringSync(encoding: null),
-              throwsNoSuchMethodError);
         });
       });
 
@@ -2755,12 +2740,6 @@ void runCommonTests(
           File f = fs.file(ns('/foo'))..createSync();
           f.writeAsStringSync('');
           expect(f.readAsStringSync(), isEmpty);
-        });
-
-        test('throwsIfNullEncoding', () {
-          File f = fs.file(ns('/foo'))..createSync();
-          expect(() => f.writeAsStringSync('Hello world', encoding: null),
-              throwsNoSuchMethodError);
         });
       });
 

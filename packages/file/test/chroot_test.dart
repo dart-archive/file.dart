@@ -2,7 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-// @dart = 2.8
 @TestOn('vm')
 import 'dart:io' as io;
 
@@ -35,8 +34,8 @@ void main() {
     });
 
     group('localBacked', () {
-      ChrootFileSystem fs;
-      io.Directory tmp;
+      late ChrootFileSystem fs;
+      late io.Directory tmp;
 
       setUp(() {
         tmp = io.Directory.systemTemp.createTempSync('file_test_');
@@ -63,8 +62,8 @@ void main() {
     }, skip: io.Platform.isWindows);
 
     group('chrootSpecific', () {
-      ChrootFileSystem fs;
-      MemoryFileSystem mem;
+      late ChrootFileSystem fs;
+      late MemoryFileSystem mem;
 
       setUp(() {
         fs = createMemoryBackedChrootFileSystem();
