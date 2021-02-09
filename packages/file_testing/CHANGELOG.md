@@ -1,3 +1,7 @@
+#### 3.0.0
+
+* Migrate to null safety.
+
 #### 2.2.0
 
 * Change dependency on `package:test_api` back to `package:test`.

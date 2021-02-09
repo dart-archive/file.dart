@@ -73,9 +73,9 @@ class _FileSystemException extends Matcher {
   _FileSystemException(dynamic osErrorCode)
       : _matcher = _wrapMatcher(osErrorCode);
 
-  final Matcher _matcher;
+  final Matcher? _matcher;
 
-  static Matcher _wrapMatcher(dynamic osErrorCode) {
+  static Matcher? _wrapMatcher(dynamic osErrorCode) {
     if (osErrorCode == null) {
       return null;
     }
@@ -86,7 +86,7 @@ class _FileSystemException extends Matcher {
   bool matches(dynamic item, Map<dynamic, dynamic> matchState) {
     if (item is FileSystemException) {
       return _matcher == null ||
-          _matcher.matches(item.osError?.errorCode, matchState);
+          _matcher!.matches(item.osError?.errorCode, matchState);
     }
     return false;
   }
@@ -97,7 +97,7 @@ class _FileSystemException extends Matcher {
       return desc.add('FileSystemException');
     } else {
       desc.add('FileSystemException with osError.errorCode: ');
-      return _matcher.describe(desc);
+      return _matcher!.describe(desc);
     }
   }
 }
