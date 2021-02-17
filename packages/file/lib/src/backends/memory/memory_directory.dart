@@ -73,9 +73,9 @@ class MemoryDirectory extends MemoryFileSystemEntity
     String fullPath = fileSystem.path.join(path, prefix);
     String dirname = fileSystem.path.dirname(fullPath);
     String basename = fileSystem.path.basename(fullPath);
-    DirectoryNode node = fileSystem.findNode(dirname) as DirectoryNode;
+    DirectoryNode? node = fileSystem.findNode(dirname) as DirectoryNode?;
     checkExists(node, () => dirname);
-    utils.checkIsDir(node, () => dirname);
+    utils.checkIsDir(node!, () => dirname);
     int _tempCounter = _systemTempCounter[fileSystem] ?? 0;
     String name() => '$basename$_tempCounter';
     while (node.children.containsKey(name())) {

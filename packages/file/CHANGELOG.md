@@ -1,3 +1,7 @@
+#### 6.0.1
+
+* Fix sound type error in memory backend when reading non-existent `MemoryDirectory`.
+
 #### 6.0.0
 
 * First stable null safe release.
