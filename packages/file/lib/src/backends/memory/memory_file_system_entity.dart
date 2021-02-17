@@ -10,6 +10,7 @@ import 'package:meta/meta.dart';
 import 'common.dart';
 import 'memory_directory.dart';
 import 'node.dart';
+import 'operations.dart';
 import 'style.dart';
 import 'utils.dart' as utils;
 
@@ -286,6 +287,7 @@ abstract class MemoryFileSystemEntity implements FileSystemEntity {
     bool recursive = false,
     utils.TypeChecker? checkType,
   }) {
+    fileSystem.opHandle(path, FileSystemOp.delete);
     Node node = backing;
     if (!recursive) {
       if (node is DirectoryNode && node.children.isNotEmpty) {

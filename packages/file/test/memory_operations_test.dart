@@ -13,8 +13,10 @@ void main() {
     List<FileSystemOp> operations = <FileSystemOp>[];
     MemoryFileSystem fs = MemoryFileSystem.test(
         opHandle: (String context, FileSystemOp operation) {
-      contexts.add(context);
-      operations.add(operation);
+      if (operation == FileSystemOp.read) {
+        contexts.add(context);
+        operations.add(operation);
+      }
     });
     final File file = fs.file('test')..createSync();
 
@@ -37,8 +39,10 @@ void main() {
     List<FileSystemOp> operations = <FileSystemOp>[];
     MemoryFileSystem fs = MemoryFileSystem.test(
         opHandle: (String context, FileSystemOp operation) {
-      contexts.add(context);
-      operations.add(operation);
+      if (operation == FileSystemOp.write) {
+        contexts.add(context);
+        operations.add(operation);
+      }
     });
     final File file = fs.file('test')..createSync();
 
@@ -56,12 +60,83 @@ void main() {
     ]);
   });
 
-  test('Failed UTF8 decoding in MemoryFileSystem throws a FileSystemException',
-      () {
-    final MemoryFileSystem fileSystem = MemoryFileSystem.test();
-    final File file = fileSystem.file('foo')
-      ..writeAsBytesSync(<int>[0xFFFE]); // Invalid UTF8
+  test('Delete operations invoke opHandle', () async {
+    List<String> contexts = <String>[];
+    List<FileSystemOp> operations = <FileSystemOp>[];
+    MemoryFileSystem fs = MemoryFileSystem.test(
+        opHandle: (String context, FileSystemOp operation) {
+      if (operation == FileSystemOp.delete) {
+        contexts.add(context);
+        operations.add(operation);
+      }
+    });
+    final File file = fs.file('test')..createSync();
+    final Directory directory = fs.directory('testDir')..createSync();
+    final Link link = fs.link('testLink')..createSync('foo');
 
-    expect(file.readAsStringSync, throwsA(isA<FileSystemException>()));
+    await file.delete();
+    file.createSync();
+    file.deleteSync();
+
+    await directory.delete();
+    directory.createSync();
+    directory.deleteSync();
+
+    await link.delete();
+    link.createSync('foo');
+    link.deleteSync();
+
+    expect(contexts,
+        <String>['test', 'test', 'testDir', 'testDir', 'testLink', 'testLink']);
+    expect(operations, <FileSystemOp>[
+      FileSystemOp.delete,
+      FileSystemOp.delete,
+      FileSystemOp.delete,
+      FileSystemOp.delete,
+      FileSystemOp.delete,
+      FileSystemOp.delete,
+    ]);
+  });
+
+  test('Create operations invoke opHandle', () async {
+    List<String> contexts = <String>[];
+    List<FileSystemOp> operations = <FileSystemOp>[];
+    MemoryFileSystem fs = MemoryFileSystem.test(
+        opHandle: (String context, FileSystemOp operation) {
+      if (operation == FileSystemOp.create) {
+        contexts.add(context);
+        operations.add(operation);
+      }
+    });
+    fs.file('testA').createSync();
+    await fs.file('testB').create();
+    fs.directory('testDirA').createSync();
+    await fs.directory('testDirB').create();
+    fs.link('testLinkA').createSync('foo');
+    await fs.link('testLinkB').create('foo');
+
+    expect(contexts, <String>[
+      'testA',
+      'testB',
+      'testDirA',
+      'testDirB',
+      'testLinkA',
+      'testLinkB'
+    ]);
+    expect(operations, <FileSystemOp>[
+      FileSystemOp.create,
+      FileSystemOp.create,
+      FileSystemOp.create,
+      FileSystemOp.create,
+      FileSystemOp.create,
+      FileSystemOp.create,
+    ]);
+  });
+
+  test('FileSystemOp toString', () {
+    expect(FileSystemOp.create.toString(), 'FileSystemOp.create');
+    expect(FileSystemOp.delete.toString(), 'FileSystemOp.delete');
+    expect(FileSystemOp.read.toString(), 'FileSystemOp.read');
+    expect(FileSystemOp.write.toString(), 'FileSystemOp.write');
   });
 }

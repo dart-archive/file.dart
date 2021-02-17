@@ -52,6 +52,7 @@ class MemoryFile extends MemoryFileSystemEntity implements File {
 
   @override
   void createSync({bool recursive = false}) {
+    fileSystem.opHandle(path, FileSystemOp.create);
     _doCreate(recursive: recursive);
   }
 

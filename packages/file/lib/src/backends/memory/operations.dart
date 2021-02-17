@@ -5,8 +5,8 @@
 /// A file system operation used by the [MemoryFileSytem] to allow
 /// tests to insert errors for certain operations.
 ///
-/// This is not backed as an enum to avoid breaking changes when adding new
-/// types.
+/// This is not implemented as an enum to allow new values to be added in a
+/// backwards compatible manner.
 class FileSystemOp {
   const FileSystemOp._(this._value);
 
@@ -29,4 +29,32 @@ class FileSystemOp {
   /// * [FileSystemEntity.writeAsBytes]
   /// * [FileSystemEntity.writeAsBytesSync]
   static const FileSystemOp write = FileSystemOp._(1);
+
+  /// A file system operation used for all delete methods.
+  ///
+  /// * [FileSystemEntity.delete]
+  /// * [FileSystemEntity.deleteSync]
+  static const FileSystemOp delete = FileSystemOp._(2);
+
+  /// A file system operation used for all create methods.
+  ///
+  /// * [FileSystemEntity.create]
+  /// * [FileSystemEntity.createSync]
+  static const FileSystemOp create = FileSystemOp._(3);
+
+  @override
+  String toString() {
+    switch (_value) {
+      case 0:
+        return 'FileSystemOp.read';
+      case 1:
+        return 'FileSystemOp.write';
+      case 2:
+        return 'FileSystemOp.delete';
+      case 3:
+        return 'FileSystemOp.create';
+      default:
+        throw StateError('Invalid FileSytemOp type: $this');
+    }
+  }
 }
