@@ -86,7 +86,8 @@ class MemoryDirectory extends MemoryFileSystemEntity
     _systemTempCounter[fileSystem] = _tempCounter;
     DirectoryNode tempDir = DirectoryNode(node);
     node.children[name()] = tempDir;
-    return MemoryDirectory(fileSystem, fileSystem.path.join(dirname, name()));
+    return MemoryDirectory(fileSystem, fileSystem.path.join(dirname, name()))
+      ..createSync();
   }
 
   @override

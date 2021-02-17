@@ -114,16 +114,22 @@ void main() {
     await fs.directory('testDirB').create();
     fs.link('testLinkA').createSync('foo');
     await fs.link('testLinkB').create('foo');
+    fs.currentDirectory.createTempSync('tmp.bar');
+    await fs.currentDirectory.createTemp('tmp.bar');
 
-    expect(contexts, <String>[
+    expect(contexts, <dynamic>[
       'testA',
       'testB',
       'testDirA',
       'testDirB',
       'testLinkA',
-      'testLinkB'
+      'testLinkB',
+      startsWith('/tmp.bar'),
+      startsWith('/tmp.bar'),
     ]);
     expect(operations, <FileSystemOp>[
+      FileSystemOp.create,
+      FileSystemOp.create,
       FileSystemOp.create,
       FileSystemOp.create,
       FileSystemOp.create,

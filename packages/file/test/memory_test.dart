@@ -141,4 +141,11 @@ void main() {
 
     expect(file.readAsStringSync, throwsA(isA<FileSystemException>()));
   });
+
+  test('Creating a temporary directory actually creates the directory', () {
+    final MemoryFileSystem fileSystem = MemoryFileSystem.test();
+    final Directory tempDir = fileSystem.currentDirectory.createTempSync('foo');
+
+    expect(tempDir.existsSync(), true);
+  });
 }
