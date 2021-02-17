@@ -8,6 +8,7 @@ import 'dart:math' as math show min;
 import 'dart:typed_data';
 
 import 'package:file/file.dart';
+import 'package:file/src/backends/memory/operations.dart';
 import 'package:file/src/common.dart' as common;
 import 'package:file/src/io.dart' as io;
 import 'package:meta/meta.dart';
@@ -219,16 +220,23 @@ class MemoryFile extends MemoryFileSystemEntity implements File {
   Future<Uint8List> readAsBytes() async => readAsBytesSync();
 
   @override
-  Uint8List readAsBytesSync() =>
-      Uint8List.fromList((resolvedBacking as FileNode).content);
+  Uint8List readAsBytesSync() {
+    fileSystem.opHandle(path, FileSystemOp.read);
+    return Uint8List.fromList((resolvedBacking as FileNode).content);
+  }
 
   @override
   Future<String> readAsString({Encoding encoding = utf8}) async =>
       readAsStringSync(encoding: encoding);
 
   @override
-  String readAsStringSync({Encoding encoding = utf8}) =>
-      encoding.decode(readAsBytesSync());
+  String readAsStringSync({Encoding encoding = utf8}) {
+    try {
+      return encoding.decode(readAsBytesSync());
+    } on FormatException catch (err) {
+      throw FileSystemException(err.message, path);
+    }
+  }
 
   @override
   Future<List<String>> readAsLines({Encoding encoding = utf8}) async =>
@@ -272,6 +280,7 @@ class MemoryFile extends MemoryFileSystemEntity implements File {
     }
     FileNode node = _resolvedBackingOrCreate;
     _truncateIfNecessary(node, mode);
+    fileSystem.opHandle(path, FileSystemOp.write);
     node.write(bytes);
     node.touch();
   }

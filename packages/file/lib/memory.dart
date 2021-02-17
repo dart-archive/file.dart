@@ -5,3 +5,4 @@
 /// An implementation of `FileSystem` that exists entirely in memory with an
 /// internal representation loosely based on the Filesystem Hierarchy Standard.
 export 'src/backends/memory.dart';
+export 'src/backends/memory/operations.dart';
