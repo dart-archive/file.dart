@@ -11,7 +11,8 @@ void main() {
   test('Read operations invoke opHandle', () async {
     List<String> contexts = <String>[];
     List<FileSystemOp> operations = <FileSystemOp>[];
-    MemoryFileSystem fs = MemoryFileSystem.test(opHandle: (String context, FileSystemOp operation) {
+    MemoryFileSystem fs = MemoryFileSystem.test(
+        opHandle: (String context, FileSystemOp operation) {
       contexts.add(context);
       operations.add(operation);
     });
@@ -23,13 +24,19 @@ void main() {
     file.readAsStringSync();
 
     expect(contexts, <String>['test', 'test', 'test', 'test']);
-    expect(operations, <FileSystemOp>[FileSystemOp.read, FileSystemOp.read, FileSystemOp.read, FileSystemOp.read]);
+    expect(operations, <FileSystemOp>[
+      FileSystemOp.read,
+      FileSystemOp.read,
+      FileSystemOp.read,
+      FileSystemOp.read
+    ]);
   });
 
   test('Write operations invoke opHandle', () async {
     List<String> contexts = <String>[];
     List<FileSystemOp> operations = <FileSystemOp>[];
-    MemoryFileSystem fs = MemoryFileSystem.test(opHandle: (String context, FileSystemOp operation) {
+    MemoryFileSystem fs = MemoryFileSystem.test(
+        opHandle: (String context, FileSystemOp operation) {
       contexts.add(context);
       operations.add(operation);
     });
@@ -41,12 +48,19 @@ void main() {
     file.writeAsStringSync('');
 
     expect(contexts, <String>['test', 'test', 'test', 'test']);
-    expect(operations, <FileSystemOp>[FileSystemOp.write, FileSystemOp.write, FileSystemOp.write, FileSystemOp.write]);
+    expect(operations, <FileSystemOp>[
+      FileSystemOp.write,
+      FileSystemOp.write,
+      FileSystemOp.write,
+      FileSystemOp.write
+    ]);
   });
 
-  test('Failed UTF8 decoding in MemoryFileSystem throws a FileSystemException', () {
+  test('Failed UTF8 decoding in MemoryFileSystem throws a FileSystemException',
+      () {
     final MemoryFileSystem fileSystem = MemoryFileSystem.test();
-    final File file = fileSystem.file('foo')..writeAsBytesSync(<int>[0xFFFE]); // Invalid UTF8
+    final File file = fileSystem.file('foo')
+      ..writeAsBytesSync(<int>[0xFFFE]); // Invalid UTF8
 
     expect(file.readAsStringSync, throwsA(isA<FileSystemException>()));
   });

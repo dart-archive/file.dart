@@ -20,7 +20,7 @@ import 'utils.dart' as utils;
 const String _thisDir = '.';
 const String _parentDir = '..';
 
-void _defaultOpHandle(String context, FileSystemOp operation) { }
+void _defaultOpHandle(String context, FileSystemOp operation) {}
 
 /// An implementation of [FileSystem] that exists entirely in memory with an
 /// internal representation loosely based on the Filesystem Hierarchy Standard.
@@ -44,7 +44,8 @@ abstract class MemoryFileSystem implements StyleableFileSystem {
   /// style. The default is [FileSystemStyle.posix].
   factory MemoryFileSystem({
     FileSystemStyle style = FileSystemStyle.posix,
-    void Function(String context, FileSystemOp operation) opHandle = _defaultOpHandle,
+    void Function(String context, FileSystemOp operation) opHandle =
+        _defaultOpHandle,
   }) =>
       _MemoryFileSystem(
         style: style,
@@ -64,7 +65,8 @@ abstract class MemoryFileSystem implements StyleableFileSystem {
   /// style. The default is [FileSystemStyle.posix].
   factory MemoryFileSystem.test({
     FileSystemStyle style = FileSystemStyle.posix,
-    void Function(String context, FileSystemOp operation) opHandle = _defaultOpHandle,
+    void Function(String context, FileSystemOp operation) opHandle =
+        _defaultOpHandle,
   }) =>
       _MemoryFileSystem(
         style: style,
