@@ -1,3 +1,9 @@
+#### 6.1.0
+
+* Reading invalid UTF8 with the `MemoryFileSystem` now correctly throws a `FileSystemException` instead of a `FormatError`.
+* `MemoryFileSystem` now provides an `opHandle` to inspect read/write operations.
+* `MemoryFileSystem` now creates the tempory directory before returning in `createTemp`/`createTempSync`.
+
 #### 6.0.1
 
 * Fix sound type error in memory backend when reading non-existent `MemoryDirectory`.

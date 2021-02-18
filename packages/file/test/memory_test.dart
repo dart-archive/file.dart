@@ -4,6 +4,7 @@
 
 import 'dart:io' as io;
 
+import 'package:file/file.dart';
 import 'package:file/memory.dart';
 import 'package:file/src/backends/memory/memory_random_access_file.dart';
 import 'package:test/test.dart';
@@ -130,5 +131,21 @@ void main() {
     // Names are recycled with a new instance
     expect(fooAA.path, '/.tmp_rand0/foorand0');
     expect(fooBB.path, '/.tmp_rand0/foorand1');
+  });
+
+  test('Failed UTF8 decoding in MemoryFileSystem throws a FileSystemException',
+      () {
+    final MemoryFileSystem fileSystem = MemoryFileSystem.test();
+    final File file = fileSystem.file('foo')
+      ..writeAsBytesSync(<int>[0xFFFE]); // Invalid UTF8
+
+    expect(file.readAsStringSync, throwsA(isA<FileSystemException>()));
+  });
+
+  test('Creating a temporary directory actually creates the directory', () {
+    final MemoryFileSystem fileSystem = MemoryFileSystem.test();
+    final Directory tempDir = fileSystem.currentDirectory.createTempSync('foo');
+
+    expect(tempDir.existsSync(), true);
   });
 }

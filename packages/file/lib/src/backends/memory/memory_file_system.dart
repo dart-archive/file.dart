@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'package:file/file.dart';
+import 'package:file/src/backends/memory/operations.dart';
 import 'package:file/src/io.dart' as io;
 import 'package:path/path.dart' as p;
 
@@ -18,6 +19,8 @@ import 'utils.dart' as utils;
 
 const String _thisDir = '.';
 const String _parentDir = '..';
+
+void _defaultOpHandle(String context, FileSystemOp operation) {}
 
 /// An implementation of [FileSystem] that exists entirely in memory with an
 /// internal representation loosely based on the Filesystem Hierarchy Standard.
@@ -41,10 +44,13 @@ abstract class MemoryFileSystem implements StyleableFileSystem {
   /// style. The default is [FileSystemStyle.posix].
   factory MemoryFileSystem({
     FileSystemStyle style = FileSystemStyle.posix,
+    void Function(String context, FileSystemOp operation) opHandle =
+        _defaultOpHandle,
   }) =>
       _MemoryFileSystem(
         style: style,
         clock: const Clock.realTime(),
+        opHandle: opHandle,
       );
 
   /// Creates a new `MemoryFileSystem` that has a fake clock.
@@ -59,10 +65,13 @@ abstract class MemoryFileSystem implements StyleableFileSystem {
   /// style. The default is [FileSystemStyle.posix].
   factory MemoryFileSystem.test({
     FileSystemStyle style = FileSystemStyle.posix,
+    void Function(String context, FileSystemOp operation) opHandle =
+        _defaultOpHandle,
   }) =>
       _MemoryFileSystem(
         style: style,
         clock: Clock.monotonicTest(),
+        opHandle: opHandle,
       );
 }
 
@@ -72,14 +81,17 @@ class _MemoryFileSystem extends FileSystem
   _MemoryFileSystem({
     this.style = FileSystemStyle.posix,
     required this.clock,
-  }) {
-    _context = style.contextFor(style.root);
+    this.opHandle = _defaultOpHandle,
+  }) : _context = style.contextFor(style.root) {
     _root = RootNode(this);
   }
 
   RootNode? _root;
   String? _systemTemp;
-  late p.Context _context;
+  p.Context _context;
+
+  @override
+  final Function(String context, FileSystemOp operation) opHandle;
 
   @override
   final Clock clock;

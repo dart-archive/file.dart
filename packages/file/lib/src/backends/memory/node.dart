@@ -5,6 +5,7 @@
 import 'dart:typed_data';
 
 import 'package:file/file.dart';
+import 'package:file/src/backends/memory/operations.dart';
 import 'package:file/src/io.dart' as io;
 
 import 'clock.dart';
@@ -41,6 +42,9 @@ typedef SegmentVisitor = Node? Function(
 /// A [FileSystem] whose internal structure is made up of a tree of [Node]
 /// instances, rooted at a single node.
 abstract class NodeBasedFileSystem implements StyleableFileSystem {
+  /// An optional handle to hook into common file system operations.
+  void Function(String context, FileSystemOp operation) get opHandle;
+
   /// The root node.
   RootNode? get root;
 

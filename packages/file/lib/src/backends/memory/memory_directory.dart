@@ -12,6 +12,7 @@ import 'memory_file.dart';
 import 'memory_file_system_entity.dart';
 import 'memory_link.dart';
 import 'node.dart';
+import 'operations.dart';
 import 'style.dart';
 import 'utils.dart' as utils;
 
@@ -47,6 +48,7 @@ class MemoryDirectory extends MemoryFileSystemEntity
 
   @override
   void createSync({bool recursive = false}) {
+    fileSystem.opHandle(path, FileSystemOp.create);
     Node? node = internalCreateSync(
       followTailLink: true,
       visitLinks: true,
@@ -84,7 +86,8 @@ class MemoryDirectory extends MemoryFileSystemEntity
     _systemTempCounter[fileSystem] = _tempCounter;
     DirectoryNode tempDir = DirectoryNode(node);
     node.children[name()] = tempDir;
-    return MemoryDirectory(fileSystem, fileSystem.path.join(dirname, name()));
+    return MemoryDirectory(fileSystem, fileSystem.path.join(dirname, name()))
+      ..createSync();
   }
 
   @override

@@ -9,6 +9,7 @@ import 'package:meta/meta.dart';
 
 import 'memory_file_system_entity.dart';
 import 'node.dart';
+import 'operations.dart';
 import 'utils.dart' as utils;
 
 /// Internal implementation of [Link].
@@ -47,6 +48,7 @@ class MemoryLink extends MemoryFileSystemEntity implements Link {
   @override
   void createSync(String target, {bool recursive = false}) {
     bool preexisting = true;
+    fileSystem.opHandle(path, FileSystemOp.create);
     internalCreateSync(
         createChild: (DirectoryNode parent, bool isFinalSegment) {
       if (isFinalSegment) {
