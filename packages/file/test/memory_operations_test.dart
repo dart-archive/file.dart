@@ -139,6 +139,54 @@ void main() {
     ]);
   });
 
+  test('Open operations invoke opHandle', () async {
+    List<String> contexts = <String>[];
+    List<FileSystemOp> operations = <FileSystemOp>[];
+    MemoryFileSystem fs = MemoryFileSystem.test(
+        opHandle: (String context, FileSystemOp operation) {
+      if (operation == FileSystemOp.open) {
+        contexts.add(context);
+        operations.add(operation);
+      }
+    });
+    final File file = fs.file('test')..createSync();
+
+    await file.open();
+    file.openSync();
+    file.openRead();
+    file.openWrite();
+
+    expect(contexts, <String>['test', 'test', 'test', 'test']);
+    expect(operations, <FileSystemOp>[
+      FileSystemOp.open,
+      FileSystemOp.open,
+      FileSystemOp.open,
+      FileSystemOp.open,
+    ]);
+  });
+
+  test('Copy operations invoke opHandle', () async {
+    List<String> contexts = <String>[];
+    List<FileSystemOp> operations = <FileSystemOp>[];
+    MemoryFileSystem fs = MemoryFileSystem.test(
+        opHandle: (String context, FileSystemOp operation) {
+      if (operation == FileSystemOp.copy) {
+        contexts.add(context);
+        operations.add(operation);
+      }
+    });
+    final File file = fs.file('test')..createSync();
+
+    await file.copy('A');
+    file.copySync('B');
+
+    expect(contexts, <String>['test', 'test']);
+    expect(operations, <FileSystemOp>[
+      FileSystemOp.copy,
+      FileSystemOp.copy,
+    ]);
+  });
+
   test('FileSystemOp toString', () {
     expect(FileSystemOp.create.toString(), 'FileSystemOp.create');
     expect(FileSystemOp.delete.toString(), 'FileSystemOp.delete');

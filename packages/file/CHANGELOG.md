@@ -1,8 +1,12 @@
+#### 6.1.1
+
+* `MemoryFile` now provides `opHandle`s for copy and open operations.
+
 #### 6.1.0
 
 * Reading invalid UTF8 with the `MemoryFileSystem` now correctly throws a `FileSystemException` instead of a `FormatError`.
 * `MemoryFileSystem` now provides an `opHandle` to inspect read/write operations.
-* `MemoryFileSystem` now creates the tempory directory before returning in `createTemp`/`createTempSync`.
+* `MemoryFileSystem` now creates the temporary directory before returning in `createTemp`/`createTempSync`.
 
 #### 6.0.1
 
