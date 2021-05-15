@@ -98,6 +98,7 @@ class MemoryFile extends MemoryFileSystemEntity implements File {
 
   @override
   File copySync(String newPath) {
+    fileSystem.opHandle(path, FileSystemOp.copy);
     FileNode sourceNode = resolvedBacking as FileNode;
     fileSystem.findNode(
       newPath,
@@ -180,6 +181,7 @@ class MemoryFile extends MemoryFileSystemEntity implements File {
 
   @override
   io.RandomAccessFile openSync({io.FileMode mode = io.FileMode.read}) {
+    fileSystem.opHandle(path, FileSystemOp.open);
     if (utils.isWriteMode(mode) && !existsSync()) {
       // [resolvedBacking] requires that the file already exists, so we must
       // create it here first.
@@ -191,6 +193,7 @@ class MemoryFile extends MemoryFileSystemEntity implements File {
 
   @override
   Stream<Uint8List> openRead([int? start, int? end]) {
+    fileSystem.opHandle(path, FileSystemOp.open);
     try {
       FileNode node = resolvedBacking as FileNode;
       Uint8List content = node.content;
@@ -210,6 +213,7 @@ class MemoryFile extends MemoryFileSystemEntity implements File {
     io.FileMode mode = io.FileMode.write,
     Encoding encoding = utf8,
   }) {
+    fileSystem.opHandle(path, FileSystemOp.open);
     if (!utils.isWriteMode(mode)) {
       throw ArgumentError.value(mode, 'mode',
           'Must be either WRITE, APPEND, WRITE_ONLY, or WRITE_ONLY_APPEND');

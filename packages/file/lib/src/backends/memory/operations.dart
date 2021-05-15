@@ -42,6 +42,20 @@ class FileSystemOp {
   /// * [FileSystemEntity.createSync]
   static const FileSystemOp create = FileSystemOp._(3);
 
+  /// A file operation used for all open methods.
+  ///
+  /// * [File.open]
+  /// * [File.openSync]
+  /// * [File.openRead]
+  /// * [File.openWrite]
+  static const FileSystemOp open = FileSystemOp._(4);
+
+  /// A file operation used for all copy methods.
+  ///
+  /// * [File.copy]
+  /// * [File.copySync]
+  static const FileSystemOp copy = FileSystemOp._(5);
+
   @override
   String toString() {
     switch (_value) {
@@ -53,6 +67,10 @@ class FileSystemOp {
         return 'FileSystemOp.delete';
       case 3:
         return 'FileSystemOp.create';
+      case 4:
+        return 'FileSystemOp.open';
+      case 5:
+        return 'FileSystemOp.copy';
       default:
         throw StateError('Invalid FileSytemOp type: $this');
     }
