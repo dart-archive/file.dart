@@ -192,7 +192,7 @@ void main() {
     List<FileSystemOp> operations = <FileSystemOp>[];
     MemoryFileSystem fs = MemoryFileSystem.test(
         opHandle: (String context, FileSystemOp operation) {
-      if (operation == FileSystemOp.create) {
+      if (operation == FileSystemOp.exists) {
         contexts.add(context);
         operations.add(operation);
       }
