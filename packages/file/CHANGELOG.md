@@ -4,7 +4,7 @@
 
 #### 6.1.1
 
-* `MemoryFileSystem` now provides `opHandle`s for copy and open operations.
+* `MemoryFile` now provides `opHandle`s for copy and open operations.
 
 #### 6.1.0
 
