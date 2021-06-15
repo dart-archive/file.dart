@@ -56,6 +56,12 @@ class FileSystemOp {
   /// * [File.copySync]
   static const FileSystemOp copy = FileSystemOp._(5);
 
+  /// A file system operation used for all exists methods.
+  ///
+  /// * [FileSystemEntity.exists]
+  /// * [FileSystemEntity.existsSync]
+  static const FileSystemOp exists = FileSystemOp._(6);
+
   @override
   String toString() {
     switch (_value) {
@@ -71,6 +77,8 @@ class FileSystemOp {
         return 'FileSystemOp.open';
       case 5:
         return 'FileSystemOp.copy';
+      case 6:
+        return 'FileSystemOp.exists';
       default:
         throw StateError('Invalid FileSytemOp type: $this');
     }

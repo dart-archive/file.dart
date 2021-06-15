@@ -22,7 +22,10 @@ class MemoryLink extends MemoryFileSystemEntity implements Link {
   io.FileSystemEntityType get expectedType => io.FileSystemEntityType.link;
 
   @override
-  bool existsSync() => backingOrNull?.type == expectedType;
+  bool existsSync() {
+    fileSystem.opHandle.call(path, FileSystemOp.exists);
+    return backingOrNull?.type == expectedType;
+  }
 
   @override
   Future<Link> rename(String newPath) async => renameSync(newPath);

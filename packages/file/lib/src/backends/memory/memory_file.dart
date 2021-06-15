@@ -42,7 +42,10 @@ class MemoryFile extends MemoryFileSystemEntity implements File {
   io.FileSystemEntityType get expectedType => io.FileSystemEntityType.file;
 
   @override
-  bool existsSync() => backingOrNull?.stat.type == expectedType;
+  bool existsSync() {
+    fileSystem.opHandle.call(path, FileSystemOp.exists);
+    return backingOrNull?.stat.type == expectedType;
+  }
 
   @override
   Future<File> create({bool recursive = false}) async {

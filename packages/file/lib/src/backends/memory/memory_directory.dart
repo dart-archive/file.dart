@@ -38,7 +38,10 @@ class MemoryDirectory extends MemoryFileSystemEntity
   }
 
   @override
-  bool existsSync() => backingOrNull?.stat.type == expectedType;
+  bool existsSync() {
+    fileSystem.opHandle.call(path, FileSystemOp.exists);
+    return backingOrNull?.stat.type == expectedType;
+  }
 
   @override
   Future<Directory> create({bool recursive = false}) async {

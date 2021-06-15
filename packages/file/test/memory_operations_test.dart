@@ -187,10 +187,46 @@ void main() {
     ]);
   });
 
+  test('Exists operations invoke opHandle', () async {
+    List<String> contexts = <String>[];
+    List<FileSystemOp> operations = <FileSystemOp>[];
+    MemoryFileSystem fs = MemoryFileSystem.test(
+        opHandle: (String context, FileSystemOp operation) {
+      if (operation == FileSystemOp.exists) {
+        contexts.add(context);
+        operations.add(operation);
+      }
+    });
+    fs.file('testA').existsSync();
+    await fs.file('testB').exists();
+    fs.directory('testDirA').existsSync();
+    await fs.directory('testDirB').exists();
+    fs.link('testLinkA').existsSync();
+    await fs.link('testLinkB').exists();
+
+    expect(contexts, <dynamic>[
+      'testA',
+      'testB',
+      'testDirA',
+      'testDirB',
+      'testLinkA',
+      'testLinkB',
+    ]);
+    expect(operations, <FileSystemOp>[
+      FileSystemOp.exists,
+      FileSystemOp.exists,
+      FileSystemOp.exists,
+      FileSystemOp.exists,
+      FileSystemOp.exists,
+      FileSystemOp.exists,
+    ]);
+  });
+
   test('FileSystemOp toString', () {
     expect(FileSystemOp.create.toString(), 'FileSystemOp.create');
     expect(FileSystemOp.delete.toString(), 'FileSystemOp.delete');
     expect(FileSystemOp.read.toString(), 'FileSystemOp.read');
     expect(FileSystemOp.write.toString(), 'FileSystemOp.write');
+    expect(FileSystemOp.exists.toString(), 'FileSystemOp.exists');
   });
 }
