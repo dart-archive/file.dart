@@ -56,7 +56,7 @@ class FileSystemOp {
   /// * [File.copySync]
   static const FileSystemOp copy = FileSystemOp._(5);
 
-  /// A file  system operation used for all exists methods.
+  /// A file system operation used for all exists methods.
   ///
   /// * [FileSystemEntity.exists]
   /// * [FileSystemEntity.existsSync]
