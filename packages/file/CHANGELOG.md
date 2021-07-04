@@ -1,3 +1,7 @@
+#### 6.1.3
+
+* - Update `meta` constraint to `>=1.3.0 <3.0.0`.
+
 #### 6.1.2
 
 * `MemoryFileSystem` now provides `opHandle`s for exists operations.
