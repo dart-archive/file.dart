@@ -8,3 +8,5 @@ environment:
 
 dependencies:
   test: ^1.16.0
+dev_dependencies: 
+  lints: ^1.0.1
