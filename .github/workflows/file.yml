@@ -1,0 +1,52 @@
+name: File Package
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch:
+
+jobs:
+  correctness:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        package: [file, file_testing]
+    steps:
+      - uses: actions/checkout@5a4ac9002d0be2fb38bd78e4b4dbde5606d7042f
+      - uses: dart-lang/setup-dart@9a04e6d73cca37bd455e0608d7e5092f881fd603
+        with:
+          sdk: dev
+      - name: Install ${{ matrix.package }} dependencies
+        run: |
+          cd packages/${{ matrix.package }}
+          dart pub upgrade
+      - name: Verify formatting in ${{ matrix.package }}
+        run: |
+          cd packages/${{ matrix.package }}
+          dart format --output=none --set-exit-if-changed .
+      - name: Analyze package ${{ matrix.package }} source
+        run: |
+          cd packages/${{ matrix.package }}
+          dart analyze --fatal-infos
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        package: [file]
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        sdk: [stable, beta, dev]
+    steps:
+      - uses: actions/checkout@5a4ac9002d0be2fb38bd78e4b4dbde5606d7042f
+      - uses: dart-lang/setup-dart@9a04e6d73cca37bd455e0608d7e5092f881fd603
+        with:
+          sdk: ${{ matrix.sdk }}
+      - name: Install ${{ matrix.package }} dependencies
+        run: |
+          cd packages/${{ matrix.package }}
+          dart pub upgrade
+      - name: Run ${{ matrix.package }} Tests
+        run: |
+          cd packages/${{ matrix.package }}
+          dart pub run test -j1 -rexpanded

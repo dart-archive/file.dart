@@ -64,7 +64,7 @@ void runCommonTests(
     late String root;
     List<String> stack = <String>[];
 
-    void skipIfNecessary(String description, void callback()) {
+    void skipIfNecessary(String description, void Function() callback) {
       stack.add(description);
       bool matchesCurrentFrame(String input) =>
           RegExp('^$input\$').hasMatch(stack.join(' > '));
@@ -80,11 +80,11 @@ void runCommonTests(
       tearDowns = <SetUpTearDown>[];
     });
 
-    void setUp(FutureOr<void> callback()) {
+    void setUp(FutureOr<void> Function() callback) {
       testpkg.setUp(replay == null ? callback : () => setUps.add(callback));
     }
 
-    void tearDown(FutureOr<void> callback()) {
+    void tearDown(FutureOr<void> Function() callback) {
       if (replay == null) {
         testpkg.tearDown(callback);
       } else {
@@ -92,10 +92,11 @@ void runCommonTests(
       }
     }
 
-    void group(String description, void body()) =>
+    void group(String description, void Function() body) =>
         skipIfNecessary(description, () => testpkg.group(description, body));
 
-    void test(String description, FutureOr<void> body(), {dynamic skip}) =>
+    void test(String description, FutureOr<void> Function() body,
+            {dynamic skip}) =>
         skipIfNecessary(description, () {
           if (replay == null) {
             testpkg.test(description, body, skip: skip);
@@ -866,7 +867,7 @@ void runCommonTests(
         test('throwsIfLoopInLinkChain', () {
           fs.link(ns('/foo')).createSync(ns('/bar'));
           fs.link(ns('/bar')).createSync(ns('/baz'));
-          fs.link(ns('/baz'))..createSync(ns('/foo'));
+          fs.link(ns('/baz')).createSync(ns('/foo'));
           expectFileSystemException(
             anyOf(ErrorCodes.EMLINK, ErrorCodes.ELOOP),
             () {
@@ -1433,7 +1434,7 @@ void runCommonTests(
               FileSystemEntityType.link);
           expect(fs.file(ns('/foo')).readAsStringSync(), 'foo');
           expect(fs.file(ns('/bar')).readAsStringSync(), 'foo');
-        });
+        }, skip: io.Platform.isWindows /* No links on Windows */);
 
         test('throwsIfDestinationExistsAsLinkToDirectory', () {
           File f = fs.file(ns('/foo'))..createSync();
@@ -1518,7 +1519,7 @@ void runCommonTests(
               FileSystemEntityType.link);
           expect(fs.file(ns('/foo/bar')).readAsStringSync(), 'qux');
           expect(fs.file(ns('/baz/qux')).readAsStringSync(), 'qux');
-        });
+        }, skip: io.Platform.isWindows /* No links on Windows */);
       });
 
       group('length', () {
@@ -3093,7 +3094,7 @@ void runCommonTests(
 
         test('unlinksIfTargetIsLinkLoop', () {
           Link l = fs.link(ns('/foo'))..createSync(ns('/bar'));
-          fs.link(ns('/bar'))..createSync(ns('/foo'));
+          fs.link(ns('/bar')).createSync(ns('/foo'));
           l.deleteSync();
           expect(fs.typeSync(ns('/foo'), followLinks: false),
               FileSystemEntityType.notFound);

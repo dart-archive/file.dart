@@ -82,10 +82,11 @@ Node resolveLinks(
   LinkNode link,
   PathGenerator path, {
   List<String>? ledger,
-  Node? tailVisitor(DirectoryNode parent, String childName, Node? child)?,
+  Node? Function(DirectoryNode parent, String childName, Node? child)?
+      tailVisitor,
 }) {
   // Record a breadcrumb trail to guard against symlink loops.
-  Set<LinkNode> breadcrumbs = Set<LinkNode>();
+  Set<LinkNode> breadcrumbs = <LinkNode>{};
 
   Node node = link;
   while (isLink(node)) {

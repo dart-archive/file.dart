@@ -306,7 +306,8 @@ class LinkNode extends Node {
   /// target cannot be traversed into, a [FileSystemException] will be thrown,
   /// and [tailVisitor] will not be invoked.
   Node getReferent({
-    Node? tailVisitor(DirectoryNode parent, String childName, Node? child)?,
+    Node? Function(DirectoryNode parent, String childName, Node? child)?
+        tailVisitor,
   }) {
     Node? referent = fs.findNode(
       target,

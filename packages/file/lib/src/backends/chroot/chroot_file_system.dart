@@ -277,7 +277,7 @@ class ChrootFileSystem extends FileSystem {
     }
 
     String getCurrentPath() => root + ctx.joinAll(ledger);
-    Set<String> breadcrumbs = Set<String>();
+    Set<String> breadcrumbs = <String>{};
     while (parts.isNotEmpty) {
       String segment = parts.removeAt(0);
       if (segment == _thisDir) {

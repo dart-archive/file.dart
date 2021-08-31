@@ -136,7 +136,7 @@ class MemoryDirectory extends MemoryFileSystemEntity
         path.endsWith(fileSystem.path.separator)
             ? path.substring(0, path.length - 1)
             : path,
-        Set<LinkNode>(),
+        <LinkNode>{},
       ),
     ];
     while (tasks.isNotEmpty) {
