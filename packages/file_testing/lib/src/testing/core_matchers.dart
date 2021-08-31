@@ -61,7 +61,7 @@ Matcher throwsFileSystemException([dynamic osErrorCode]) =>
 ///
 /// See also:
 ///   - [ErrorCodes]
-void expectFileSystemException(dynamic osErrorCode, void callback()) {
+void expectFileSystemException(dynamic osErrorCode, void Function() callback) {
   expect(callback, throwsFileSystemException(osErrorCode));
 }
 

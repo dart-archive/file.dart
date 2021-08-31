@@ -181,7 +181,8 @@ abstract class MemoryFileSystemEntity implements FileSystemEntity {
   /// resolve it to its target prior to returning it.
   @protected
   Node? internalCreateSync({
-    required Node? createChild(DirectoryNode parent, bool isFinalSegment),
+    required Node? Function(DirectoryNode parent, bool isFinalSegment)
+        createChild,
     bool followTailLink = false,
     bool visitLinks = false,
   }) {

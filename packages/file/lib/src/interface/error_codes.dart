@@ -167,7 +167,7 @@ class ErrorCodes {
   // ignore: non_constant_identifier_names
   static int get EXDEV => _platform((_Codes codes) => codes.exdev);
 
-  static int _platform(int getCode(_Codes codes)) {
+  static int _platform(int Function(_Codes codes) getCode) {
     _Codes codes = (_platforms[operatingSystem] ?? _platforms['linux'])!;
     return getCode(codes);
   }
