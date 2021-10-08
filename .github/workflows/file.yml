@@ -14,8 +14,8 @@ jobs:
       matrix:
         package: [file, file_testing]
     steps:
-      - uses: actions/checkout@5a4ac9002d0be2fb38bd78e4b4dbde5606d7042f
-      - uses: dart-lang/setup-dart@9a04e6d73cca37bd455e0608d7e5092f881fd603
+      - uses: actions/checkout@v2.3.4
+      - uses: dart-lang/setup-dart@v1.2
         with:
           sdk: dev
       - name: Install ${{ matrix.package }} dependencies
@@ -38,8 +38,8 @@ jobs:
         os: [ubuntu-latest, macos-latest, windows-latest]
         sdk: [stable, beta, dev]
     steps:
-      - uses: actions/checkout@5a4ac9002d0be2fb38bd78e4b4dbde5606d7042f
-      - uses: dart-lang/setup-dart@9a04e6d73cca37bd455e0608d7e5092f881fd603
+      - uses: actions/checkout@v2.3.4
+      - uses: dart-lang/setup-dart@v1.2
         with:
           sdk: ${{ matrix.sdk }}
       - name: Install ${{ matrix.package }} dependencies
