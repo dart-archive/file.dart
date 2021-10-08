@@ -4,7 +4,6 @@
 
 import 'package:file/file.dart';
 import 'package:file/memory.dart';
-import 'package:file/src/interface/file.dart';
 import 'package:test/test.dart';
 
 void main() {
