@@ -1,3 +1,7 @@
+#### 6.1.3-dev
+
+* Populate the pubspec `repository` field.
+
 #### 6.1.2
 
 * `MemoryFileSystem` now provides `opHandle`s for exists operations.

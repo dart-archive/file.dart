@@ -1,3 +1,7 @@
+#### 3.0.1-dev
+
+* Populate the pubspec `repository` field.
+
 #### 3.0.0
 
 * Migrate to null safety.

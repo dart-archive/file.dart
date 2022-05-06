@@ -1,4 +1,4 @@
-name: File Package
+name: Dart
 
 on:
   push:

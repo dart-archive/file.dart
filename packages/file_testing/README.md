@@ -1,3 +1,4 @@
+[![Dart](https://github.com/google/file.dart/actions/workflows/file.yml/badge.svg)](https://github.com/google/file.dart/actions/workflows/file.yml)
 [![pub package](https://img.shields.io/pub/v/file_testing.svg)](https://pub.dev/packages/file_testing)
 
 Testing utilities intended to work with `package:file`

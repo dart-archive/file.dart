@@ -1,12 +1,13 @@
 name: file_testing
-version: 3.0.0
+version: 3.0.1-dev
 description: Testing utilities for package:file
-homepage: https://github.com/google/file.dart/packages/file_testing
+repository: https://github.com/google/file.dart/tree/master/packages/file_testing
 
 environment:
-  sdk: '>=2.12.0-0 <3.0.0'
+  sdk: '>=2.12.0 <3.0.0'
 
 dependencies:
   test: ^1.16.0
+
 dev_dependencies: 
   lints: ^1.0.1
