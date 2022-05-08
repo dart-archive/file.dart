@@ -49,7 +49,7 @@
 * Enabled more tests.
 * Internal cleanup.
 * Remove implicit dynamic in preparation for null safety.
-* Remove dependency on Intl
+* Remove dependency on Intl.
 
 #### 5.2.1
 
