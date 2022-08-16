@@ -12,7 +12,7 @@ import 'file_system_entity.dart';
 abstract class File implements FileSystemEntity, io.File {
   // Override method definitions to codify the return type covariance.
   @override
-  Future<File> create({bool recursive = false});
+  Future<File> create({bool recursive = false, bool exclusive = false});
 
   @override
   Future<File> rename(String newPath);
