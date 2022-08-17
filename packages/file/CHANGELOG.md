@@ -1,3 +1,7 @@
+#### 6.1.3
+
+* In classes that implement `File` methods `create`, `createSync` now take `bool exclusive = true` parameter. No functional changes.
+
 #### 6.1.2
 
 * `MemoryFileSystem` now provides `opHandle`s for exists operations.

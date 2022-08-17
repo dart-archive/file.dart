@@ -125,7 +125,7 @@ class _ChrootFile extends _ChrootFileSystemEntity<File, io.File>
   File get absolute => _ChrootFile(fileSystem, _absolutePath);
 
   @override
-  Future<File> create({bool recursive = false}) async {
+  Future<File> create({bool recursive = false, bool exclusive = false}) async {
     String path = fileSystem._resolve(
       this.path,
       followLinks: false,
@@ -157,7 +157,7 @@ class _ChrootFile extends _ChrootFileSystemEntity<File, io.File>
   }
 
   @override
-  void createSync({bool recursive = false}) {
+  void createSync({bool recursive = false, bool exclusive = false}) {
     String path = fileSystem._resolve(
       this.path,
       followLinks: false,

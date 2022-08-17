@@ -48,15 +48,16 @@ class MemoryFile extends MemoryFileSystemEntity implements File {
   }
 
   @override
-  Future<File> create({bool recursive = false}) async {
-    createSync(recursive: recursive);
+  Future<File> create({bool recursive = false, bool exclusive = false}) async {
+    createSync(recursive: recursive, exclusive: exclusive);
     return this;
   }
 
+  // TODO(dartbug.com/49647): Pass `exclusive` through after it lands.
   @override
-  void createSync({bool recursive = false}) {
+  void createSync({bool recursive = false, bool exclusive = false}) {
     fileSystem.opHandle(path, FileSystemOp.create);
-    _doCreate(recursive: recursive);
+    _doCreate(recursive: recursive /*, exclusive: exclusive*/);
   }
 
   Node? _doCreate({bool recursive = false}) {

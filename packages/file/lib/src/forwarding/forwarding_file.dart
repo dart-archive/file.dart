@@ -14,13 +14,16 @@ abstract class ForwardingFile
   @override
   ForwardingFile wrap(io.File delegate) => wrapFile(delegate) as ForwardingFile;
 
+  // TODO(dartbug.com/49647): Pass `exclusive` through after it lands.
   @override
-  Future<File> create({bool recursive = false}) async =>
-      wrap(await delegate.create(recursive: recursive));
+  Future<File> create({bool recursive = false, bool exclusive = false}) async =>
+      wrap(await delegate.create(
+          recursive: recursive /*, exclusive: exclusive*/));
 
+  // TODO(dartbug.com/49647): Pass `exclusive` through after it lands.
   @override
-  void createSync({bool recursive = false}) =>
-      delegate.createSync(recursive: recursive);
+  void createSync({bool recursive = false, bool exclusive = false}) =>
+      delegate.createSync(recursive: recursive /*, exclusive: exclusive*/);
 
   @override
   Future<File> copy(String newPath) async => wrap(await delegate.copy(newPath));

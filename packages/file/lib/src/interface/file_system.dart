@@ -105,7 +105,7 @@ abstract class FileSystem {
   /// `false`, and [path] points to a link
   ///
   /// If the [path] does not point to a file system object or an error occurs
-  /// then [io.FileSystemEntityType.NOT_FOUND] is returned.
+  /// then [io.FileSystemEntityType.notFound] is returned.
   Future<io.FileSystemEntityType> type(String path, {bool followLinks = true});
 
   /// Syncronously finds the type of file system object that a [path] points
@@ -115,7 +115,7 @@ abstract class FileSystem {
   /// `false`, and [path] points to a link
   ///
   /// If the [path] does not point to a file system object or an error occurs
-  /// then [io.FileSystemEntityType.NOT_FOUND] is returned.
+  /// then [io.FileSystemEntityType.notFound] is returned.
   io.FileSystemEntityType typeSync(String path, {bool followLinks = true});
 
   /// Checks if [`type(path)`](type) returns [io.FileSystemEntityType.FILE].
