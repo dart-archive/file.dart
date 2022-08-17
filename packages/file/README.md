@@ -1,5 +1,5 @@
-[![Build Status](https://travis-ci.org/google/file.dart.svg?branch=master)](https://travis-ci.org/google/file.dart)
 [![pub package](https://img.shields.io/pub/v/file.svg)](https://pub.dev/packages/file)
+[![package publisher](https://img.shields.io/pub/publisher/file.svg)](https://pub.dev/packages/file/publisher)
 
 A generic file system abstraction for Dart.
 

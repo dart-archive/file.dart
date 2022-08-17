@@ -1,3 +1,7 @@
+#### 6.1.4
+
+* Populate the pubspec `repository` field.
+
 #### 6.1.3
 
 * In classes that implement `File` methods `create`, `createSync` now take `bool exclusive = true` parameter. No functional changes.
@@ -49,7 +53,7 @@
 * Enabled more tests.
 * Internal cleanup.
 * Remove implicit dynamic in preparation for null safety.
-* Remove dependency on Intl
+* Remove dependency on Intl.
 
 #### 5.2.1
 
