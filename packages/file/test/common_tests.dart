@@ -637,13 +637,18 @@ void runCommonTests(
           expect(dest, exists);
         });
 
-        test('succeedsIfDestinationIsEmptyDirectory', () {
-          fs.directory(ns('/bar')).createSync();
-          Directory src = fs.directory(ns('/foo'))..createSync();
-          Directory dest = src.renameSync(ns('/bar'));
-          expect(src, isNot(exists));
-          expect(dest, exists);
-        });
+        test(
+          'succeedsIfDestinationIsEmptyDirectory',
+          () {
+            fs.directory(ns('/bar')).createSync();
+            Directory src = fs.directory(ns('/foo'))..createSync();
+            Directory dest = src.renameSync(ns('/bar'));
+            expect(src, isNot(exists));
+            expect(dest, exists);
+          },
+          // See https://github.com/google/file.dart/issues/197.
+          skip: io.Platform.isWindows,
+        );
 
         test('throwsIfDestinationIsFile', () {
           fs.file(ns('/bar')).createSync();
