@@ -1,3 +1,6 @@
+#### 7.0.0
+* Dart 3 fixes for class modifiers.
+
 #### 6.1.4
 
 * Populate the pubspec `repository` field.
