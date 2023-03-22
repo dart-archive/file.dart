@@ -10,7 +10,7 @@ import 'package:meta/meta.dart';
 
 /// A [RandomAccessFile] implementation that forwards all methods and properties
 /// to a delegate.
-abstract class ForwardingRandomAccessFile implements io.RandomAccessFile {
+mixin ForwardingRandomAccessFile implements io.RandomAccessFile {
   /// The entity to which this entity will forward all methods and properties.
   @protected
   io.RandomAccessFile get delegate;

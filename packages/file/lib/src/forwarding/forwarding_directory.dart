@@ -6,7 +6,7 @@ import 'package:file/src/io.dart' as io;
 import 'package:file/file.dart';
 
 /// A directory that forwards all methods and properties to a delegate.
-abstract class ForwardingDirectory<T extends Directory>
+mixin ForwardingDirectory<T extends Directory>
     implements ForwardingFileSystemEntity<T, io.Directory>, Directory {
   @override
   T wrap(io.Directory delegate) => wrapDirectory(delegate) as T;

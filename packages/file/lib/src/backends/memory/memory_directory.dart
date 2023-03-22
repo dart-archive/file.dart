@@ -74,19 +74,19 @@ class MemoryDirectory extends MemoryFileSystemEntity
 
   @override
   Directory createTempSync([String? prefix]) {
-    prefix = (prefix ?? '') + 'rand';
+    prefix = '${prefix ?? ''}rand';
     String fullPath = fileSystem.path.join(path, prefix);
     String dirname = fileSystem.path.dirname(fullPath);
     String basename = fileSystem.path.basename(fullPath);
     DirectoryNode? node = fileSystem.findNode(dirname) as DirectoryNode?;
     checkExists(node, () => dirname);
     utils.checkIsDir(node!, () => dirname);
-    int _tempCounter = _systemTempCounter[fileSystem] ?? 0;
-    String name() => '$basename$_tempCounter';
+    int tempCounter = _systemTempCounter[fileSystem] ?? 0;
+    String name() => '$basename$tempCounter';
     while (node.children.containsKey(name())) {
-      _tempCounter++;
+      tempCounter++;
     }
-    _systemTempCounter[fileSystem] = _tempCounter;
+    _systemTempCounter[fileSystem] = tempCounter;
     DirectoryNode tempDir = DirectoryNode(node);
     node.children[name()] = tempDir;
     return MemoryDirectory(fileSystem, fileSystem.path.join(dirname, name()))

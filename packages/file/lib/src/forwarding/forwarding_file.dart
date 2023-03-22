@@ -9,7 +9,7 @@ import 'package:file/src/io.dart' as io;
 import 'package:file/file.dart';
 
 /// A file that forwards all methods and properties to a delegate.
-abstract class ForwardingFile
+mixin ForwardingFile
     implements ForwardingFileSystemEntity<File, io.File>, File {
   @override
   ForwardingFile wrap(io.File delegate) => wrapFile(delegate) as ForwardingFile;
