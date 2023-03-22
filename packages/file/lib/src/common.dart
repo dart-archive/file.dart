@@ -52,7 +52,7 @@ FileSystemException _fsException(String path, String msg, int errorCode) {
 
 /// Mixin containing implementations of [Directory] methods that are common
 /// to all implementations.
-mixin DirectoryAddOnsMixin implements Directory {
+abstract mixin class DirectoryAddOnsMixin implements Directory {
   @override
   Directory childDirectory(String basename) {
     return fileSystem.directory(fileSystem.path.join(path, basename));
