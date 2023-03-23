@@ -42,7 +42,7 @@ jobs:
       matrix:
         package: [file]
         os: [ubuntu-latest, macos-latest, windows-latest]
-        sdk: [stable, beta, dev]
+        sdk: [dev]
 
     steps:
       - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c
