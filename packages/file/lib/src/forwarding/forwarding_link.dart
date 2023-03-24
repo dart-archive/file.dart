@@ -6,7 +6,7 @@ import 'package:file/src/io.dart' as io;
 import 'package:file/file.dart';
 
 /// A link that forwards all methods and properties to a delegate.
-abstract mixin class ForwardingLink
+mixin ForwardingLink
     implements ForwardingFileSystemEntity<Link, io.Link>, Link {
   @override
   ForwardingLink wrap(io.Link delegate) => wrapLink(delegate) as ForwardingLink;
