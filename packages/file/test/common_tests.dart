@@ -370,6 +370,11 @@ void runCommonTests(
       });
 
       group('stat', () {
+        test('isNotFoundForEmptyPath', () {
+          FileStat stat = fs.statSync('');
+          expect(stat.type, FileSystemEntityType.notFound);
+        });
+
         test('isNotFoundForPathToNonExistentEntityAtTail', () {
           FileStat stat = fs.statSync(ns('/foo'));
           expect(stat.type, FileSystemEntityType.notFound);

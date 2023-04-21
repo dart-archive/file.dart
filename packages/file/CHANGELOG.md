@@ -1,3 +1,7 @@
+#### 6.1.5
+
+* `MemoryFileSystem` now treats empty paths as non-existent.
+
 #### 6.1.4
 
 * Populate the pubspec `repository` field.

@@ -197,9 +197,7 @@ class _MemoryFileSystem extends FileSystem
     return node.type;
   }
 
-  /// Gets the node backing for the current working directory. Note that this
-  /// can return null if the directory has been deleted or moved from under our
-  /// feet.
+  /// Gets the node backing for the current working directory.
   DirectoryNode get _current => findNode(cwd) as DirectoryNode;
 
   @override
@@ -211,7 +209,9 @@ class _MemoryFileSystem extends FileSystem
     List<String>? pathWithSymlinks,
     bool followTailLink = false,
   }) {
-    if (_context.isAbsolute(path)) {
+    if (path.isEmpty) {
+      return null;
+    } else if (_context.isAbsolute(path)) {
       reference = _root;
       path = path.substring(style.drive.length);
     } else {

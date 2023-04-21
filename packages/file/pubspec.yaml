@@ -1,5 +1,5 @@
 name: file
-version: 6.1.4
+version: 6.1.5
 description:
   A pluggable, mockable file system abstraction for Dart. Supports local file
   system access, as well as in-memory file systems, record-replay file systems,
