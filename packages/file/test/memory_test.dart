@@ -148,4 +148,83 @@ void main() {
 
     expect(tempDir.existsSync(), true);
   });
+
+  group('MemoryFileSystemIOOverrides test', () {
+    const directoryPath = '/foo/bar/baz';
+    const testFileName = 'test.txt';
+    const contents = 'Hello world!';
+    const linkFileName = 'symlink';
+
+    late MemoryFileSystem fs;
+
+    setUp(() {
+      fs = MemoryFileSystem();
+    });
+
+    test('Writes to the MemoryFileSystem', () {
+      io.IOOverrides.runWithIOOverrides(
+        () {
+          var directory = io.Directory(directoryPath);
+          expect(directory.existsSync(), false);
+
+          directory.createSync(recursive: true);
+          expect(directory.existsSync(), true);
+
+          io.Directory.current = directoryPath;
+
+          var file = io.File(testFileName);
+          expect(file.existsSync(), false);
+          expect(file.absolute.path, '$directoryPath/$testFileName');
+
+          var tokens = contents.split(' ');
+          var separator = '';
+          for (var token in tokens) {
+            file.writeAsStringSync('$separator$token',
+                mode: io.FileMode.append);
+            separator = ' ';
+          }
+
+          expect(file.readAsStringSync(), contents);
+
+          var link = io.Link(linkFileName);
+          expect(link.existsSync(), false);
+          link.createSync(file.absolute.path);
+        },
+        MemoryFileSystemIOOverrides(fs: fs),
+      );
+
+      expect(fs.isDirectorySync(directoryPath), true);
+      expect(fs.currentDirectory.path, directoryPath);
+
+      var file = fs.file(testFileName);
+      expect(file.existsSync(), true);
+      expect(file.readAsStringSync(), contents);
+      expect(fs.isLinkSync(linkFileName), true);
+      expect(fs.link(linkFileName).targetSync(), file.absolute.path);
+    });
+
+    test('Reads from the MemoryFileSystem', () {
+      fs.directory(directoryPath).create(recursive: true);
+
+      var file = fs.file('$directoryPath/$testFileName')
+        ..writeAsStringSync(contents);
+      fs.link('$directoryPath/$linkFileName').createSync(file.path);
+      fs.currentDirectory = directoryPath;
+
+      io.IOOverrides.runWithIOOverrides(
+        () {
+          expect(io.FileSystemEntity.isDirectorySync(directoryPath), true);
+          expect(io.Directory.current.path, directoryPath);
+
+          var file = io.File(testFileName);
+          expect(file.existsSync(), true);
+          expect(file.readAsStringSync(), contents);
+
+          expect(io.FileSystemEntity.isLinkSync(linkFileName), true);
+          expect(io.Link(linkFileName).targetSync(), file.absolute.path);
+        },
+        MemoryFileSystemIOOverrides(fs: fs),
+      );
+    });
+  });
 }

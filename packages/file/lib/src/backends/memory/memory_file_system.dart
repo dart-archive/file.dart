@@ -4,6 +4,7 @@
 
 import 'package:file/file.dart';
 import 'package:file/src/backends/memory/operations.dart';
+import 'package:file/src/io_overrides.dart';
 import 'package:file/src/io.dart' as io;
 import 'package:path/path.dart' as p;
 
@@ -277,4 +278,10 @@ class _MemoryFileSystem extends FileSystem
     }
     return child;
   }
+}
+
+/// [IOOverrides] implementation backed by a [MemoryFileSytem].
+class MemoryFileSystemIOOverrides extends FileSystemIOOverrides {
+  MemoryFileSystemIOOverrides({MemoryFileSystem? fs})
+      : super(fs ?? MemoryFileSystem());
 }
