@@ -498,6 +498,38 @@ void runCommonTests(
           expect(type, FileSystemEntityType.notFound);
         });
       });
+
+      test('isFileForFile', () {
+        fs.file(ns('/foo')).createSync();
+
+        expect(fs.isFileSync(ns('/foo')), true);
+        expect(fs.isDirectorySync(ns('/foo')), false);
+        expect(fs.isLinkSync(ns('/foo')), false);
+      });
+
+      test('isDirectoryForDirectory', () {
+        fs.directory(ns('/foo')).createSync();
+
+        expect(fs.isFileSync(ns('/foo')), false);
+        expect(fs.isDirectorySync(ns('/foo')), true);
+        expect(fs.isLinkSync(ns('/foo')), false);
+      });
+
+      test('isLinkForLink', () {
+        fs.file(ns('/file')).createSync();
+        fs.link(ns('/file-link')).createSync(ns('/file'));
+        fs.link(ns('/dir-link')).createSync(ns('/'));
+
+        expect(fs.isLinkSync(ns('/file')), false);
+
+        expect(fs.isFileSync(ns('/file-link')), true);
+        expect(fs.isDirectorySync(ns('/file-link')), false);
+        expect(fs.isLinkSync(ns('/file-link')), true);
+
+        expect(fs.isFileSync(ns('/dir-link')), false);
+        expect(fs.isDirectorySync(ns('/dir-link')), true);
+        expect(fs.isLinkSync(ns('/dir-link')), true);
+      });
     });
 
     group('Directory', () {
