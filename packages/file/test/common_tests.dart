@@ -499,36 +499,44 @@ void runCommonTests(
         });
       });
 
-      test('isFileForFile', () {
-        fs.file(ns('/foo')).createSync();
+      group('isFile/isDirectory/isLink', () {
+        late String filePath;
+        late String directoryPath;
+        late String fileLinkPath;
+        late String directoryLinkPath;
 
-        expect(fs.isFileSync(ns('/foo')), true);
-        expect(fs.isDirectorySync(ns('/foo')), false);
-        expect(fs.isLinkSync(ns('/foo')), false);
-      });
+        setUp(() {
+          filePath = ns('/file');
+          directoryPath = ns('/directory');
+          fileLinkPath = ns('/file-link');
+          directoryLinkPath = ns('/directory-link');
 
-      test('isDirectoryForDirectory', () {
-        fs.directory(ns('/foo')).createSync();
+          fs.file(filePath).createSync();
+          fs.directory(directoryPath).createSync();
+          fs.link(fileLinkPath).createSync(filePath);
+          fs.link(directoryLinkPath).createSync(directoryPath);
+        });
 
-        expect(fs.isFileSync(ns('/foo')), false);
-        expect(fs.isDirectorySync(ns('/foo')), true);
-        expect(fs.isLinkSync(ns('/foo')), false);
-      });
+        test('isFile', () {
+          expect(fs.isFileSync(filePath), true);
+          expect(fs.isFileSync(directoryPath), false);
+          expect(fs.isFileSync(fileLinkPath), true);
+          expect(fs.isFileSync(directoryLinkPath), false);
+        });
 
-      test('isLinkForLink', () {
-        fs.file(ns('/file')).createSync();
-        fs.link(ns('/file-link')).createSync(ns('/file'));
-        fs.link(ns('/dir-link')).createSync(ns('/'));
+        test('isDirectory', () {
+          expect(fs.isDirectorySync(filePath), false);
+          expect(fs.isDirectorySync(directoryPath), true);
+          expect(fs.isDirectorySync(fileLinkPath), false);
+          expect(fs.isDirectorySync(directoryLinkPath), true);
+        });
 
-        expect(fs.isLinkSync(ns('/file')), false);
-
-        expect(fs.isFileSync(ns('/file-link')), true);
-        expect(fs.isDirectorySync(ns('/file-link')), false);
-        expect(fs.isLinkSync(ns('/file-link')), true);
-
-        expect(fs.isFileSync(ns('/dir-link')), false);
-        expect(fs.isDirectorySync(ns('/dir-link')), true);
-        expect(fs.isLinkSync(ns('/dir-link')), true);
+        test('isLink', () {
+          expect(fs.isLinkSync(filePath), false);
+          expect(fs.isLinkSync(directoryPath), false);
+          expect(fs.isLinkSync(fileLinkPath), true);
+          expect(fs.isLinkSync(directoryLinkPath), true);
+        });
       });
     });
 
