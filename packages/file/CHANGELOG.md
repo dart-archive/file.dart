@@ -2,6 +2,9 @@
 
 * Dart 3 fixes for class modifiers.
 
+* Make the return type of `MemoryFile.openRead` and `_ChrootFile.openRead` again
+  match the return type from `dart:io`.
+
 #### 6.1.4
 
 * Populate the pubspec `repository` field.

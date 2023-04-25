@@ -19,4 +19,6 @@ dev_dependencies:
   test: ^1.23.1
 
 dependency_overrides:
+  # Temporary to break a dependency cycle.  See:
+  # <https://github.com/google/file.dart/pull/217#issuecomment-1530032688>
   glob: 2.1.1
