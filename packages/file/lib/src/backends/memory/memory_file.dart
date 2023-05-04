@@ -416,19 +416,18 @@ class _FileSink implements io.IOSink {
   Future<void> addStream(Stream<List<int>> stream) {
     _checkNotStreaming();
     _streamCompleter = Completer<void>();
-    void finish() {
-      _streamCompleter!.complete();
-      _streamCompleter = null;
-    }
 
     stream.listen(
       (List<int> data) => _addData(data),
       cancelOnError: true,
       onError: (Object error, StackTrace stackTrace) {
-        _completer.completeError(error, stackTrace);
-        finish();
+        _streamCompleter!.completeError(error, stackTrace);
+        _streamCompleter = null;
       },
-      onDone: finish,
+      onDone: () {
+        _streamCompleter!.complete();
+        _streamCompleter = null;
+      },
     );
     return _streamCompleter!.future;
   }

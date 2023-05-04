@@ -2,6 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:async';
 import 'dart:io' as io;
 
 import 'package:file/file.dart';
@@ -147,5 +148,26 @@ void main() {
     final Directory tempDir = fileSystem.currentDirectory.createTempSync('foo');
 
     expect(tempDir.existsSync(), true);
+  });
+
+  test(
+      'addStream forwards error to returned future and file can still be '
+      'closed', () async {
+    final file = MemoryFileSystem.test().file('foo').openWrite();
+    await expectLater(file.addStream(Stream.error('bar')), throwsA('bar'));
+    await file.close();
+  });
+
+  test(
+      'addStream cancels on error and does not misbehave if the stream '
+      'produces multiple errors and then closes', () async {
+    final file = MemoryFileSystem.test().file('foo').openWrite();
+    final controller = StreamController<List<int>>()
+      ..addError('bar')
+      ..addError('baz');
+    final close = controller.close();
+    await expectLater(file.addStream(controller.stream), throwsA('bar'));
+    await file.close();
+    await close;
   });
 }
