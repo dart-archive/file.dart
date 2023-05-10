@@ -1,4 +1,5 @@
-#### 6.2.0
+#### 7.0.0
+
 * Dart 3 fixes for class modifiers.
 
 #### 6.1.4
