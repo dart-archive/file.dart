@@ -1,4 +1,4 @@
-#### 7.0.0
+#### 7.0.0-wip
 
 * Dart 3 fixes for class modifiers.
 
