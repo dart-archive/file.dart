@@ -197,8 +197,10 @@ class _MemoryFileSystem extends FileSystem
     return node.type;
   }
 
-  /// Gets the node backing for the current working directory.
-  DirectoryNode get _current => findNode(cwd) as DirectoryNode;
+  /// Gets the node backing for the current working directory. Note that this
+  /// can return null if the directory has been deleted or moved from under our
+  /// feet.
+  DirectoryNode? get _current => findNode(cwd) as DirectoryNode?;
 
   @override
   Node? findNode(
