@@ -206,9 +206,9 @@ class MemoryFile extends MemoryFileSystemEntity implements File {
             ? content.sublist(start)
             : content.sublist(start, math.min(end, content.length));
       }
-      return Stream<List<int>>.fromIterable(<Uint8List>[content]);
+      return Stream.value(content);
     } catch (e) {
-      return Stream<List<int>>.fromFuture(Future<Uint8List>.error(e));
+      return Stream.error(e);
     }
   }
 
