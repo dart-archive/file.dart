@@ -359,7 +359,7 @@ class _FileSink implements io.IOSink {
     return _FileSink._(future, encoding);
   }
 
-  _FileSink._(Future<FileNode> _node, this.encoding) : _pendingWrites = _node;
+  _FileSink._(Future<FileNode> node, this.encoding) : _pendingWrites = node;
 
   final Completer<void> _completer = Completer<void>();
 

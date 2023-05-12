@@ -1,5 +1,6 @@
-#### 6.1.5
+#### 7.0.0-wip
 
+* Dart 3 fixes for class modifiers.
 * Fix `FileSystem.isLink`/`FileSystem.isLinkSync` to not follow symbolic links.
 
 #### 6.1.4
