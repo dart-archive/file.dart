@@ -1,6 +1,7 @@
 #### 7.0.0-wip
 
 * Dart 3 fixes for class modifiers.
+* `MemoryFileSystem` now treats empty paths as non-existent.
 * Fix `FileSystem.isLink`/`FileSystem.isLinkSync` to not follow symbolic links.
 
 #### 6.1.4
