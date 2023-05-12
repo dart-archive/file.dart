@@ -1,5 +1,6 @@
-#### 6.1.5
+#### 7.0.0-wip
 
+* Dart 3 fixes for class modifiers.
 * `MemoryFileSystem` now treats empty paths as non-existent.
 
 #### 6.1.4

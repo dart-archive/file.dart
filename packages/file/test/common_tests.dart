@@ -507,7 +507,7 @@ void runCommonTests(
 
     group('Directory', () {
       test('uri', () {
-        expect(fs.directory(ns('/foo')).uri, fs.path.toUri(ns('/foo') + '/'));
+        expect(fs.directory(ns('/foo')).uri, fs.path.toUri('${ns('/foo')}/'));
         expect(fs.directory('foo').uri.toString(), 'foo/');
       });
 
@@ -2605,7 +2605,7 @@ void runCommonTests(
 
         test('isTrailingNewlineAgnostic', () {
           File f = fs.file(ns('/foo'))..createSync();
-          f.writeAsStringSync(testString + '\n');
+          f.writeAsStringSync('$testString\n');
           expect(f.readAsLinesSync(), expectedLines);
 
           f.writeAsStringSync('\n');
