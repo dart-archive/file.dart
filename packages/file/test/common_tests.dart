@@ -370,6 +370,11 @@ void runCommonTests(
       });
 
       group('stat', () {
+        test('isNotFoundForEmptyPath', () {
+          FileStat stat = fs.statSync('');
+          expect(stat.type, FileSystemEntityType.notFound);
+        });
+
         test('isNotFoundForPathToNonExistentEntityAtTail', () {
           FileStat stat = fs.statSync(ns('/foo'));
           expect(stat.type, FileSystemEntityType.notFound);
@@ -496,6 +501,46 @@ void runCommonTests(
         test('isNotFoundForNoDirectoryInTraversal', () {
           FileSystemEntityType type = fs.typeSync(ns('/foo/bar/baz'));
           expect(type, FileSystemEntityType.notFound);
+        });
+      });
+
+      group('isFile/isDirectory/isLink', () {
+        late String filePath;
+        late String directoryPath;
+        late String fileLinkPath;
+        late String directoryLinkPath;
+
+        setUp(() {
+          filePath = ns('/file');
+          directoryPath = ns('/directory');
+          fileLinkPath = ns('/file-link');
+          directoryLinkPath = ns('/directory-link');
+
+          fs.file(filePath).createSync();
+          fs.directory(directoryPath).createSync();
+          fs.link(fileLinkPath).createSync(filePath);
+          fs.link(directoryLinkPath).createSync(directoryPath);
+        });
+
+        test('isFile', () {
+          expect(fs.isFileSync(filePath), true);
+          expect(fs.isFileSync(directoryPath), false);
+          expect(fs.isFileSync(fileLinkPath), true);
+          expect(fs.isFileSync(directoryLinkPath), false);
+        });
+
+        test('isDirectory', () {
+          expect(fs.isDirectorySync(filePath), false);
+          expect(fs.isDirectorySync(directoryPath), true);
+          expect(fs.isDirectorySync(fileLinkPath), false);
+          expect(fs.isDirectorySync(directoryLinkPath), true);
+        });
+
+        test('isLink', () {
+          expect(fs.isLinkSync(filePath), false);
+          expect(fs.isLinkSync(directoryPath), false);
+          expect(fs.isLinkSync(fileLinkPath), true);
+          expect(fs.isLinkSync(directoryLinkPath), true);
         });
       });
     });
