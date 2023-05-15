@@ -2273,6 +2273,21 @@ void runCommonTests(
           expect(f, isNot(exists));
           expect(newFile, exists);
         });
+
+        test('openReadCompatibleWithUtf8Decoder', () async {
+          const content = 'Hello world!';
+          File file = fs.file(ns('/foo'))
+            ..createSync()
+            ..writeAsStringSync(content);
+          expect(
+            await file
+                .openRead()
+                .transform(utf8.decoder)
+                .transform(const LineSplitter())
+                .first,
+            content,
+          );
+        });
       });
 
       group('openWrite', () {

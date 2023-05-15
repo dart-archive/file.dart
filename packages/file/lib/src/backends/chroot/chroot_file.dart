@@ -251,8 +251,8 @@ class _ChrootFile extends _ChrootFileSystemEntity<File, io.File>
           path, getDelegate(followLinks: true).openSync(mode: mode));
 
   @override
-  Stream<Uint8List> openRead([int? start, int? end]) =>
-      getDelegate(followLinks: true).openRead(start, end).cast<Uint8List>();
+  Stream<List<int>> openRead([int? start, int? end]) =>
+      getDelegate(followLinks: true).openRead(start, end);
 
   @override
   IOSink openWrite({

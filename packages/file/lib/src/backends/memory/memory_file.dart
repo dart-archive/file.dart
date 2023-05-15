@@ -196,7 +196,7 @@ class MemoryFile extends MemoryFileSystemEntity implements File {
   }
 
   @override
-  Stream<Uint8List> openRead([int? start, int? end]) {
+  Stream<List<int>> openRead([int? start, int? end]) {
     fileSystem.opHandle(path, FileSystemOp.open);
     try {
       FileNode node = resolvedBacking as FileNode;
@@ -206,9 +206,9 @@ class MemoryFile extends MemoryFileSystemEntity implements File {
             ? content.sublist(start)
             : content.sublist(start, math.min(end, content.length));
       }
-      return Stream<Uint8List>.fromIterable(<Uint8List>[content]);
+      return Stream.value(content);
     } catch (e) {
-      return Stream<Uint8List>.fromFuture(Future<Uint8List>.error(e));
+      return Stream.error(e);
     }
   }
 
