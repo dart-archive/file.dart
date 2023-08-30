@@ -1,5 +1,5 @@
 name: file_testing
-version: 3.0.0
+version: 3.0.1-wip
 description: Testing utilities for package:file.
 repository: https://github.com/google/file.dart/tree/master/packages/file_testing
 
@@ -11,6 +11,3 @@ dependencies:
 
 dev_dependencies: 
   lints: ^2.0.1
-
-dependency_overrides:
-  glob: 2.1.1
