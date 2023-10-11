@@ -1,3 +1,7 @@
+#### 3.0.1-wip
+
+* Require Dart 3.0 or later.
+
 #### 3.0.0
 
 * Migrate to null safety.
