@@ -231,7 +231,7 @@ class ChrootFileSystem extends FileSystem {
     } else {
       assert(path.isAbsolute(localPath));
     }
-    return '$root$localPath';
+    return path.join(root, path.relative(localPath, from: _localRoot));
   }
 
   /// Resolves symbolic links on [path] and returns the resulting resolved path.
