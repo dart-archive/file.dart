@@ -1,5 +1,7 @@
-[![pub package](https://img.shields.io/pub/v/file.svg)](https://pub.dev/packages/file)
-[![package publisher](https://img.shields.io/pub/publisher/file.svg)](https://pub.dev/packages/file/publisher)
+> [!NOTE]
+> The source-of-truth for this package has moved to https://github.com/dart-lang/tools.
+
+## package:file
 
 A generic file system abstraction for Dart.
 

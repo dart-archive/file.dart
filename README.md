@@ -1,4 +1,5 @@
-[![Dart](https://github.com/google/file.dart/actions/workflows/file.yml/badge.svg)](https://github.com/google/file.dart/actions/workflows/file.yml)
+> [!NOTE]
+> The source-of-truth for these packages has moved to https://github.com/dart-lang/tools.
 
 A monorepo for the `package:file` and `package:file_testing` packages.
 
