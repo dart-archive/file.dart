@@ -1,4 +1,7 @@
-[![pub package](https://img.shields.io/pub/v/file_testing.svg)](https://pub.dev/packages/file_testing)
+> [!NOTE]
+> The source-of-truth for this package has moved to https://github.com/dart-lang/tools.
+
+## package:file_testing
 
 Testing utilities intended to work with `package:file`
 
